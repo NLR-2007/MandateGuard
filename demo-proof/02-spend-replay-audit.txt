@@ -1,0 +1,25 @@
+=== PART 22/20: EXECUTION, DUPLICATE, REPLAY ===
+  PASS  safe order APPROVED
+  PASS  execution recorded — spentToday 4800
+  PASS  mandate now USED (replay protection armed)
+  PASS  duplicate execution refused — Execution already recorded.
+  PASS  daily spend did NOT double — spentToday 4800
+  PASS  replay on used mandate refused — Mandate has already been used.
+  PASS  reason mentions the mandate
+
+=== PART 23: DAILY LIMIT ===
+  PASS  spent today is 7000 — {"dailyLimit":10000,"spentToday":7000,"remaining":3000}
+  PASS  6. daily limit exceeded -> BLOCKED — projected 11000
+  PASS     reason shown
+
+=== PART 24/25: AUDIT + TRANSACTION DETAIL ===
+  PASS  audit row has every required field — all present
+  PASS  transaction detail endpoint works
+  PASS  detail includes a timeline
+
+=== PART 34: DEMO RESET ===
+  PASS  reset clears counts
+  PASS  reset clears daily spend
+  PASS  reset does not claim to touch the chain
+
+RESULT: 16 passed, 0 failed

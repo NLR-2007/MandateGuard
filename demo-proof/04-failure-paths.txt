@@ -1,0 +1,16 @@
+=== FIX VERIFICATION: server survives a dead facilitator ===
+  /health -> HTTP 200  (server alive)
+
+=== PART 8: AI FAILURE (bad model) ===
+  {"success":false,"error":"The configured NVIDIA model was not found. Check NVIDIA_MODEL in server/.env."}  [http=502]
+
+  --- manual path must still work ---
+  PASS  manual policy created: MG-1001
+  PASS  MandateGuard still decides: BLOCKED with 4 reasons
+
+=== PART 19: FACILITATOR FAILURE ===
+  {"success":false,"error":"The x402 payment service is unavailable right now. The verification could not be paid for, so it was not run.","detail":"facilitator_unreachable"}
+    [http=503]
+  audit rows: 1 -> 1
+  PASS  protected handler did NOT run, nothing faked
+  /health after the failure -> HTTP 200  (still alive)

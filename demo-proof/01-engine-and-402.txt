@@ -1,0 +1,39 @@
+=== PART 3: HEALTH ===
+  PASS  health status ok
+  PASS  mandateGuard true
+  PASS  nvidiaNimConfigured true
+  PASS  x402 true
+  PASS  algorand true
+  PASS  network testnet
+  PASS  no secret in /health
+
+=== PART 6: MANDATEGUARD ENGINE (12 cases) ===
+  PASS  1. correct order — APPROVED
+  PASS  2. product mismatch — BLOCKED | "Product does not match the approved policy."
+  PASS     reason shown — Product does not match the approved policy.
+  PASS  3. quantity mismatch — BLOCKED | "Quantity changed from 1 to 2."
+  PASS     reason shown — Quantity changed from 1 to 2.
+  PASS  4. price above maximum — BLOCKED | "Order price exceeds the approved maximum price."
+  PASS     reason shown — Order price exceeds the approved maximum price.
+  PASS  7. wrong seller — BLOCKED | "Seller is not approved."
+  PASS     reason shown — Seller is not approved.
+  PASS  8. warranty added — BLOCKED | "Warranty was added without human approval."
+  PASS     reason shown — Warranty was added without human approval.
+  PASS  9. wrong receiver — BLOCKED | "Payment receiver wallet does not match the approved wallet."
+  PASS     reason shown — Payment receiver wallet does not match the approved wallet.
+  PASS  5. per-transaction limit exceeded — Per-transaction spending limit exceeded.
+  PASS  10. expired policy — Human spending policy has expired.
+  PASS  12. combined attack — 4 reasons
+  PASS     amount checks still PASS
+  PASS     every violation has a sentence
+
+=== PART 12: x402 GATE (no payment) ===
+  PASS  unpaid request returns 402 — HTTP 402
+  PASS  payment-required header present
+  PASS  challenge asset is TestNet USDC
+  PASS  challenge amount is 5000 micro (0.005)
+  PASS  challenge network is Algorand TestNet
+  PASS  MandateGuard did NOT run on unpaid request — 10 -> 10 audit rows
+  PASS  invalid payment proof still 402
+
+RESULT: 32 passed, 0 failed

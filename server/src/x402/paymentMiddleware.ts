@@ -13,6 +13,10 @@ import { createPaymentConfig, getX402Config } from './x402Config.js'
 /**
  * Builds the x402 middleware for the protected route.
  * Call only when isX402Configured() is true.
+ *
+ * The inner middleware is wrapped so that a facilitator outage answers 503
+ * instead of throwing. A payment problem must never take the whole service
+ * down - MandateGuard, the AI and the free routes have to keep working.
  */
 export function createX402Middleware(): MiddlewareHandler {
   const config = getX402Config()
@@ -25,8 +29,27 @@ export function createX402Middleware(): MiddlewareHandler {
   )
 
   const paymentConfig = createPaymentConfig()
+  const inner = paymentMiddleware(paymentConfig as never, resourceServer) as MiddlewareHandler
 
-  return paymentMiddleware(paymentConfig as never, resourceServer) as MiddlewareHandler
+  return async (c, next) => {
+    try {
+      return await inner(c, next)
+    } catch (error) {
+      const message = (error as Error)?.message ?? 'unknown error'
+      console.error(`  ✕ x402 payment layer unavailable: ${message}`)
+
+      // No fake success, and the protected handler never runs.
+      return c.json(
+        {
+          success: false,
+          error:
+            'The x402 payment service is unavailable right now. The verification could not be paid for, so it was not run.',
+          detail: 'facilitator_unreachable',
+        },
+        503,
+      )
+    }
+  }
 }
 
 /** Details the facilitator returns after a payment settles. */

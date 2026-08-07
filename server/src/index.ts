@@ -1,5 +1,5 @@
 /**
- * MandateGuard - Phase 6
+ * MandateGuard - AI Agent Spend Policy Engine
  *
  * Layers:
  *   NVIDIA NIM  - reads English, drafts policies and orders (assistance only)
@@ -23,6 +23,40 @@ import { getModelName, isNimConfigured } from './services/nimClient.js'
 import { describeX402, isX402Configured } from './x402/x402Config.js'
 
 const PORT = 4021
+
+/**
+ * Keep the service alive during a live demo.
+ *
+ * The x402 library initialises its facilitator connection in the background.
+ * If the network or the facilitator is down, that rejection used to reach the
+ * top level and kill the whole process - taking MandateGuard, the AI and every
+ * free route with it. We log it loudly and carry on; the paid route answers 503
+ * on its own.
+ */
+process.on('unhandledRejection', (reason) => {
+  console.error(
+    '⚠ Unhandled rejection (service kept running):',
+    reason instanceof Error ? reason.message : reason,
+  )
+})
+
+process.on('uncaughtException', (error) => {
+  const code = (error as NodeJS.ErrnoException).code
+
+  // A failure to take the port is fatal: pretending to run would leave a
+  // zombie that answers nothing. Say so plainly and stop.
+  if (code === 'EADDRINUSE') {
+    console.error(
+      `\n✕ Port ${PORT} is already in use — another MandateGuard server is running.\n` +
+        '  Stop it first, then start this one again.\n' +
+        '  Windows:  Get-NetTCPConnection -LocalPort 4021 -State Listen |\n' +
+        '              ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }\n',
+    )
+    process.exit(1)
+  }
+
+  console.error('⚠ Uncaught exception (service kept running):', error.message)
+})
 
 const app = new Hono()
 
@@ -61,7 +95,7 @@ app.get('/health', (c) =>
   c.json({
     status: 'ok',
     service: 'MandateGuard',
-    phase: 6,
+    phase: 8,
     mandateGuard: true,
     nvidiaNimConfigured: isNimConfigured(),
     nvidiaModel: getModelName(),
@@ -104,7 +138,7 @@ app.onError((err, c) => {
 
 serve({ fetch: app.fetch, port: PORT }, () => {
   console.log('\n' + '═'.repeat(56))
-  console.log('  MandateGuard Policy Engine — Phase 4')
+  console.log('  MandateGuard — AI Agent Spend Policy Engine')
   console.log('═'.repeat(56))
   console.log(`  API:     http://localhost:${PORT}`)
   console.log(`  Health:  http://localhost:${PORT}/health`)

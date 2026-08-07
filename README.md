@@ -10,6 +10,49 @@ ordered, and answers **APPROVED** or **BLOCKED** with exact reasons.
 
 ---
 
+## Problem
+
+AI agents are starting to spend money on our behalf. The usual control is a
+spending limit — "don't spend more than ₹5,000".
+
+That is not enough. Here is a real example from our demo:
+
+| | Human approved | AI ordered |
+|---|---|---|
+| Product | 1TB SSD | 1TB SSD ✓ |
+| Quantity | 1 | **2** |
+| Price | ≤ ₹5,000 | ₹4,900 ✓ |
+| Seller | SecureStore | **OtherStore** |
+| Warranty | not allowed | **added** |
+| Receiver wallet | ALGO-SECURE-STORE | **ALGO-UNKNOWN-WALLET** |
+
+An amount-only check sees ₹4,900 < ₹5,000 and says **PASS**. The money was in
+budget. The purchase was wrong.
+
+## Solution
+
+MandateGuard sits between the AI agent and the payment. It independently
+compares the AI's final order against the human-approved policy, using ten
+deterministic rules, and returns APPROVED or BLOCKED **with the exact reasons**.
+
+In the example above it returns BLOCKED with four reasons — while still agreeing
+that the price was fine.
+
+## Why MandateGuard
+
+- **Intent, not just amount.** Quantity, seller, add-ons and the payment
+  destination are all checked, not only the total.
+- **The AI never judges itself.** The decision is plain TypeScript. Same input,
+  same answer, every time — there is a test that proves it.
+- **Every block explains itself.** Never a bare "BLOCKED"; always sentences a
+  human can act on.
+- **Pay-per-check.** x402 makes per-call verification affordable for agents, with
+  no signup or API keys.
+- **Auditable.** Every decision is recorded with its payment proof and mandate
+  status.
+
+---
+
 ## The idea in one picture
 
 ```
@@ -312,6 +355,15 @@ pretends to be blockchain data.
 
 ---
 
+## Screenshots and proof
+
+Captured evidence lives in [`demo-proof/`](demo-proof/) — real transcripts of the
+rule engine, the 402 gate, the NVIDIA NIM calls and the failure paths, plus the
+list of screenshots to take before a live demo.
+
+Runbook: [`HACKATHON_DEMO.md`](HACKATHON_DEMO.md) · Judge answers:
+[`JUDGE_QA.md`](JUDGE_QA.md)
+
 ## Known limitations
 
 - **No smart contract is deployed.** Mandate proof and replay protection live in
@@ -327,6 +379,12 @@ pretends to be blockchain data.
   GoPlausible facilitator advertises. Do not bump these without re-testing.
 - **Automated tests never spend Test USDC.** Payment paths are exercised through
   the 402 gate and mocked units; a real payment is a manual step.
+- **Demo catalog instead of a real marketplace.** The AI agent picks from three
+  fixed items, not a live e-commerce API.
+- **No real product is purchased.** The x402 payment is genuinely on-chain; the
+  "buying an SSD" part is simulated.
+- **NVIDIA NIM prepares the draft and the order — it never makes the security
+  decision.** That is MandateGuard's job, in deterministic code.
 
 ## Security notes
 
