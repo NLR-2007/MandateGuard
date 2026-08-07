@@ -12,8 +12,12 @@ Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" |
   Where-Object { $_.CommandLine -like "*src/index.ts*" } |
   ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 
-cd D:\Block-Chain\mandateguard\server; npm run dev
+cd D:\Block-Chain\mandateguard\server; npm start
 # wait for:  Storage: MySQL   /   ✓ Telegram: listening   /   x402: ON
+
+#    Use `npm start`, NOT `npm run dev`. The watcher restarts on every file
+#    change and each restart leaves another Telegram poller behind. Two
+#    pollers fight over the same bot and your commands go unanswered.
 
 # 2. frontend
 cd D:\Block-Chain\mandateguard; npm run dev

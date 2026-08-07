@@ -154,20 +154,46 @@ export function startPolling(handler: Handler): void {
     while (polling) {
       try {
         const t = token()
-        const res = await fetch(
-          `${API}/bot${t}/getUpdates?timeout=30&offset=${offset}&allowed_updates=["message","callback_query"]`,
-        )
+        const url = new URL(`${API}/bot${t}/getUpdates`)
+        url.searchParams.set('timeout', '30')
+        url.searchParams.set('offset', String(offset))
+        url.searchParams.set('allowed_updates', '["message","callback_query"]')
+
+        const res = await fetch(url)
         const body = (await res.json()) as {
           ok: boolean
+          error_code?: number
+          description?: string
           result?: TelegramUpdate[]
+        }
+
+        if (!body.ok) {
+          /**
+           * 409 means another process is polling the same bot. Telegram hands
+           * each update to whichever poller asks first, so messages appear to
+           * vanish. Saying so loudly matters - this used to fail in silence.
+           */
+          if (body.error_code === 409) {
+            console.error(
+              '  ✕ Telegram: another instance is polling this bot. Stop the other server — commands will be missed until you do.',
+            )
+          } else {
+            console.error(`  ✕ Telegram getUpdates failed: ${body.description}`)
+          }
+          await new Promise((r) => setTimeout(r, 3000))
+          continue
         }
 
         for (const update of body.result ?? []) {
           offset = update.update_id + 1
           const incoming = parseUpdate(update)
-          if (incoming) await handler(incoming)
+          if (incoming) {
+            console.log(`  📩 Telegram: ${incoming.command ?? incoming.callback ?? 'message'}`)
+            await handler(incoming)
+          }
         }
-      } catch {
+      } catch (error) {
+        console.error(`  ✕ Telegram poll error: ${(error as Error).message}`)
         // Network blip. Wait a moment rather than spinning hot.
         await new Promise((r) => setTimeout(r, 3000))
       }
