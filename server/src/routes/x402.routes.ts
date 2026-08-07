@@ -10,7 +10,7 @@
 
 import { Hono } from 'hono'
 import { getSpentToday, nextVerificationId } from '../data/memoryStore.js'
-import { recordVerification, setPaymentProof } from '../services/auditService.js'
+import { findAudit, recordVerification, setPaymentProof } from '../services/auditService.js'
 import { addEvent, nextRequestId } from '../services/flowService.js'
 import {
   getMandate,
@@ -33,6 +33,76 @@ const ORDER_SOURCES: OrderSource[] = ['MANUAL_DEMO', 'NVIDIA_NIM', 'SECURITY_SIM
 export function createX402Routes(): Hono {
   const routes = new Hono()
 
+  /**
+   * SETTLEMENT RECORDER - must be registered before the payment gate so it
+   * wraps it.
+   *
+   * The x402 middleware settles the payment on Algorand only AFTER our handler
+   * has returned: it verifies, calls next(), and *then* submits the transaction
+   * and puts PAYMENT-RESPONSE on the response. So the transaction id simply
+   * does not exist while the handler is running - reading it there always found
+   * nothing, which is why real payments were recorded with no id.
+   *
+   * This runs after everything is finished, reads the settled result, and fills
+   * it into both the JSON answer and the audit row. Still nothing invented: if
+   * the header is absent, the fields stay null.
+   */
+  routes.use('/x402/verify-mandate', async (c, next) => {
+    await next()
+
+    const res = c.res
+    if (!res || res.status !== 200) return
+
+    const settlement = readSettlement(res.headers.get('PAYMENT-RESPONSE'))
+    if (!settlement) {
+      console.log('  ⛓ No transaction id was returned by the facilitator')
+      return
+    }
+
+    let body: Record<string, unknown>
+    try {
+      body = (await res.clone().json()) as Record<string, unknown>
+    } catch {
+      return
+    }
+
+    const payment = body.payment as Record<string, unknown> | undefined
+    if (!payment) return
+
+    payment.status = settlement.success ? 'VERIFIED' : 'UNKNOWN'
+    payment.transactionId = settlement.transaction
+    payment.payer = settlement.payer
+    payment.explorerUrl = settlement.transaction
+      ? explorerTxUrl(settlement.transaction)
+      : null
+
+    // The audit row was written before settlement - complete it now.
+    const verificationId = body.verificationId
+    if (typeof verificationId === 'string') {
+      const entry = findAudit(verificationId)
+      if (entry) {
+        setPaymentProof(entry, {
+          x402PaymentStatus: settlement.success ? 'VERIFIED' : 'UNKNOWN',
+          x402TransactionId: settlement.transaction,
+        })
+      }
+    }
+
+    if (settlement.transaction) {
+      console.log(`  ⛓ Algorand TestNet tx: ${settlement.transaction}`)
+      console.log(`     ${explorerTxUrl(settlement.transaction)}`)
+    } else {
+      console.log('  ⛓ The facilitator settled without returning a transaction id')
+    }
+
+    // Content-Length would now be wrong: the body grew by the id.
+    const headers = new Headers(res.headers)
+    headers.delete('content-length')
+
+    c.res = undefined
+    c.res = new Response(JSON.stringify(body), { status: res.status, headers })
+  })
+
   // ── PAYMENT GATE ────────────────────────────────────────
   // Everything after this line requires a settled Test USDC payment.
   routes.use('/x402/verify-mandate', createX402Middleware())
@@ -40,14 +110,8 @@ export function createX402Routes(): Hono {
   routes.post('/x402/verify-mandate', async (c) => {
     console.log('  ✓ x402 PAYMENT VERIFIED - MandateGuard handler starting')
 
-    // The middleware puts the facilitator's answer on the response headers.
-    const settlement = readSettlement(c.res.headers.get('PAYMENT-RESPONSE'))
-
-    if (settlement?.transaction) {
-      console.log(`  ⛓ Algorand TestNet tx: ${settlement.transaction}`)
-    } else {
-      console.log('  ⛓ No transaction id was returned by the facilitator')
-    }
+    // The transaction id is NOT available here: x402 settles after this handler
+    // returns. The settlement recorder above fills it in once it exists.
 
     let body: unknown
     try {
@@ -82,7 +146,7 @@ export function createX402Routes(): Hono {
     addEvent(
       requestId,
       'x402 payment verified',
-      settlement?.transaction ? `tx ${settlement.transaction}` : 'no transaction id returned',
+      `${VERIFICATION_PRICE} Test USDC on ${NETWORK_LABEL}`,
     )
 
     // Mandate proof: fingerprint the policy so it can be checked for replay.
@@ -131,10 +195,11 @@ export function createX402Routes(): Hono {
       violations.length > 0 ? violations.join(' ') : 'all checks passed',
     )
 
-    // Only real values from the facilitator are stored - never invented ones.
+    // The payment is verified - that is why this handler is running at all.
+    // The transaction id arrives later, from the settlement recorder.
     setPaymentProof(entry, {
-      x402PaymentStatus: settlement?.success ? 'VERIFIED' : 'UNKNOWN',
-      x402TransactionId: settlement?.transaction ?? null,
+      x402PaymentStatus: 'VERIFIED',
+      x402TransactionId: null,
       x402Amount: VERIFICATION_PRICE,
       blockchainNetwork: NETWORK_LABEL,
       paymentVerifiedAt: new Date().toISOString(),
@@ -154,14 +219,13 @@ export function createX402Routes(): Hono {
       payment: {
         protocol: 'x402',
         network: NETWORK_LABEL,
-        status: settlement?.success ? 'VERIFIED' : 'UNKNOWN',
+        status: 'VERIFIED',
         amount: VERIFICATION_PRICE,
         asset: 'Test USDC',
-        transactionId: settlement?.transaction ?? null,
-        payer: settlement?.payer ?? null,
-        explorerUrl: settlement?.transaction
-          ? explorerTxUrl(settlement.transaction)
-          : null,
+        // Filled in by the settlement recorder once Algorand confirms.
+        transactionId: null,
+        payer: null,
+        explorerUrl: null,
         verifiedAt: new Date().toISOString(),
       },
       mandate: {
