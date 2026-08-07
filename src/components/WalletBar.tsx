@@ -108,7 +108,7 @@ export default function WalletBar() {
       )}
 
       {activeAddress && (
-        <p className="label mt-3 normal-case" style={{ letterSpacing: 0 }}>
+        <p className="footnote mt-3">
           Only your public address is shown. MandateGuard never sees your seed phrase or
           private key — every payment is signed inside your wallet.
         </p>

@@ -15,8 +15,8 @@
 
   /* Ink */
   --ink:        #17160f;
-  --ink-soft:   #4b473d;
-  --ink-faint:  #8d8778;
+  --ink-soft:   #3d3a31;
+  --ink-faint:  #6d675a;
   --rule:       #cfc7b4;
   --rule-soft:  #ded7c6;
 
@@ -446,4 +446,17 @@ select.field {
 [data-on-ink],
 [data-on-ink] * {
   color: var(--paper-card);
+}
+
+/* ── Footnote: small explanatory prose, NOT a label ─────────
+   .label is for two-word tags. Sentences use this instead:
+   sentence case, normal spacing, dark enough to read. */
+
+.footnote {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.65;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-soft);
 }

@@ -78,14 +78,14 @@ export default function History() {
 }}>
                 No entries yet.
               </p>
-              <p className="label mt-2">Run a verification from the Dashboard.</p>
+              <p className="footnote mt-2">Run a verification from the Dashboard.</p>
             </div>
           )}
 
           {!error && !loading && entries.length > 0 && (
             <>
               <TransactionTable entries={entries} />
-              <p className="label mt-5 max-w-3xl leading-relaxed">
+              <p className="footnote mt-5 max-w-3xl">
                 Entries paid through x402 carry a real Algorand TestNet transaction — the
                 proof column links to the explorer. Entries marked “free route” skipped the
                 payment layer. History is stored in MySQL and survives a restart.

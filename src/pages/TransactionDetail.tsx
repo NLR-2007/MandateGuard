@@ -45,7 +45,7 @@ export default function TransactionDetail() {
     return (
       <section className="pt-24 text-center">
         <h1 className="display text-[32px]">Not found</h1>
-        <p className="label mt-3">{error}</p>
+        <p className="footnote mt-3">{error}</p>
         <Link
           to="/history"
           className="btn btn-solid mt-8 inline-block"
@@ -157,7 +157,7 @@ return (
       <div className="block mt-6 p-6">
         <h3 className="display text-[21px]">Timeline</h3>
         {timeline.length === 0 ? (
-          <p className="label mt-3">
+          <p className="footnote mt-3">
             No timeline events recorded for this verification.
           </p>
         ) : (

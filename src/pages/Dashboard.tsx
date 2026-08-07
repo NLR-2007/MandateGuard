@@ -437,7 +437,7 @@ export default function Dashboard() {
             <button onClick={() => { setStarted(true); setStep(1) }} className="btn btn-solid mt-7">
               Start
             </button>
-            <p className="label mt-4">Algorand TestNet · test funds only · never MainNet</p>
+            <p className="footnote mt-4">Algorand TestNet — test funds only, never MainNet.</p>
           </div>
 
           <div className="border-l pl-8" style={{ borderColor: 'var(--rule)'
