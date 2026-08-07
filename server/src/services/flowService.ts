@@ -5,6 +5,8 @@
 //
 // This file only records events. It never makes a decision.
 
+import { persistEvent } from '../data/repository.js'
+
 export interface FlowEvent {
   requestId: string
   at: string
@@ -15,6 +17,17 @@ export interface FlowEvent {
 const events: FlowEvent[] = []
 
 let requestCounter = 1000
+
+/** Continue the REQ- sequence after loading from MySQL. */
+export function setRequestCounter(n: number): void {
+  requestCounter = n
+}
+
+/** Replaces the timeline with rows loaded from MySQL. */
+export function loadEvents(loaded: FlowEvent[]): void {
+  events.length = 0
+  events.push(...loaded)
+}
 
 /** REQ-XXXX. Contains no personal or sensitive information. */
 export function nextRequestId(): string {
@@ -31,6 +44,7 @@ export function addEvent(requestId: string, step: string, detail = ''): FlowEven
     detail,
   }
   events.push(event)
+  persistEvent(event)
   return event
 }
 

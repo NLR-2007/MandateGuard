@@ -1,5 +1,7 @@
 import { Hono } from 'hono'
 import { auditLog, dailySpend, getSpentToday, policies } from '../data/memoryStore.js'
+import { describeStorage } from '../data/db.js'
+import { clearAll } from '../data/repository.js'
 import { getTimeline, resetEvents } from '../services/flowService.js'
 import { resetMandates } from '../services/mandateProof.js'
 import { getModelName, isNimConfigured } from '../services/nimClient.js'
@@ -79,6 +81,7 @@ systemRoutes.get('/system/status', (c) => {
       blocked,
       executed,
     },
+    storage: describeStorage(),
     latestPolicyId: latest?.id ?? null,
   })
 })
@@ -95,12 +98,13 @@ systemRoutes.get('/system/timeline/:requestId', (c) => {
  * It does NOT and CANNOT delete anything already written to Algorand -
  * blockchain history is permanent.
  */
-systemRoutes.post('/demo/reset', (c) => {
+systemRoutes.post('/demo/reset', async (c) => {
   policies.clear()
   auditLog.length = 0
   dailySpend.clear()
   resetMandates()
   resetEvents()
+  await clearAll() // empty the MySQL tables as well
 
   console.log('  ↺ demo state reset (server memory only)')
 

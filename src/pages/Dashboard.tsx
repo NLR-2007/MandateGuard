@@ -391,6 +391,17 @@ export default function Dashboard() {
         />
         <Card title="Blockchain" value="Algorand TestNet" tone="ok" />
         <Card
+          title="Storage"
+          value={
+            status
+              ? status.storage.state === 'MYSQL'
+                ? `MySQL · ${status.storage.database}`
+                : 'In memory (MySQL down)'
+              : '—'
+          }
+          tone={status?.storage.state === 'MYSQL' ? 'ok' : 'warn'}
+        />
+        <Card
           title="Wallet"
           value={activeAddress ? 'Connected' : 'Not Connected'}
           tone={activeAddress ? 'ok' : 'warn'}

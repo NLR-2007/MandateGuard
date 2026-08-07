@@ -4,11 +4,13 @@
 //   1. Turn a policy into a short, stable SHA-256 fingerprint (Part Q).
 //   2. Track whether a mandate has been consumed, for replay protection.
 //
-// ⚠️ SCOPE NOTE: In Phase 6 this registry lives in server memory, NOT on
-// Algorand. The on-chain contract is documented as blocked - see README.
-// Nothing here pretends to be blockchain data, and no fake IDs are produced.
+// ⚠️ SCOPE NOTE: this registry lives in MySQL, NOT on Algorand. The on-chain
+// contract is documented as blocked - see README. Nothing here pretends to be
+// blockchain data, and no fake IDs are produced.
 
 import { createHash } from 'node:crypto'
+import { storageState } from '../data/db.js'
+import { persistMandate } from '../data/repository.js'
 import type { SpendingPolicy } from '../types/index.js'
 
 export type MandateStatus = 'ACTIVE' | 'USED' | 'EXPIRED' | 'NOT_REGISTERED'
@@ -21,7 +23,7 @@ export interface MandateRecord {
   usedAt: string | null
   registeredAt: string
   /** Where the proof lives. On-chain registration is not available yet. */
-  storage: 'IN_MEMORY'
+  storage: 'IN_MEMORY' | 'MYSQL'
 }
 
 const mandates = new Map<string, MandateRecord>()
@@ -68,10 +70,11 @@ export function registerMandate(policy: SpendingPolicy): MandateRecord {
     used: false,
     usedAt: null,
     registeredAt: new Date().toISOString(),
-    storage: 'IN_MEMORY',
+    storage: storageState() === 'MYSQL' ? 'MYSQL' : 'IN_MEMORY',
   }
 
   mandates.set(policy.id, record)
+  persistMandate(record)
   return record
 }
 
@@ -110,10 +113,17 @@ export function markMandateUsed(mandateId: string): MandateRecord | null {
 
   record.used = true
   record.usedAt = new Date().toISOString()
+  persistMandate(record)
   return record
 }
 
 /** Test helper - clears the registry. */
 export function resetMandates(): void {
   mandates.clear()
+}
+
+/** Replaces the registry with rows loaded from MySQL. */
+export function loadMandates(records: MandateRecord[]): void {
+  mandates.clear()
+  for (const r of records) mandates.set(r.mandateId, r)
 }

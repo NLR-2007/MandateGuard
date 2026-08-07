@@ -7,11 +7,15 @@
  *   Algorand    - TestNet ledger that records the payment
  *   MandateGuard- deterministic engine: does the order match human intent?
  *
- * Not connected: MainNet, database, authentication. All data is in memory
- * and resets when this process restarts.
+ * Storage: MySQL (see server/.env). The in-memory maps are a read cache for
+ * the running process; MySQL is the source of truth across restarts.
+ *
+ * Not connected: MainNet, authentication.
  */
 
 import { serve } from '@hono/node-server'
+import { describeStorage, initDatabase, storageState } from './data/db.js'
+import { loadAll } from './data/repository.js'
 import { Hono } from 'hono'
 import { aiRoutes } from './routes/ai.routes.js'
 import { auditRoutes } from './routes/audit.routes.js'
@@ -102,6 +106,7 @@ app.get('/health', (c) =>
     x402: isX402Configured(),
     algorand: isX402Configured(),
     network: 'testnet',
+    storage: describeStorage(),
     payment: describeX402(),
   }),
 )
@@ -136,13 +141,40 @@ app.onError((err, c) => {
   return c.json({ success: false, error: 'Internal server error.' }, 500)
 })
 
+// Connect to MySQL and load existing data before answering any request.
+const dbReady = await initDatabase()
+let loaded = { policies: 0, verifications: 0, mandates: 0, events: 0 }
+
+if (dbReady) {
+  loaded = await loadAll()
+} else {
+  console.error(
+    [
+      '',
+      '⚠ MySQL is not reachable — running with IN-MEMORY storage.',
+      `  ${describeStorage().error}`,
+      '  Data will be lost on restart. Start MySQL (XAMPP), then restart this server.',
+      '',
+    ].join('\n'),
+  )
+}
+
 serve({ fetch: app.fetch, port: PORT }, () => {
   console.log('\n' + '═'.repeat(56))
   console.log('  MandateGuard — AI Agent Spend Policy Engine')
   console.log('═'.repeat(56))
   console.log(`  API:     http://localhost:${PORT}`)
   console.log(`  Health:  http://localhost:${PORT}/health`)
-  console.log('  Store:   in-memory (data resets on restart)')
+  if (storageState() === 'MYSQL') {
+    const st = describeStorage()
+    console.log(`  Storage: MySQL — ${st.database} at ${st.host}:${st.port}`)
+    console.log(
+      `           loaded ${loaded.policies} policies, ${loaded.verifications} verifications, ` +
+        `${loaded.mandates} mandates, ${loaded.events} events`,
+    )
+  } else {
+    console.log('  Storage: IN-MEMORY (MySQL unavailable — data resets on restart)')
+  }
   console.log(
     `  NVIDIA NIM: ${isNimConfigured() ? `configured (${getModelName()})` : 'NOT configured - manual mode only'}`,
   )

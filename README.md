@@ -90,6 +90,7 @@ APPROVED / BLOCKED
 |---|---|
 | Frontend | React + TypeScript + Tailwind CSS |
 | Backend | Node.js + Hono + TypeScript |
+| Database | MySQL / MariaDB (XAMPP) |
 | AI | NVIDIA NIM (`meta/llama-3.1-70b-instruct`) |
 | Security | MandateGuard deterministic policy engine |
 | Payment | x402 |
@@ -149,8 +150,12 @@ always sees the complete list of problems, not just the first.
 ### Requirements
 
 - Node.js 20+
+- **MySQL or MariaDB running** (XAMPP is fine — start MySQL in the control panel)
 - An Algorand **TestNet** wallet (Pera, Defly or Lute)
 - An NVIDIA NIM API key (optional — the app works without it)
+
+The server creates the `mandateguard` database and its tables on first start.
+You do not need to run any SQL by hand.
 
 ### 1. Backend
 
@@ -371,8 +376,6 @@ Runbook: [`HACKATHON_DEMO.md`](HACKATHON_DEMO.md) · Judge answers:
   Blocker: Algorand TypeScript needs the AlgoKit + puya toolchain (not installed
   here), and deploying would require a signing key on the server, which this
   project refuses to hold.
-- **In-memory storage.** Restarting the backend clears policies, verifications,
-  the audit log and mandates. No database yet.
 - **TestNet only.** MainNet is rejected by configuration, by design.
 - **`@x402/*` is pinned to 2.12.0.** Version 2.21.0 truncates the Algorand
   network id to the 32-character CAIP-2 limit, which no longer matches what the
@@ -401,10 +404,27 @@ Runbook: [`HACKATHON_DEMO.md`](HACKATHON_DEMO.md) · Judge answers:
 
 ## Data lifetime
 
-Everything is stored in memory. Restarting the backend clears policies,
-verifications, the audit log and the mandate registry. There is no database yet.
-The frontend handles this: if a saved policy id has vanished, it recreates the
-policy and retries.
+Everything is stored in **MySQL** and survives a restart: policies, verifications,
+the audit log, the timeline, daily spend and the mandate registry. ID sequences
+continue where they left off, so `MG-1001` is never handed out twice.
+
+| Table | What it holds |
+|---|---|
+| `policies` | Human-approved spending policies |
+| `mandates` | SHA-256 fingerprint, expiry, and whether it has been used |
+| `verifications` | Every decision, its violations, payment proof and execution status |
+| `flow_events` | The audit timeline, one row per step |
+| `daily_spend` | Money counted as executed, per day |
+
+The in-memory maps are only a read cache for the running process so the
+deterministic engine can stay synchronous. MySQL is the source of truth.
+
+**If MySQL is down** the server still starts, says so loudly in the log, reports
+`storage.state: "IN_MEMORY"` in `/health`, and shows *"In memory (MySQL down)"* on
+the Dashboard. It never pretends data was saved.
+
+`Reset Demo` empties the tables as well as the in-memory cache. It cannot touch
+Algorand — blockchain history is permanent.
 
 ---
 

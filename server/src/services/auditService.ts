@@ -1,4 +1,5 @@
 import { addSpentToday, auditLog } from '../data/memoryStore.js'
+import { persistVerification } from '../data/repository.js'
 import { getMandateStatus, markMandateUsed } from './mandateProof.js'
 import type {
   AuditEntry,
@@ -43,6 +44,7 @@ export function recordVerification(
   }
 
   auditLog.unshift(entry)
+  persistVerification(entry)
   return entry
 }
 
@@ -63,6 +65,7 @@ export function setPaymentProof(
   >,
 ): AuditEntry {
   Object.assign(entry, proof)
+  persistVerification(entry)
   return entry
 }
 
@@ -135,6 +138,8 @@ export function recordExecution(verificationId: string): ExecutionOutcome {
     entry.mandateStatus = 'USED'
     console.log(`  ⛓ Mandate ${entry.policyId} marked USED after approved execution`)
   }
+
+  persistVerification(entry)
 
   return { ok: true, entry, spentToday, mandateStatus: getMandateStatus(entry.policyId) }
 }

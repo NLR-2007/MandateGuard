@@ -17,6 +17,7 @@ cd mandateguard && npm run dev             # http://localhost:5173
 
 **Checklist**
 
+- [ ] **XAMPP MySQL is running** (backend banner must say `Storage: MySQL`)
 - [ ] Backend banner shows `x402: ON` and `NVIDIA NIM: configured`
 - [ ] Browser open at `http://localhost:5173`, hard-refreshed (Ctrl+Shift+R)
 - [ ] Pera Wallet open, on **TestNet**, with ≥ 1 ALGO and ≥ 0.05 Test USDC
@@ -147,6 +148,7 @@ cd mandateguard && npm run dev             # http://localhost:5173
 | Wallet won't connect | *"Let me show you the recorded proof"* → open `demo-proof/` |
 | Payment hangs / facilitator down | Use the **free route** button on the AI Order page — the same engine, no payment layer. Say: *"The payment layer is optional for the security decision."* |
 | NVIDIA slow or failing | Switch to **Create Policy → Manual Policy** tab. Say: *"AI is assistance only. The security engine does not depend on it."* |
+| MySQL not started | Backend still runs but says `Storage: IN-MEMORY`. Start MySQL in XAMPP and restart the backend — nothing else changes. |
 | Whole demo fails | Talk over the screenshots in `demo-proof/`. Nothing is faked, all of it is real captured output. |
 
 The backend now survives a facilitator outage, so a bad network never takes the

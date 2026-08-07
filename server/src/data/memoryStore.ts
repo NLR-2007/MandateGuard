@@ -1,7 +1,10 @@
-// Phase 4 keeps everything in memory on purpose.
-// There is no database yet, so all data resets when the server restarts.
+// In-process read cache. MySQL is the source of truth - see data/db.ts and
+// data/repository.ts. Everything here is refilled from MySQL at startup and
+// written through on every change.
 
 import type { AuditEntry, SpendingPolicy } from '../types/index.js'
+import { persistDailySpend } from './repository.js'
+import { setRequestCounter } from '../services/flowService.js'
 
 export const policies = new Map<string, SpendingPolicy>()
 
@@ -13,6 +16,13 @@ export const dailySpend = new Map<string, number>()
 
 let policyCounter = 1000
 let verificationCounter = 1000
+
+/** Called after loading from MySQL so ids continue instead of restarting at 1001. */
+export function setCounters(next: { policy?: number; verification?: number; request?: number }): void {
+  if (next.policy !== undefined) policyCounter = next.policy
+  if (next.verification !== undefined) verificationCounter = next.verification
+  if (next.request !== undefined) setRequestCounter(next.request)
+}
 
 export function nextPolicyId(): string {
   policyCounter += 1
@@ -39,5 +49,6 @@ export function addSpentToday(amount: number, now: Date = new Date()): number {
   const key = todayKey(now)
   const total = (dailySpend.get(key) ?? 0) + amount
   dailySpend.set(key, total)
+  persistDailySpend(total, key)
   return total
 }

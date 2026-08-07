@@ -219,6 +219,14 @@ export interface SystemStatus {
     blocked: number
     executed: number
   }
+  storage: {
+    state: 'MYSQL' | 'IN_MEMORY'
+    driver: string
+    host: string
+    port: number
+    database: string
+    error: string | null
+  }
   latestPolicyId: string | null
 }
 

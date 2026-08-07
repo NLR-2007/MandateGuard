@@ -1,4 +1,5 @@
 import { nextPolicyId, policies } from '../data/memoryStore.js'
+import { persistPolicy } from '../data/repository.js'
 import type { SpendingPolicy } from '../types/index.js'
 
 /** What the client is allowed to send when creating a policy. */
@@ -80,6 +81,7 @@ export function createPolicy(input: PolicyInput): SpendingPolicy {
   }
 
   policies.set(policy.id, policy)
+  persistPolicy(policy)
   return policy
 }
 
