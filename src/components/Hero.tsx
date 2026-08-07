@@ -1,85 +1,139 @@
 import { Link } from 'react-router-dom'
-
-const flow = [
-  'Human',
-  'NVIDIA NIM',
-  'AI Agent',
-  'MandateGuard',
-  'x402',
-  'Algorand',
-  'Approved / Blocked',
+const chain = [
+  { n: '01', name: 'Human', role: 'writes the rule'
+},
+  { n: '02', name: 'NVIDIA NIM', role: 'reads the sentence'
+},
+  { n: '03', name: 'AI Agent', role: 'prepares an order'
+},
+  { n: '04', name: 'MandateGuard', role: 'compares intent', mark: true },
+  { n: '05', name: 'x402', role: 'collects the fee'
+},
+  { n: '06', name: 'Algorand', role: 'records the proof'
+},
 ]
-
-const highlighted = new Set(['MandateGuard', 'x402', 'Algorand', 'NVIDIA NIM'])
 
 export default function Hero() {
   return (
-    <section className="mx-auto max-w-6xl px-6 pt-16 pb-12 text-center">
-      <div className="flex flex-wrap justify-center gap-2">
-        <span className="rounded-full border border-violet-500/50 bg-violet-500/10 px-4 py-1 text-xs font-semibold text-violet-300">
-          AI Powered
+    <section className="pt-10 pb-4">
+      {/* Docket line */}
+      <div className="reveal d1 flex flex-wrap items-center gap-x-5 gap-y-1">
+        <span className="label">Built with</span>
+        <span className="mono text-[11px] tracking-[0.12em] uppercase">
+          NVIDIA NIM
         </span>
-        <span className="rounded-full border border-emerald-500/50 bg-emerald-500/10 px-4 py-1 text-xs font-semibold text-emerald-400">
-          x402 Enabled
-        </span>
-        <span className="rounded-full border border-blue-500/50 bg-blue-500/10 px-4 py-1 text-xs font-semibold text-blue-300">
+        <span className="label">·</span>
+        <span className="mono text-[11px] tracking-[0.12em] uppercase">
           Algorand TestNet
         </span>
+        <span className="label">·</span>
+        <span className="mono text-[11px] tracking-[0.12em] uppercase">x402</span>
       </div>
 
-      <h1 className="mt-6 text-5xl font-bold text-white sm:text-6xl">
-        Mandate<span className="text-cyan-400">Guard</span>
-      </h1>
+      {/* Headline */}
+      <div className="reveal d2 mt-6 grid gap-8 lg:grid-cols-[1.35fr_1fr]">
+        <div>
+          <h1 className="display text-[clamp(46px,7.5vw,86px)]">
+            Let the machine spend.
+            <br />
+            <span style={{ color: 'var(--oxblood)'
+}}>Keep the intent</span> human.
+          </h1>
 
-      <p className="mt-3 text-xl text-cyan-300">AI Agent Spend Policy Engine</p>
+          <p
+            className="mt-6 max-w-xl text-[17px] leading-relaxed"
+            style={{ color: 'var(--ink-soft)'
+}}
+          >
+            An agent can stay inside your limit and still buy the wrong thing.
+            MandateGuard compares the order an AI actually placed against the rule a
+            person approved — and answers in plain sentences.
+          </p>
 
-      <p className="mx-auto mt-6 max-w-2xl text-2xl font-medium text-white">
-        “Let AI spend, but keep human intent in control.”
-      </p>
-
-      <p className="mx-auto mt-4 max-w-2xl text-slate-400">
-        MandateGuard checks whether an AI agent’s purchase matches the rules approved by the human.
-      </p>
-
-      {/* Buttons */}
-      <div className="mt-8 flex flex-wrap justify-center gap-4">
-        <Link
-          to="/dashboard"
-          className="rounded-lg bg-cyan-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-cyan-400"
-        >
-          Start Demo
-        </Link>
-        <Link
-          to="/unsafe-demo"
-          className="rounded-lg border border-slate-600 px-6 py-3 font-semibold text-white transition-colors duration-200 hover:border-cyan-400 hover:text-cyan-300"
-        >
-          See Problem Without MandateGuard
-        </Link>
-        <Link
-          to="/history"
-          className="rounded-lg border border-slate-600 px-6 py-3 font-semibold text-white transition-colors duration-200 hover:border-cyan-400 hover:text-cyan-300"
-        >
-          View Audit History
-        </Link>
-      </div>
-
-      {/* Flow */}
-      <div className="mt-14 flex flex-col items-center gap-2">
-        {flow.map((step, i) => (
-          <div key={step} className="flex flex-col items-center gap-2">
-            <div
-              className={[
-                'rounded-lg border px-6 py-2 text-sm font-medium transition-colors duration-200',
-                highlighted.has(step)
-                  ? 'border-cyan-500/60 bg-cyan-500/10 text-cyan-300'
-                  : 'border-slate-700 bg-slate-900 text-slate-200',
-              ].join(' ')}
-            >
-              {step}
-            </div>
-            {i < flow.length - 1 && <span className="text-slate-600">↓</span>}
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/dashboard" className="btn btn-solid">
+              Start Demo
+            </Link>
+            <Link to="/unsafe-demo" className="btn">
+              See the Problem
+            </Link>
+            <Link to="/history" className="btn">
+              History
+            </Link>
           </div>
-        ))}
+        </div>
+
+        {/* Specimen: the record card */}
+        <aside className="reveal d3 sheet self-start p-6">
+          <div className="flex items-baseline justify-between">
+            <span className="label">Example</span>
+            <span className="mono text-[10px]" style={{ color: 'var(--ink-faint)'
+}}>
+              VER-1002
+            </span>
+          </div>
+
+          <dl className="mt-4 space-y-2 text-[13px]">
+            {[
+              ['Approved', '1 × 1TB SSD, ≤ ₹5,000'],
+              ['Seller', 'SecureStore'],
+              ['Ordered', '2 × 1TB SSD, ₹4,900'],
+              ['From', 'OtherStore'],
+            ].map(([k, v], i) => (
+              <div key={k} className="flex justify-between gap-4">
+                <dt className="label label-ink">{k}</dt>
+                <dd
+                  className="mono text-right text-[12px]"
+                  style={{ color: i > 1 ? 'var(--oxblood)' : 'var(--ink)'
+}}
+                >
+                  {v}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="rule-line my-5" />
+
+          <p className="text-[13px]" style={{ color: 'var(--ink-soft)'
+}}>
+            Under budget. Wrong purchase.
+          </p>
+
+          <div className="mt-4 flex justify-center">
+            <span className="stamp stamp-blocked stamp-sm">
+              Blocked
+              <sub>4 violations</sub>
+            </span>
+          </div>
+        </aside>
+      </div>
+
+      {/* The chain of custody */}
+      <div className="reveal d4 mt-16">
+        <div className="rule-double" />
+        <ol className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          {chain.map((step) => (
+            <li
+              key={step.n}
+              className="border-b border-r px-4 py-5 last:border-r-0"
+              style={{
+                borderColor: 'var(--rule)',
+                background: step.mark ? 'rgba(140,29,24,0.05)' : 'transparent',
+              }}
+            >
+              <span
+                className="mono text-[10px] tracking-[0.16em]"
+                style={{ color: step.mark ? 'var(--oxblood)' : 'var(--ink-faint)'
+}}
+              >
+                {step.n}
+              </span>
+              <p className="display mt-2 text-[19px] leading-tight">{step.name}</p>
+              <p className="label mt-1">{step.role}</p>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   )

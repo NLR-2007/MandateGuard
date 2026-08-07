@@ -1,5 +1,4 @@
 import type { AIOrder, ChangedFields, SpendingPolicy } from '../types'
-
 interface Props {
   policy: SpendingPolicy
   order: AIOrder
@@ -19,16 +18,16 @@ function Row({
   isChanged?: boolean
 }) {
   return (
-    <div className="border-b border-slate-800 py-2.5 last:border-b-0">
-      <p className="text-xs text-slate-400">{label}</p>
+    <div className="border-b border-[var(--rule)] py-2.5 last:border-b-0">
+      <p className="text-xs text-[var(--ink-soft)]">{label}</p>
       {isChanged ? (
         <p className="mt-0.5 flex flex-wrap items-center gap-2 font-medium">
-          <span className="text-slate-500 line-through">{wasValue}</span>
-          <span className="text-red-400">→</span>
-          <span className="rounded bg-red-500/15 px-2 py-0.5 text-red-300">{value}</span>
+          <span className="text-[var(--ink-faint)] line-through">{wasValue}</span>
+          <span className="text-[var(--oxblood)]">→</span>
+          <span className="rounded bg-[rgba(140,29,24,0.06)] px-2 py-0.5 text-[var(--oxblood)]">{value}</span>
         </p>
       ) : (
-        <p className="mt-0.5 font-medium text-white">{value}</p>
+        <p className="mt-0.5 font-medium text-[var(--ink)]">{value}</p>
       )}
     </div>
   )
@@ -43,25 +42,24 @@ export default function AIOrderCard({ policy, order, changed }: Props) {
   return (
     <div
       className={[
-        'h-full rounded-xl border p-6',
-        anyChange ? 'border-red-500/50 bg-red-500/5' : 'border-emerald-500/40 bg-emerald-500/5',
+        'h-full  border p-6',
+        anyChange ? 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)]' : 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)]',
       ].join(' ')}
     >
       <div className="mb-4 flex items-center justify-between gap-3">
         <h3
           className={[
             'flex items-center gap-2 font-bold tracking-wide',
-            anyChange ? 'text-red-400' : 'text-emerald-400',
+            anyChange ? 'text-[var(--oxblood)]' : 'text-[var(--forest)]',
           ].join(' ')}
         >
-          <span>{anyChange ? '⚠️' : '🤖'}</span> AI PREPARED ORDER
+          <span>{anyChange ? '' : ''}</span> AI PREPARED ORDER
         </h3>
         <span
           className={[
-            'rounded-full border px-3 py-1 text-xs font-semibold',
+            'tag',
             anyChange
-              ? 'border-red-500/40 bg-red-500/10 text-red-400'
-              : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400',
+              ? 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)]' : 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]',
           ].join(' ')}
         >
           {anyChange ? 'CHANGED' : 'MATCHES'}

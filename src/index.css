@@ -1,6 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
-/* MandateGuard base look: dark navy page, white readable text */
+/* ═══════════════════════════════════════════════════════════
+   MandateGuard — "Bureau of Machine Mandates"
+   An institutional paper record: ink on stock, ruled margins,
+   machine data in monospace, decisions applied as rubber stamps.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Paper stock */
+  --paper:      #ece7dc;
+  --paper-card: #f6f3ec;
+  --paper-deep: #e2dccd;
+
+  /* Ink */
+  --ink:        #17160f;
+  --ink-soft:   #4b473d;
+  --ink-faint:  #8d8778;
+  --rule:       #cfc7b4;
+  --rule-soft:  #ded7c6;
+
+  /* Verdicts */
+  --oxblood:    #8c1d18;
+  --stamp-red:  #a32621;
+  --forest:     #27512f;
+  --ochre:      #92650f;
+  --indigo:     #22355b;
+
+  --shadow-hard: 3px 3px 0 var(--ink);
+  --shadow-soft: 2px 2px 0 var(--rule);
+}
+
 html,
 body,
 #root {
@@ -8,7 +38,374 @@ body,
 }
 
 body {
-  background-color: #060d1c;
-  color: #e6edf7;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', ui-sans-serif, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+
+  /* Paper grain + faint horizontal ruling */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 31px,
+      rgba(23, 22, 15, 0.035) 31px,
+      rgba(23, 22, 15, 0.035) 32px
+    );
+}
+
+/* ── Typography ─────────────────────────────────────────── */
+
+.display {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.02;
+}
+
+.mono {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-variant-ligatures: none;
+}
+
+/* Small-caps institutional label */
+.label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.label-ink {
+  color: var(--ink-soft);
+}
+
+/* Section mark for the gutter: § 01 */
+.gutter-mark {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--oxblood);
+  text-transform: uppercase;
+}
+
+/* ── Sheet: the page container with a red margin rule ───── */
+
+.sheet {
+  position: relative;
+  background: var(--paper-card);
+  border: 1px solid var(--ink);
+  box-shadow: var(--shadow-hard);
+}
+
+.sheet::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--oxblood);
+  opacity: 0.55;
+}
+
+/* Plain bordered block, no margin rule */
+.block {
+  background: var(--paper-card);
+  border: 1px solid var(--rule);
+}
+
+.block-ink {
+  border-color: var(--ink);
+}
+
+/* Hairline separator */
+.rule-line {
+  border-top: 1px solid var(--rule);
+}
+
+.rule-double {
+  border-top: 3px double var(--ink);
+}
+
+/* ── Buttons ────────────────────────────────────────────── */
+
+.btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.25rem;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard);
+}
+
+.btn:active:not(:disabled) {
+  transform: translate(0, 0);
+  box-shadow: none;
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-solid {
+  background: var(--ink);
+  color: var(--paper-card);
+}
+
+.btn-solid:hover:not(:disabled) {
+  box-shadow: 3px 3px 0 var(--oxblood);
+}
+
+.btn-red {
+  background: var(--oxblood);
+  border-color: var(--oxblood);
+  color: #f6f3ec;
+}
+
+.btn-red:hover:not(:disabled) {
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.btn-sm {
+  padding: 0.45rem 0.85rem;
+  font-size: 10px;
+}
+
+/* ── Form controls ──────────────────────────────────────── */
+
+.field {
+  width: 100%;
+  background: var(--paper);
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  padding: 0.5rem 0.25rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--ink);
+  transition: background-color 0.15s ease;
+}
+
+.field:focus {
+  outline: none;
+  background: #fffdf7;
+  border-bottom-width: 2px;
+  margin-bottom: -1px;
+}
+
+.field::placeholder {
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+.field-missing {
+  border-bottom-color: var(--oxblood);
+  background: rgba(140, 29, 24, 0.05);
+}
+
+textarea.field {
+  border: 1px solid var(--ink);
+  padding: 0.85rem;
+  line-height: 1.7;
+  resize: vertical;
+}
+
+/* ── Stamp: the signature element ───────────────────────── */
+
+.stamp {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.6rem 1.6rem;
+  border: 3px double currentColor;
+  border-radius: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.92;
+  transform: rotate(-4deg);
+  animation: stamp-press 0.42s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.stamp-approved {
+  color: var(--forest);
+}
+
+.stamp-blocked {
+  color: var(--stamp-red);
+}
+
+.stamp-lg {
+  font-size: 28px;
+  padding: 0.8rem 2.2rem;
+}
+
+.stamp-sm {
+  font-size: 12px;
+  padding: 0.35rem 0.9rem;
+  border-width: 2px;
+  letter-spacing: 0.14em;
+}
+
+.stamp sub {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  opacity: 0.75;
+  font-weight: 400;
+  bottom: 0;
+}
+
+@keyframes stamp-press {
+  0% {
+    opacity: 0;
+    transform: rotate(-14deg) scale(2.1);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(-3deg) scale(0.94);
+  }
+  100% {
+    opacity: 0.92;
+    transform: rotate(-4deg) scale(1);
+  }
+}
+
+/* ── Tags: small classification marks ───────────────────── */
+
+.tag {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.tag-ink { color: var(--ink-soft); }
+.tag-red { color: var(--oxblood); background: rgba(140, 29, 24, 0.06); }
+.tag-green { color: var(--forest); background: rgba(39, 81, 47, 0.07); }
+.tag-ochre { color: var(--ochre); background: rgba(146, 101, 15, 0.08); }
+.tag-indigo { color: var(--indigo); background: rgba(34, 53, 91, 0.06); }
+.tag-solid { background: var(--ink); color: var(--paper-card); border-color: var(--ink); }
+
+/* ── Ledger table ───────────────────────────────────────── */
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ledger thead th {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 2px solid var(--ink);
+  white-space: nowrap;
+}
+
+.ledger tbody td {
+  padding: 0.7rem 0.75rem;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+}
+
+.ledger tbody tr:nth-child(even) {
+  background: rgba(23, 22, 15, 0.022);
+}
+
+.ledger tbody tr:hover {
+  background: rgba(140, 29, 24, 0.045);
+}
+
+/* ── Entrance choreography ──────────────────────────────── */
+
+.reveal {
+  animation: reveal 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.d1 { animation-delay: 0.05s; }
+.d2 { animation-delay: 0.12s; }
+.d3 { animation-delay: 0.19s; }
+.d4 { animation-delay: 0.26s; }
+.d5 { animation-delay: 0.33s; }
+
+/* ── Links ──────────────────────────────────────────────── */
+
+.ink-link {
+  color: var(--indigo);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 0.12s ease;
+}
+
+.ink-link:hover {
+  color: var(--oxblood);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp,
+  .reveal {
+    animation: none;
+  }
+  .stamp {
+    transform: rotate(-4deg);
+    opacity: 0.92;
+  }
+}
+
+/* ── Notice: a marginal instruction to the reader ────────── */
+
+.notice {
+  border-left: 4px solid var(--ochre);
+  background: rgba(146, 101, 15, 0.07);
+  padding: 0.7rem 1rem;
+  font-size: 14px;
+  color: #6f4d0b;
+}
+
+.notice-ink {
+  border-left-color: var(--ink);
+  background: rgba(23, 22, 15, 0.04);
+  color: var(--ink-soft);
 }

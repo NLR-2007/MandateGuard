@@ -1,5 +1,4 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-
 /**
  * Two ways to look at the same app.
  *
@@ -11,9 +10,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
  * you open its URL directly, so no link ever dead-ends.
  */
 export type AppMode = 'MVP' | 'DEMO'
-
 const STORAGE_KEY = 'mg_app_mode'
-
 interface AppModeValue {
   mode: AppMode
   setMode: (mode: AppMode) => void
@@ -29,9 +26,9 @@ const AppModeContext = createContext<AppModeValue>({
 function readStored(): AppMode {
   try {
     return localStorage.getItem(STORAGE_KEY) === 'DEMO' ? 'DEMO' : 'MVP'
-  } catch {
+} catch {
     return 'MVP'
-  }
+}
 }
 
 export function AppModeProvider({ children }: { children: React.ReactNode }) {

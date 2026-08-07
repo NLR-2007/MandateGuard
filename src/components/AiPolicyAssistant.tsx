@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { createPolicy, parsePolicyInstruction } from '../services/api'
 import type { AiDraftStatus, PolicyDraft, SpendingPolicy } from '../types'
 import Badge from './Badge'
-
 interface Props {
   /** Called after the HUMAN approves the draft and the policy is created. */
   onApproved: (policy: SpendingPolicy) => void
@@ -23,7 +22,6 @@ interface DraftForm {
 
 const EXAMPLE =
   'Buy one 1TB SSD below ₹5000 from SecureStore.\nNo warranty.\nOnly pay ALGO-SECURE-STORE.\nMaximum ₹5000 per transaction.\nDaily limit ₹10000.'
-
 /** Turns validForMinutes into a value the datetime-local input understands. */
 function toLocalDateTime(minutesFromNow: number): string {
   const d = new Date(Date.now() + minutesFromNow * 60_000)
@@ -47,8 +45,7 @@ function draftToForm(draft: PolicyDraft): DraftForm {
 }
 
 const inputBase =
-  'w-full rounded-lg border bg-slate-900 px-4 py-2.5 text-white transition-colors duration-200 placeholder:text-slate-600 focus:outline-none'
-
+  'w-full  border  px-4 py-2.5 text-[var(--ink)] transition-colors duration-200 placeholder:text-[var(--ink-soft)] focus:outline-none'
 export default function AiPolicyAssistant({ onApproved }: Props) {
   const [instruction, setInstruction] = useState('')
   const [loading, setLoading] = useState(false)
@@ -130,18 +127,17 @@ export default function AiPolicyAssistant({ onApproved }: Props) {
   }
 
   const fieldClass = (isEmpty: boolean) =>
-    [inputBase, isEmpty ? 'border-red-500/60' : 'border-slate-700 focus:border-cyan-500'].join(
+    [inputBase, isEmpty ? 'border-[var(--oxblood)]' : 'border-[var(--rule)] focus:border-[var(--ink)]'].join(
       ' ',
     )
 
-  const labelClass = 'mb-1.5 block text-sm text-slate-300'
-
-  return (
+  const labelClass = 'mb-1.5 block text-sm text-[var(--ink-soft)]'
+return (
     <div className="space-y-6">
       {/* Instruction box */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
+      <div className="block p-6">
         <div className="mb-3 flex flex-wrap items-center gap-3">
-          <h3 className="font-semibold text-white">
+          <h3 className="display text-[19px]">
             Tell the AI what it is allowed to buy
           </h3>
           <Badge tone="ai">AI Assisted</Badge>
@@ -152,34 +148,34 @@ export default function AiPolicyAssistant({ onApproved }: Props) {
           value={instruction}
           onChange={(e) => setInstruction(e.target.value)}
           placeholder={EXAMPLE}
-          className={`${inputBase} border-slate-700 focus:border-cyan-500 resize-y`}
+          className={`${inputBase} border-[var(--rule)] focus:border-[var(--ink)] resize-y`}
         />
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             onClick={() => void handleUnderstand()}
             disabled={loading || instruction.trim() === ''}
-            className="rounded-lg bg-cyan-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-cyan-400 disabled:opacity-50"
+            className="btn btn-solid"
           >
             {loading ? 'AI is understanding your instruction…' : 'Understand My Instruction'}
           </button>
 
           <button
             onClick={() => setInstruction(EXAMPLE)}
-            className="text-sm text-slate-400 underline underline-offset-4 hover:text-cyan-300"
+            className="text-sm text-[var(--ink-soft)] underline underline-offset-4 hover:text-[var(--indigo)]"
           >
             Use the example
           </button>
         </div>
 
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-[var(--ink-faint)]">
           The AI only reads your sentence and fills in a form. It cannot approve or block
           anything.
         </p>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-5 py-4 text-red-300">
+        <div className="notice text-[var(--oxblood)]">
           {error}
           <p className="mt-1 text-sm text-red-200/70">
             You can still create the policy with the Manual tab.
@@ -189,9 +185,9 @@ export default function AiPolicyAssistant({ onApproved }: Props) {
 
       {/* Human review screen */}
       {form && (
-        <div className="rounded-xl border border-violet-500/40 bg-violet-500/5 p-6">
+        <div className="block p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-lg font-bold text-white">AI Generated Policy Draft</h3>
+            <h3 className="display text-[21px] text-[var(--ink)]">AI Generated Policy Draft</h3>
             <div className="flex flex-wrap gap-2">
               <Badge tone="ai">NVIDIA NIM</Badge>
               {model && <Badge tone="neutral">{model}</Badge>}
@@ -201,20 +197,20 @@ export default function AiPolicyAssistant({ onApproved }: Props) {
             </div>
           </div>
 
-          <p className="mt-3 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-yellow-200">
+          <p className="mt-3 notice text-[var(--ochre)]">
             AI created this draft. Please review it before approving.
           </p>
 
           {aiMissing.length > 0 && (
-            <p className="mt-3 text-sm text-slate-400">
+            <p className="mt-3 text-sm text-[var(--ink-soft)]">
               The AI left these empty because you did not mention them:{' '}
-              <span className="text-red-300">{aiMissing.join(', ')}</span>. It did not guess
+              <span className="text-[var(--oxblood)]">{aiMissing.join(', ')}</span>. It did not guess
               them.
             </p>
           )}
 
           {warnings.map((w) => (
-            <p key={w} className="mt-2 text-sm text-yellow-300">
+            <p key={w} className="mt-2 text-sm text-[var(--ochre)]">
               ⚠ {w}
             </p>
           ))}
@@ -272,10 +268,9 @@ export default function AiPolicyAssistant({ onApproved }: Props) {
                   type="button"
                   onClick={() => update('warrantyAllowed', true)}
                   className={[
-                    'rounded-lg border px-5 py-2 text-sm font-medium transition-colors duration-200',
+                    'btn btn-sm',
                     form.warrantyAllowed === true
-                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                      : 'border-slate-700 text-slate-400 hover:border-slate-500',
+                      ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)]',
                   ].join(' ')}
                 >
                   Yes
@@ -284,16 +279,15 @@ export default function AiPolicyAssistant({ onApproved }: Props) {
                   type="button"
                   onClick={() => update('warrantyAllowed', false)}
                   className={[
-                    'rounded-lg border px-5 py-2 text-sm font-medium transition-colors duration-200',
+                    'btn btn-sm',
                     form.warrantyAllowed === false
-                      ? 'border-cyan-500 bg-cyan-500/10 text-cyan-300'
-                      : 'border-slate-700 text-slate-400 hover:border-slate-500',
+                      ? 'border-[var(--ink)] bg-[rgba(34,53,91,0.06)] text-[var(--indigo)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)]',
                   ].join(' ')}
                 >
                   No
                 </button>
                 {form.warrantyAllowed === null && (
-                  <span className="text-sm text-red-300">
+                  <span className="text-sm text-[var(--oxblood)]">
                     Missing — please choose Yes or No.
                   </span>
                 )}
@@ -343,7 +337,7 @@ export default function AiPolicyAssistant({ onApproved }: Props) {
                 onChange={(e) => update('expiresAt', e.target.value)}
               />
               {form.expiresAt.trim() === '' && (
-                <p className="mt-1 text-sm text-red-300">
+                <p className="mt-1 text-sm text-[var(--oxblood)]">
                   Missing — please choose when this policy stops being valid.
                 </p>
               )}
@@ -351,7 +345,7 @@ export default function AiPolicyAssistant({ onApproved }: Props) {
           </div>
 
           {emptyFields.length > 0 && (
-            <p className="mt-5 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            <p className="mt-5 notice text-sm text-[var(--oxblood)]">
               Please fill in: {emptyFields.join(', ')}
             </p>
           )}
@@ -361,13 +355,13 @@ export default function AiPolicyAssistant({ onApproved }: Props) {
             <button
               onClick={() => void handleApprove()}
               disabled={approving || emptyFields.length > 0}
-              className="rounded-lg bg-emerald-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-emerald-400 disabled:opacity-50"
+              className="btn btn-solid"
             >
               {approving ? 'Creating…' : '✓ Approve Policy'}
             </button>
             <button
               onClick={() => setStatus('REVIEWED')}
-              className="rounded-lg border border-slate-600 px-6 py-3 font-semibold text-white transition-colors duration-200 hover:border-cyan-400 hover:text-cyan-300"
+              className="border border-[var(--ink)] px-6 py-3 display text-[19px] transition-colors duration-200 hover:border-[var(--ink)] hover:text-[var(--indigo)]"
             >
               Edit
             </button>
@@ -377,13 +371,13 @@ export default function AiPolicyAssistant({ onApproved }: Props) {
                 setWarnings([])
                 setAiMissing([])
               }}
-              className="rounded-lg border border-slate-700 px-6 py-3 font-semibold text-slate-400 transition-colors duration-200 hover:border-red-500/60 hover:text-red-300"
+              className="btn"
             >
               Cancel
             </button>
           </div>
 
-          <p className="mt-4 text-xs text-slate-500">
+          <p className="mt-4 text-xs text-[var(--ink-faint)]">
             No policy exists until you press Approve. The AI cannot create one by itself.
           </p>
         </div>

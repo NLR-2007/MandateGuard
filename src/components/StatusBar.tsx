@@ -1,17 +1,10 @@
 import { useEffect, useState } from 'react'
 import { getSystemStatus } from '../services/api'
 import type { ServiceState, SystemStatus } from '../types'
-
-const dot: Record<ServiceState, string> = {
-  OK: 'bg-emerald-400',
-  NOT_CONFIGURED: 'bg-yellow-400',
-  ERROR: 'bg-red-500',
-}
-
-const label: Record<ServiceState, string> = {
-  OK: 'working',
-  NOT_CONFIGURED: 'not configured',
-  ERROR: 'error',
+const dotColor: Record<ServiceState, string> = {
+  OK: 'var(--forest)',
+  NOT_CONFIGURED: 'var(--ochre)',
+  ERROR: 'var(--oxblood)',
 }
 
 interface Props {
@@ -19,37 +12,40 @@ interface Props {
   error?: string
 }
 
-/** Small lights: AI ● MandateGuard ● x402 ● Algorand ● */
+/** Service lamps, reading like an instrument panel label strip. */
 export function StatusLights({ status, error }: Props) {
   if (error) {
     return (
-      <div className="flex items-center gap-2 text-sm text-red-300">
-        <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-        Backend unreachable
-      </div>
+      <span className="mono text-[11px]" style={{ color: 'var(--oxblood)'
+}}>
+        ● server unreachable
+      </span>
     )
   }
 
-  if (!status) {
-    return <div className="text-sm text-slate-500">Checking services…</div>
-  }
+  if (!status) return <span className="label">checking services…</span>
 
   const items = [
-    { key: 'AI', service: status.services.ai },
-    { key: 'MandateGuard', service: status.services.mandateGuard },
+    { key: 'NIM', service: status.services.ai },
+    { key: 'Guard', service: status.services.mandateGuard },
     { key: 'x402', service: status.services.x402 },
     { key: 'Algorand', service: status.services.algorand },
   ]
 
   return (
-    <div className="flex flex-wrap items-center gap-4">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
       {items.map(({ key, service }) => (
         <span
           key={key}
-          className="flex items-center gap-2 text-sm text-slate-300"
-          title={`${service.name}: ${label[service.state]}`}
+          className="mono flex items-center gap-1.5 text-[10px] tracking-[0.12em] uppercase"
+          style={{ color: 'var(--ink-soft)'
+}}
+          title={service.name}
         >
-          <span className={`h-2.5 w-2.5 rounded-full ${dot[service.state]}`} />
+          <span
+            className="inline-block h-[7px] w-[7px]"
+            style={{ background: dotColor[service.state] }}
+          />
           {key}
         </span>
       ))}

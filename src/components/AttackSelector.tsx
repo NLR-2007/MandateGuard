@@ -1,6 +1,5 @@
 import { scenarioOrder, scenarios } from '../data/demoData'
 import type { AttackScenario } from '../types'
-
 interface Props {
   active: AttackScenario
   onSelect: (scenario: AttackScenario) => void
@@ -12,18 +11,15 @@ export default function AttackSelector({ active, onSelect }: Props) {
       {scenarioOrder.map((id) => {
         const isActive = id === active
         const isSafe = id === 'safe'
-
-        return (
+return (
           <button
             key={id}
             onClick={() => onSelect(id)}
             className={[
-              'rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors duration-200',
+              'btn btn-sm',
               isActive
                 ? isSafe
-                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                  : 'border-red-500 bg-red-500/10 text-red-400'
-                : 'border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white',
+                  ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]' : 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)] hover:text-[var(--ink)]',
             ].join(' ')}
           >
             {scenarios[id].label}

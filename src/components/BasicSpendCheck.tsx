@@ -11,38 +11,37 @@ export default function BasicSpendCheck({ maxPrice, orderPrice }: Props) {
   const withinLimit = orderPrice <= maxPrice
 
   return (
-    <div className="rounded-2xl border border-yellow-500/40 bg-yellow-500/5 p-8">
-      <h3 className="flex items-center gap-2 text-xl font-bold text-yellow-400">
-        <span>⚖️</span> Basic Spend Limit Check
+    <div className="notice p-8">
+      <h3 className="flex items-center gap-2 display text-[23px] text-[var(--ochre)]">
+         Basic Spend Limit Check
       </h3>
-      <p className="mt-1 text-sm text-slate-400">This check looks at the amount only.</p>
+      <p className="mt-1 text-sm text-[var(--ink-soft)]">This check looks at the amount only.</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-          <p className="text-sm text-slate-400">Maximum allowed</p>
-          <p className="mt-1 text-2xl font-bold text-white">
+        <div className="block p-5">
+          <p className="text-sm text-[var(--ink-soft)]">Maximum allowed</p>
+          <p className="mt-1 display text-[28px] text-[var(--ink)]">
             ₹{maxPrice.toLocaleString('en-IN')}
           </p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-          <p className="text-sm text-slate-400">AI order amount</p>
-          <p className="mt-1 text-2xl font-bold text-white">
+        <div className="block p-5">
+          <p className="text-sm text-[var(--ink-soft)]">AI order amount</p>
+          <p className="mt-1 display text-[28px] text-[var(--ink)]">
             ₹{orderPrice.toLocaleString('en-IN')}
           </p>
         </div>
         <div
           className={[
-            'rounded-xl border p-5',
+            ' border p-5',
             withinLimit
-              ? 'border-emerald-500/40 bg-emerald-500/10'
-              : 'border-red-500/40 bg-red-500/10',
+              ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)]' : 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)]',
           ].join(' ')}
         >
-          <p className="text-sm text-slate-400">Result</p>
+          <p className="text-sm text-[var(--ink-soft)]">Result</p>
           <p
             className={[
-              'mt-1 text-lg font-bold',
-              withinLimit ? 'text-emerald-400' : 'text-red-400',
+              'mt-1 display text-[21px]',
+              withinLimit ? 'text-[var(--forest)]' : 'text-[var(--oxblood)]',
             ].join(' ')}
           >
             {withinLimit ? '✓ WITHIN SPENDING LIMIT' : '✕ OVER LIMIT'}
@@ -50,10 +49,10 @@ export default function BasicSpendCheck({ maxPrice, orderPrice }: Props) {
         </div>
       </div>
 
-      <p className="mt-6 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-5 py-4 font-semibold text-yellow-300">
+      <p className="mt-6 border border-[var(--ochre)] bg-[rgba(146,101,15,0.08)] px-5 py-4 font-semibold text-[var(--ochre)]">
         Payment would be allowed by an amount-only policy.
       </p>
-      <p className="mt-3 text-sm text-slate-400">
+      <p className="mt-3 text-sm text-[var(--ink-soft)]">
         An amount-only policy can miss other changes.
       </p>
     </div>

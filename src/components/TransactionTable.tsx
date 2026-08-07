@@ -1,50 +1,20 @@
 import { Link } from 'react-router-dom'
-import Badge from './Badge'
 import type { AuditEntry } from '../types'
-
 const policySourceLabel = {
-  MANUAL: 'Human written',
-  NVIDIA_NIM_ASSISTED: 'AI assisted',
+  MANUAL: 'by hand',
+  NVIDIA_NIM_ASSISTED: 'ai-assisted',
 } as const
 
 const orderSourceLabel = {
-  MANUAL_DEMO: 'Demo order',
-  NVIDIA_NIM: 'AI order',
-  SECURITY_SIMULATION: 'Simulation',
+  MANUAL_DEMO: 'sample',
+  NVIDIA_NIM: 'agent',
+  SECURITY_SIMULATION: 'tampered',
 } as const
 
-interface Props {
-  entries: AuditEntry[]
-}
-
-/**
- * Colour rules:
- *   green  = APPROVED
- *   red    = BLOCKED
- *   yellow = APPROVED but not executed yet
- *   blue   = simulated executed
- */
-function decisionStyle(entry: AuditEntry): string {
-  if (entry.decision === 'BLOCKED') {
-    return 'border-red-500/40 bg-red-500/10 text-red-400'
-  }
-  return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
-}
-
-function executionStyle(entry: AuditEntry): string {
-  if (entry.executionStatus === 'SIMULATED_EXECUTED') {
-    return 'border-blue-500/40 bg-blue-500/10 text-blue-300'
-  }
-  if (entry.decision === 'APPROVED') {
-    return 'border-yellow-500/40 bg-yellow-500/10 text-yellow-300'
-  }
-  return 'border-slate-700 bg-slate-800/60 text-slate-400'
-}
-
 function executionLabel(entry: AuditEntry): string {
-  if (entry.executionStatus === 'SIMULATED_EXECUTED') return 'SIMULATED EXECUTED'
-  if (entry.decision === 'APPROVED') return 'APPROVED — NOT EXECUTED'
-  return 'NOT EXECUTED'
+  if (entry.executionStatus === 'SIMULATED_EXECUTED') return 'executed'
+  if (entry.decision === 'APPROVED') return 'not executed'
+  return '—'
 }
 
 function formatTime(iso: string): string {
@@ -52,135 +22,107 @@ function formatTime(iso: string): string {
   return Number.isFinite(d.getTime()) ? d.toLocaleTimeString() : iso
 }
 
-export default function TransactionTable({ entries }: Props) {
+export default function TransactionTable({ entries }: { entries: AuditEntry[] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-800">
-      <table className="w-full min-w-[1100px] text-left text-sm">
-        <thead className="bg-slate-900 text-slate-400">
+    <div className="overflow-x-auto">
+      <table className="ledger min-w-[1000px]">
+        <thead>
           <tr>
-            <th className="px-4 py-3 font-medium">Verification ID</th>
-            <th className="px-4 py-3 font-medium">Policy ID</th>
-            <th className="px-4 py-3 font-medium">Order ID</th>
-            <th className="px-4 py-3 font-medium">Product</th>
-            <th className="px-4 py-3 font-medium">Amount</th>
-            <th className="px-4 py-3 font-medium">Seller</th>
-            <th className="px-4 py-3 font-medium">Source</th>
-            <th className="px-4 py-3 font-medium">Decision</th>
-            <th className="px-4 py-3 font-medium">Violations</th>
-            <th className="px-4 py-3 font-medium">Time</th>
-            <th className="px-4 py-3 font-medium">Execution</th>
-            <th className="px-4 py-3 font-medium">x402 Payment</th>
-            <th className="px-4 py-3 font-medium">Algorand Tx</th>
-            <th className="px-4 py-3 font-medium">Mandate</th>
+            <th>Verification</th>
+            <th>Policy</th>
+            <th>Order</th>
+            <th>Product</th>
+            <th className="text-right">Amount</th>
+            <th>Seller</th>
+            <th>Source</th>
+            <th>Decision</th>
+            <th>Reasons</th>
+            <th>x402</th>
+            <th>Algorand tx</th>
+            <th>Time</th>
           </tr>
         </thead>
         <tbody>
-          {entries.map((entry) => (
-            <tr
-              key={entry.verificationId}
-              className="border-t border-slate-800 align-top transition-colors duration-200 hover:bg-slate-900/60"
-            >
-              <td className="px-4 py-3 font-medium">
-                <Link
-                  to={`/history/${entry.verificationId}`}
-                  className="text-cyan-300 underline underline-offset-2 hover:text-cyan-200"
-                >
-                  {entry.verificationId}
-                </Link>
-              </td>
-              <td className="px-4 py-3 text-slate-300">{entry.policyId}</td>
-              <td className="px-4 py-3 text-slate-300">{entry.orderId}</td>
-              <td className="px-4 py-3 text-slate-300">{entry.product}</td>
-              <td className="px-4 py-3 text-slate-300">
-                ₹{entry.amount.toLocaleString('en-IN')}
-              </td>
-              <td className="px-4 py-3 text-slate-300">{entry.seller}</td>
-              <td className="px-4 py-3">
-                <div className="flex flex-col gap-1">
-                  <Badge tone={entry.policySource === 'MANUAL' ? 'human' : 'ai'}>
-                    {policySourceLabel[entry.policySource] ?? entry.policySource}
-                  </Badge>
-                  <Badge
-                    tone={
-                      entry.orderSource === 'SECURITY_SIMULATION'
-                        ? 'simulation'
-                        : entry.orderSource === 'NVIDIA_NIM'
-                          ? 'ai'
-                          : 'neutral'
-                    }
+          {entries.map((entry) => {
+            const blocked = entry.decision === 'BLOCKED'
+return (
+              <tr key={entry.verificationId}>
+                <td className="mono">
+                  <Link to={`/history/${entry.verificationId}`} className="ink-link">
+                    {entry.verificationId}
+                  </Link>
+                </td>
+                <td className="mono" style={{ color: 'var(--ink-soft)'
+}}>
+                  {entry.policyId}
+                </td>
+                <td className="mono text-[11px]" style={{ color: 'var(--ink-soft)'
+}}>
+                  {entry.orderId}
+                </td>
+                <td>{entry.product}</td>
+                <td className="mono text-right">₹{entry.amount.toLocaleString('en-IN')}</td>
+                <td>{entry.seller}</td>
+                <td className="label" style={{ whiteSpace: 'nowrap'
+}}>
+                  {policySourceLabel[entry.policySource] ?? entry.policySource}
+                  <br />
+                  {orderSourceLabel[entry.orderSource] ?? entry.orderSource}
+                </td>
+                <td>
+                  <span
+                    className="mono text-[11px] font-semibold tracking-[0.14em] uppercase"
+                    style={{ color: blocked ? 'var(--oxblood)' : 'var(--forest)'
+}}
                   >
-                    {orderSourceLabel[entry.orderSource] ?? entry.orderSource}
-                  </Badge>
-                </div>
-              </td>
-              <td className="px-4 py-3">
-                <span
-                  className={[
-                    'rounded-full border px-3 py-1 text-xs font-semibold',
-                    decisionStyle(entry),
-                  ].join(' ')}
-                >
-                  {entry.decision}
-                </span>
-              </td>
-              <td className="max-w-[260px] px-4 py-3">
-                {entry.violations.length === 0 ? (
-                  <span className="text-slate-500">—</span>
-                ) : (
-                  <ul className="space-y-1">
-                    {entry.violations.map((v) => (
-                      <li key={v} className="text-xs text-red-300">
-                        ✕ {v}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </td>
-              <td className="px-4 py-3 text-slate-300">{formatTime(entry.checkedAt)}</td>
-              <td className="px-4 py-3">
-                <span
-                  className={[
-                    'rounded-full border px-3 py-1 text-xs font-semibold',
-                    executionStyle(entry),
-                  ].join(' ')}
-                >
-                  {executionLabel(entry)}
-                </span>
-              </td>
-              <td className="px-4 py-3">
-                <Badge
-                  tone={
-                    entry.x402PaymentStatus === 'VERIFIED'
-                      ? 'verified'
-                      : entry.x402PaymentStatus === 'UNKNOWN'
-                        ? 'simulation'
-                        : 'neutral'
-                  }
-                >
-                  {entry.x402PaymentStatus === 'NOT_PAID'
-                    ? 'FREE ROUTE'
-                    : entry.x402PaymentStatus}
-                </Badge>
-              </td>
-              <td className="max-w-[180px] px-4 py-3">
-                {entry.x402TransactionId ? (
-                  <a
-                    href={`https://lora.algokit.io/testnet/transaction/${entry.x402TransactionId}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-mono text-xs break-all text-blue-300 underline underline-offset-2 hover:text-blue-200"
-                  >
-                    {entry.x402TransactionId.slice(0, 10)}…
-                  </a>
-                ) : (
-                  <span className="text-slate-500">—</span>
-                )}
-              </td>
-              <td className="px-4 py-3 text-slate-300">
-                {entry.mandateStatus ?? <span className="text-slate-500">—</span>}
-              </td>
-            </tr>
-          ))}
+                    {blocked ? '✕ blocked' : '✓ approved'}
+                  </span>
+                  <span className="label mt-0.5 block">{executionLabel(entry)}</span>
+                </td>
+                <td className="max-w-[230px]">
+                  {entry.violations.length === 0 ? (
+                    <span style={{ color: 'var(--ink-faint)'
+}}>—</span>
+                  ) : (
+                    <ol className="space-y-0.5">
+                      {entry.violations.map((v) => (
+                        <li key={v} className="text-[11.5px]" style={{ color: 'var(--oxblood)'
+}}>
+                          {v}
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </td>
+                <td className="label" style={{ whiteSpace: 'nowrap'
+}}>
+                  {entry.x402PaymentStatus === 'NOT_PAID' ? 'free route' : entry.x402PaymentStatus.toLowerCase()}
+                </td>
+                <td className="max-w-[140px]">
+                  {entry.x402TransactionId ? (
+                    <a
+                      href={`https://lora.algokit.io/testnet/transaction/${entry.x402TransactionId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="ink-link mono text-[11px] break-all"
+                    >
+                      {entry.x402TransactionId.slice(0, 10)}…
+                    </a>
+                  ) : (
+                    <span style={{ color: 'var(--ink-faint)'
+}}>—</span>
+                  )}
+                  <span className="label mt-0.5 block">
+                    {entry.mandateStatus ? entry.mandateStatus.toLowerCase() : '—'}
+                  </span>
+                </td>
+                <td className="mono text-[11px]" style={{ color: 'var(--ink-soft)'
+}}>
+                  {formatTime(entry.checkedAt)}
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>

@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { defaultPolicyInput, loadPolicy, savePolicy } from '../data/demoData'
 import { createPolicy, verifyMandate } from '../services/api'
 import type { AIOrder, SpendingPolicy, VerificationResult } from '../types'
-
 interface Props {
   order: AIOrder
   maxPrice: number
@@ -53,38 +52,38 @@ export default function GuardComparison({ order, maxPrice }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-8">
-      <h2 className="text-2xl font-bold text-white">Without vs With MandateGuard</h2>
-      <p className="mt-2 text-slate-400">
+    <div className="block p-8">
+      <h2 className="display text-[28px] text-[var(--ink)]">Without vs With MandateGuard</h2>
+      <p className="mt-2 text-[var(--ink-soft)]">
         The same AI order, checked two different ways.
       </p>
 
       <button
         onClick={() => void run()}
         disabled={busy}
-        className="mt-6 rounded-lg bg-cyan-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-cyan-400 disabled:opacity-60"
+        className="mt-6 btn btn-solid disabled:opacity-60"
       >
-        {busy ? 'Checking…' : '🛡️ Run MandateGuard on this order'}
+        {busy ? 'Checking…' : 'Run MandateGuard on this order'}
       </button>
 
       {error && (
-        <p className="mt-4 rounded-lg border border-red-500/40 bg-red-500/10 px-5 py-4 text-red-300">
+        <p className="mt-4 notice text-[var(--oxblood)]">
           {error}
         </p>
       )}
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
         {/* WITHOUT */}
-        <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/5 p-6">
-          <h3 className="font-bold text-yellow-400">WITHOUT MANDATEGUARD</h3>
-          <p className="mt-4 text-2xl font-bold text-white">
+        <div className="notice p-6">
+          <h3 className="font-bold text-[var(--ochre)]">WITHOUT MANDATEGUARD</h3>
+          <p className="mt-4 display text-[28px] text-[var(--ink)]">
             ₹{order.price.toLocaleString('en-IN')} &lt; ₹{maxPrice.toLocaleString('en-IN')}
           </p>
-          <p className="mt-3 inline-block rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 font-semibold text-emerald-400">
+          <p className="mt-3 inline-block border border-[var(--forest)] bg-[rgba(39,81,47,0.07)] px-4 py-2 font-semibold text-[var(--forest)]">
             PASS
           </p>
-          <p className="mt-4 text-slate-300">Payment would proceed.</p>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-4 text-[var(--ink-soft)]">Payment would proceed.</p>
+          <p className="mt-2 text-xs text-[var(--ink-faint)]">
             Only the amount was checked. Nothing else was looked at.
           </p>
         </div>
@@ -92,18 +91,15 @@ export default function GuardComparison({ order, maxPrice }: Props) {
         {/* WITH */}
         <div
           className={[
-            'rounded-xl border p-6',
+            ' border p-6',
             result
-              ? result.decision === 'APPROVED'
-                ? 'border-emerald-500/40 bg-emerald-500/5'
-                : 'border-red-500/50 bg-red-500/5'
-              : 'border-slate-700 bg-slate-900/60',
+              ? result.decision === 'APPROVED' ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)]' : 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)]' : 'border-[var(--rule)] ',
           ].join(' ')}
         >
-          <h3 className="font-bold text-cyan-300">WITH MANDATEGUARD</h3>
+          <h3 className="font-bold text-[var(--indigo)]">WITH MANDATEGUARD</h3>
 
           {!result ? (
-            <p className="mt-4 text-slate-500">
+            <p className="mt-4 text-[var(--ink-faint)]">
               Press the button above to run the real policy engine.
             </p>
           ) : (
@@ -111,11 +107,11 @@ export default function GuardComparison({ order, maxPrice }: Props) {
               <ul className="mt-4 space-y-1.5 text-sm">
                 {result.checks.map((c) => (
                   <li key={c.rule} className="flex items-center justify-between gap-3">
-                    <span className="text-slate-300">{c.rule}</span>
+                    <span className="text-[var(--ink-soft)]">{c.rule}</span>
                     <span
                       className={
-                        c.passed ? 'font-semibold text-emerald-400' : 'font-semibold text-red-400'
-                      }
+                        c.passed ? 'font-semibold text-[var(--forest)]' : 'font-semibold text-[var(--oxblood)]'
+}
                     >
                       {c.passed ? 'PASS' : 'FAIL'}
                     </span>
@@ -125,17 +121,15 @@ export default function GuardComparison({ order, maxPrice }: Props) {
 
               <p
                 className={[
-                  'mt-5 rounded-lg border px-4 py-3 text-center text-xl font-bold',
-                  result.decision === 'APPROVED'
-                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
-                    : 'border-red-500/50 bg-red-500/10 text-red-400',
+                  'mt-5  border px-4 py-3 text-center display text-[23px]',
+                  result.decision === 'APPROVED' ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]' : 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)]',
                 ].join(' ')}
               >
                 FINAL RESULT: {result.decision}
               </p>
 
               {result.violations.length > 0 && (
-                <ul className="mt-4 space-y-1 text-xs text-red-300">
+                <ul className="mt-4 space-y-1 text-xs text-[var(--oxblood)]">
                   {result.violations.map((v) => (
                     <li key={v}>✕ {v}</li>
                   ))}
@@ -146,7 +140,7 @@ export default function GuardComparison({ order, maxPrice }: Props) {
         </div>
       </div>
 
-      <p className="mt-8 text-center text-2xl font-bold text-yellow-400">
+      <p className="mt-8 text-center display text-[28px] text-[var(--ochre)]">
         Amount approved ≠ Intent approved
       </p>
     </div>

@@ -29,16 +29,13 @@ import type {
   SpendingPolicy,
   SystemStatus,
 } from '../types'
-
 const EXAMPLE_INSTRUCTION =
   'Buy one 1TB SSD below ₹5000 from SecureStore.\n' +
   'Do not add warranty.\n' +
   'Only pay ALGO-SECURE-STORE.\n' +
   'Maximum ₹5000 per transaction.\n' +
   'Daily limit ₹10000.'
-
 type Scenario = 'SAFE' | 'ATTACK'
-
 interface DraftForm {
   product: string
   quantity: string
@@ -85,10 +82,7 @@ const STAGE_TO_STATE: Record<PaymentStage, PaymentState> = {
   failed: 'FAILED',
 }
 
-const input =
-  'w-full rounded-lg border bg-slate-900 px-4 py-2.5 text-white transition-colors duration-200 placeholder:text-slate-600 focus:outline-none'
-const labelCls = 'mb-1.5 block text-sm text-slate-300'
-
+const labelCls = 'label label-ink mb-1.5 block'
 export default function Dashboard() {
   const { activeAddress, signTransactions } = useWallet()
   const [refreshKey, setRefreshKey] = useState(0)
@@ -357,118 +351,110 @@ export default function Dashboard() {
   const update = <K extends keyof DraftForm>(key: K, value: DraftForm[K]) =>
     setForm((prev) => (prev ? { ...prev, [key]: value } : prev))
 
-  const fieldCls = (empty: boolean) =>
-    [input, empty ? 'border-red-500/60' : 'border-slate-700 focus:border-cyan-500'].join(' ')
+  const fieldCls = (empty: boolean) => `field ${empty ? 'field-missing' : ''}`
 
   return (
-    <section className="mx-auto max-w-6xl px-6 py-12">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <section className="pt-10">
+      <div className="reveal d1 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">MandateGuard Control Center</h1>
-          <p className="mt-2 text-slate-400">
-            One journey: instruction to blockchain proof.
+          <span className="label">Dashboard</span>
+          <h1 className="display mt-1 text-[clamp(34px,5vw,52px)]">
+            Run a verification
+          </h1>
+          <p className="mt-2 max-w-xl text-[15px]" style={{ color: 'var(--ink-soft)'
+}}>
+            Everything in one place: your instruction, the AI draft, your approval, the
+            AI order, the x402 payment, the decision and the proof.
           </p>
         </div>
         <StatusLights status={status} error={statusError} />
       </div>
+      <div className="rule-double mt-6" />
 
-      {/* Service + spend cards */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Current status */}
+      <div className="reveal d2 mt-6 grid gap-px sm:grid-cols-2 lg:grid-cols-5" style={{ background: 'var(--rule)'
+}}>
+        <Card label="AI" value={status?.services.ai.model ?? 'NVIDIA NIM'} state={status?.services.ai.state === 'OK'} />
+        <Card label="MandateGuard" value="10 rules, deterministic" state />
         <Card
-          title="AI Service"
-          value={status?.services.ai.model ?? 'NVIDIA NIM'}
-          tone={status?.services.ai.state === 'OK' ? 'ok' : 'warn'}
+          label="x402 fee"
+          value={status?.services.x402.state === 'OK' ? `x402 · ${status.services.x402.price}` : 'not configured'}
+          state={status?.services.x402.state === 'OK'}
         />
-        <Card title="MandateGuard" value="Active" tone="ok" />
+        <Card label="Blockchain" value="Algorand TestNet" state />
         <Card
-          title="x402"
-          value={
-            status?.services.x402.state === 'OK'
-              ? `Enabled · ${status.services.x402.price}`
-              : 'Not configured'
-          }
-          tone={status?.services.x402.state === 'OK' ? 'ok' : 'warn'}
-        />
-        <Card title="Blockchain" value="Algorand TestNet" tone="ok" />
-        <Card
-          title="Storage"
-          value={
-            status
-              ? status.storage.state === 'MYSQL'
-                ? `MySQL · ${status.storage.database}`
-                : 'In memory (MySQL down)'
-              : '—'
-          }
-          tone={status?.storage.state === 'MYSQL' ? 'ok' : 'warn'}
-        />
-        <Card
-          title="Wallet"
-          value={activeAddress ? 'Connected' : 'Not Connected'}
-          tone={activeAddress ? 'ok' : 'warn'}
-        />
-        <Card
-          title="Policy"
-          value={
-            policy
-              ? `${policy.id} · ACTIVE`
-              : status?.latestPolicyId
-                ? `${status.latestPolicyId} · ACTIVE`
-                : 'Not Created'
-          }
-          tone={policy || status?.latestPolicyId ? 'ok' : 'warn'}
-        />
-        <Card
-          title="Daily Limit"
-          value={
-            status?.spend.dailyLimit != null
-              ? `₹${status.spend.dailyLimit.toLocaleString('en-IN')}`
-              : '—'
-          }
-        />
-        <Card
-          title="Spent / Remaining"
-          value={
-            status
-              ? `₹${status.spend.spentToday.toLocaleString('en-IN')} / ${
-                  status.spend.remaining != null
-                    ? '₹' + status.spend.remaining.toLocaleString('en-IN')
-                    : '—'
-                }`
-              : '—'
-          }
+          label="Database"
+          value={status ? (status.storage.state === 'MYSQL' ? `MySQL · ${status.storage.database}` : 'memory only') : '—'}
+          state={status?.storage.state === 'MYSQL'}
         />
       </div>
 
-      {/* Agent spend counters */}
+      <div className="reveal d3 mt-px grid gap-px sm:grid-cols-2 lg:grid-cols-5" style={{ background: 'var(--rule)'
+}}>
+        <Card label="Wallet" value={activeAddress ? 'connected' : 'not connected'} state={Boolean(activeAddress)} />
+        <Card
+          label="Policy"
+          value={policy ? policy.id : (status?.latestPolicyId ?? 'none yet')}
+          state={Boolean(policy || status?.latestPolicyId)}
+        />
+        <Card
+          label="Daily limit"
+          value={status?.spend.dailyLimit != null ? `₹${status.spend.dailyLimit.toLocaleString('en-IN')}` : '—'}
+        />
+        <Card
+          label="Spent today"
+          value={status ? `₹${status.spend.spentToday.toLocaleString('en-IN')}` : '—'}
+        />
+        <Card
+          label="Remaining"
+          value={status?.spend.remaining != null ? `₹${status.spend.remaining.toLocaleString('en-IN')}` : '—'}
+        />
+      </div>
+
       {status && (
-        <div className="mt-4 grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          <Mini label="Approved" value={status.counts.approved} tone="ok" />
-          <Mini label="Blocked" value={status.counts.blocked} tone="bad" />
-          <Mini label="Executed" value={status.counts.executed} tone="info" />
-          <Mini label="Active Policies" value={status.counts.policies} />
-          <Mini label="Verifications" value={status.counts.verifications} />
+        <div className="reveal d4 mt-6 flex flex-wrap gap-x-8 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--rule)'
+}}>
+          <Tally label="Approved" n={status.counts.approved} tone="var(--forest)" />
+          <Tally label="Blocked" n={status.counts.blocked} tone="var(--oxblood)" />
+          <Tally label="Executed" n={status.counts.executed} tone="var(--indigo)" />
+          <Tally label="Policies" n={status.counts.policies} />
+          <Tally label="Verifications" n={status.counts.verifications} />
         </div>
       )}
 
       {!started ? (
-        <div className="mt-10 rounded-2xl border border-cyan-500/40 bg-cyan-500/5 p-10 text-center">
-          <h2 className="text-2xl font-bold text-white">Ready when you are</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-slate-300">
-            One guided run: you describe what to buy, the AI drafts a policy, you approve
-            it, the AI orders, you pay the small x402 fee, and MandateGuard decides.
-          </p>
-          <button
-            onClick={() => {
-              setStarted(true)
-              setStep(1)
-            }}
-            className="mt-6 rounded-lg bg-cyan-500 px-8 py-4 text-lg font-bold text-slate-950 transition-colors duration-200 hover:bg-cyan-400"
-          >
-            🚀 Start AI Purchase
-          </button>
-          <p className="mt-4 text-xs text-slate-500">
-            Everything runs on Algorand TestNet — never MainNet.
-          </p>
+        <div className="reveal d5 sheet mt-10 grid gap-8 p-10 md:grid-cols-[1.3fr_1fr]">
+          <div>
+            <span className="gutter-mark">Before you start</span>
+            <h2 className="display mt-3 text-[30px]">
+              Nothing is approved until you approve it.
+            </h2>
+            <p className="mt-3 max-w-lg text-[15px]" style={{ color: 'var(--ink-soft)'
+}}>
+              You describe the purchase in one sentence. The AI turns it into a form. You
+              fill in anything it left blank, and only your approval creates the policy.
+            </p>
+            <button onClick={() => { setStarted(true); setStep(1) }} className="btn btn-solid mt-7">
+              Start
+            </button>
+            <p className="label mt-4">Algorand TestNet · test funds only · never MainNet</p>
+          </div>
+
+          <div className="border-l pl-8" style={{ borderColor: 'var(--rule)'
+}}>
+            <span className="label">The 8 steps</span>
+            <ol className="mt-3 space-y-1.5">
+              {['Your instruction', 'AI draft', 'You approve', 'AI order', 'Review', 'x402 payment', 'Decision', 'Proof'].map((t, i) => (
+                <li key={t} className="flex gap-3 text-[13px]">
+                  <span className="mono" style={{ color: 'var(--oxblood)'
+}}>
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
       ) : (
         <>
@@ -478,35 +464,41 @@ export default function Dashboard() {
 
           {/* Scenario switch */}
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="text-sm text-slate-400">Demo Scenario:</span>
+            <span className="label">Demo scenario</span>
             {(['SAFE', 'ATTACK'] as Scenario[]).map((s) => (
               <button
                 key={s}
                 onClick={() => setScenario(s)}
-                className={[
-                  'rounded-lg border px-4 py-2 text-sm font-semibold transition-colors duration-200',
+                className="btn btn-sm"
+                style={
                   scenario === s
-                    ? s === 'SAFE'
-                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                      : 'border-red-500 bg-red-500/10 text-red-400'
-                    : 'border-slate-700 text-slate-400 hover:border-slate-500',
-                ].join(' ')}
+                    ? s === 'SAFE' ? { background: 'var(--forest)', borderColor: 'var(--forest)', color: 'var(--paper-card)'
+}
+                      : { background: 'var(--oxblood)', borderColor: 'var(--oxblood)', color: 'var(--paper-card)'
+}
+                    : { color: 'var(--ink-faint)', borderColor: 'var(--rule)'
+}
+                }
               >
-                {s === 'SAFE' ? 'Safe AI Order' : 'Unsafe AI Order'}
+                {s === 'SAFE' ? 'Safe AI order' : 'Unsafe AI order'}
               </button>
             ))}
             {requestId && <Badge tone="neutral">{requestId}</Badge>}
             <button
               onClick={() => void handleReset()}
               disabled={busy !== ''}
-              className="ml-auto rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-400 transition-colors duration-200 hover:border-red-500/60 hover:text-red-300"
+              className="btn btn-sm ml-auto"
             >
-              ↺ Reset Demo
+              Reset demo
             </button>
           </div>
 
           {error && (
-            <p className="mt-6 rounded-lg border border-red-500/40 bg-red-500/10 px-5 py-4 text-red-300">
+            <p
+              className="mt-6 border-l-4 py-3 pl-4 text-[14px]"
+              style={{ borderColor: 'var(--oxblood)', color: 'var(--oxblood)', background: 'rgba(140,29,24,0.05)'
+}}
+            >
               {error}
             </p>
           )}
@@ -518,34 +510,33 @@ export default function Dashboard() {
                 rows={6}
                 value={instruction}
                 onChange={(e) => setInstruction(e.target.value)}
-                className={`${input} resize-y border-slate-700 focus:border-cyan-500`}
+                className="field"
+                style={{ fontFamily: "Instrument Serif, serif", fontSize: "19px" }}
               />
               <button
                 onClick={() => void handleUnderstand()}
                 disabled={busy !== '' || instruction.trim() === ''}
-                className="mt-4 rounded-lg bg-cyan-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-cyan-400 disabled:opacity-50"
+                className="btn btn-solid mt-5"
               >
-                {busy === 'parse'
-                  ? 'AI is understanding your instruction…'
-                  : 'Ask AI to Understand'}
+                {busy === 'parse' ? 'AI is understanding your instruction…' : 'Ask AI to Understand'}
               </button>
             </Panel>
           )}
 
           {/* STEPS 2 + 3 */}
           {step === 2 && form && (
-            <Panel title="Step 2 — AI Policy Draft">
+            <Panel title="Step 2 — AI draft policy">
               <div className="flex flex-wrap gap-2">
                 <Badge tone="ai">Generated by NVIDIA NIM</Badge>
                 {model && <Badge tone="neutral">{model}</Badge>}
               </div>
 
-              <p className="mt-4 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-yellow-200">
-                AI created this draft. Please review before approval.
+              <p className="notice mt-4">
+                The AI wrote this draft. Please check it before you approve.
               </p>
 
               {aiMissing.length > 0 && (
-                <p className="mt-3 text-sm text-slate-400">
+                <p className="mt-3 text-sm text-[var(--ink-soft)]">
                   Not stated by you, so the AI left them empty:{' '}
                   <span className="text-red-300">{aiMissing.join(', ')}</span>
                 </p>
@@ -593,24 +584,28 @@ export default function Dashboard() {
                     <button
                       type="button"
                       onClick={() => update('warrantyAllowed', true)}
-                      className={[
-                        'rounded-lg border px-5 py-2 text-sm font-medium',
+                      className="btn btn-sm"
+                      style={
                         form.warrantyAllowed === true
-                          ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                          : 'border-slate-700 text-slate-400',
-                      ].join(' ')}
+                          ? { background: 'var(--forest)', borderColor: 'var(--forest)', color: 'var(--paper-card)'
+}
+                          : { color: 'var(--ink-faint)', borderColor: 'var(--rule)'
+}
+                      }
                     >
                       Yes
                     </button>
                     <button
                       type="button"
                       onClick={() => update('warrantyAllowed', false)}
-                      className={[
-                        'rounded-lg border px-5 py-2 text-sm font-medium',
+                      className="btn btn-sm"
+                      style={
                         form.warrantyAllowed === false
-                          ? 'border-cyan-500 bg-cyan-500/10 text-cyan-300'
-                          : 'border-slate-700 text-slate-400',
-                      ].join(' ')}
+                          ? { background: 'var(--ink)', borderColor: 'var(--ink)', color: 'var(--paper-card)'
+}
+                          : { color: 'var(--ink-faint)', borderColor: 'var(--rule)'
+}
+                      }
                     >
                       No
                     </button>
@@ -660,19 +655,23 @@ export default function Dashboard() {
               </div>
 
               {missing.length > 0 && (
-                <p className="mt-5 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                  Please fill in: {missing.join(', ')}
+                <p
+                  className="mono mt-5 border-l-4 py-2 pl-3 text-[12px]"
+                  style={{ borderColor: 'var(--oxblood)', color: 'var(--oxblood)'
+}}
+                >
+                  Incomplete: {missing.join(', ')}
                 </p>
               )}
 
               <button
                 onClick={() => void handleApprove()}
                 disabled={busy !== '' || missing.length > 0}
-                className="mt-6 rounded-lg bg-emerald-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-emerald-400 disabled:opacity-50"
+                className="btn btn-solid mt-6"
               >
                 {busy === 'approve' ? 'Creating…' : '✓ Approve Human Policy'}
               </button>
-              <p className="mt-3 text-xs text-slate-500">
+              <p className="mt-3 text-xs text-[var(--ink-soft)]">
                 Step 3. No policy exists until you press this. The AI cannot create one.
               </p>
             </Panel>
@@ -687,7 +686,7 @@ export default function Dashboard() {
                 <Badge tone="neutral">ACTIVE</Badge>
               </div>
 
-              <p className="mt-4 text-sm text-slate-400">
+              <p className="mt-4 text-sm text-[var(--ink-soft)]">
                 Mandate proof registered for {policy.id}. In this build the proof is stored
                 in server memory — no smart contract is deployed.
               </p>
@@ -695,20 +694,16 @@ export default function Dashboard() {
               <button
                 onClick={() => void handlePrepareOrder()}
                 disabled={busy !== ''}
-                className="mt-6 rounded-lg bg-violet-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-violet-400 disabled:opacity-50"
+                className="btn btn-solid mt-6"
               >
-                {busy === 'order'
-                  ? 'Working…'
-                  : scenario === 'SAFE'
-                    ? '✨ Ask AI to Prepare Order'
-                    : '⚠️ Load Unsafe AI Order'}
+                {busy === 'order' ? 'Working…' : scenario === 'SAFE' ? 'Ask AI to Prepare Order' : 'Load Unsafe AI Order'}
               </button>
             </Panel>
           )}
 
           {/* STEP 5 - pre-check */}
           {step === 5 && policy && order && (
-            <Panel title="Step 5 — Order ready for verification">
+            <Panel title="Step 5 — Review before you pay">
               <div className="flex flex-wrap gap-2">
                 {orderSource === 'NVIDIA_NIM' && <Badge tone="ai">AI Generated Order</Badge>}
                 {orderSource === 'SECURITY_SIMULATION' && (
@@ -717,8 +712,8 @@ export default function Dashboard() {
                 <Badge tone="order">{order.orderId}</Badge>
               </div>
 
-              <p className="mt-4 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-yellow-200">
-                AI order is untrusted until MandateGuard verifies it.
+              <p className="notice mt-4">
+                This AI order is not trusted until MandateGuard checks it.
               </p>
 
               {aiReason && (
@@ -742,11 +737,9 @@ export default function Dashboard() {
               <button
                 onClick={handlePayAndVerify}
                 disabled={busy !== '' || !activeAddress}
-                className="mt-6 rounded-lg bg-emerald-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-emerald-400 disabled:opacity-50"
+                className="btn btn-solid mt-6"
               >
-                {busy === 'pay'
-                  ? 'Payment in progress…'
-                  : '⛓️ Verify with x402 + MandateGuard'}
+                {busy === 'pay' ? 'Payment in progress…' : 'Verify with x402 + MandateGuard'}
               </button>
             </Panel>
           )}
@@ -763,20 +756,19 @@ export default function Dashboard() {
                     <button
                       onClick={handleResend}
                       disabled={!canResend}
-                      className="rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition-colors duration-200 hover:bg-cyan-400 disabled:opacity-40"
+                      className="btn btn-solid"
                     >
                       {canResend
-                        ? '↻ Resend request to wallet'
-                        : '↻ Resend available in a few seconds…'}
+                        ? '↻ Resend request to wallet' : '↻ Resend available in a few seconds…'}
                     </button>
                     <button
                       onClick={handleCancelPayment}
-                      className="rounded-lg border border-slate-600 px-5 py-2.5 text-sm font-semibold text-slate-300 transition-colors duration-200 hover:border-red-500/60 hover:text-red-300"
+                      className="btn"
                     >
                       Cancel payment
                     </button>
                   </div>
-                  <p className="mt-3 text-xs text-slate-500">
+                  <p className="mt-3 text-xs text-[var(--ink-soft)]">
                     Resending sends a <strong>new</strong> signing request. If an old prompt
                     is still open on your phone, reject that one and approve the newest.
                   </p>
@@ -787,13 +779,13 @@ export default function Dashboard() {
                 <div className="mt-5 flex flex-wrap gap-3">
                   <button
                     onClick={handleResend}
-                    className="rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition-colors duration-200 hover:bg-cyan-400"
+                    className="bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-[var(--paper-card)] transition-colors duration-200 hover:bg-cyan-400"
                   >
                     ↻ Try the payment again
                   </button>
                   <button
                     onClick={() => setStep(5)}
-                    className="rounded-lg border border-slate-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:border-cyan-400"
+                    className="btn"
                   >
                     Back to the order
                   </button>
@@ -804,42 +796,73 @@ export default function Dashboard() {
 
           {/* STEPS 7 + 8 */}
           {step >= 7 && result && (
-            <Panel title="Step 7 — Final decision">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Big
-                  label="x402 Payment"
-                  value={result.payment.status === 'VERIFIED' ? '✓ VERIFIED' : '? UNKNOWN'}
-                  tone={result.payment.status === 'VERIFIED' ? 'ok' : 'warn'}
-                />
-                <Big
-                  label="MandateGuard Decision"
-                  value={result.decision === 'APPROVED' ? '✓ APPROVED' : '✕ BLOCKED'}
-                  tone={result.decision === 'APPROVED' ? 'ok' : 'bad'}
-                />
+            <Panel title="Step 7 — The decision">
+              <div className="grid gap-8 border-b pb-8 sm:grid-cols-2" style={{ borderColor: 'var(--rule)'
+}}>
+                <div className="text-center">
+                  <span className="label">x402 payment</span>
+                  <div className="mt-4 flex justify-center">
+                    <span
+                      className={`stamp stamp-sm ${result.payment.status === 'VERIFIED' ? 'stamp-approved' : ''}`}
+                      style={result.payment.status === 'VERIFIED' ? undefined : { color: 'var(--ochre)'
+}}
+                    >
+                      {result.payment.status === 'VERIFIED' ? 'Paid' : 'Unknown'}
+                      <sub>{result.payment.amount}</sub>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <span className="label">MandateGuard decision</span>
+                  <div className="mt-4 flex justify-center">
+                    <span
+                      className={`stamp stamp-lg ${result.decision === 'APPROVED' ? 'stamp-approved' : 'stamp-blocked'}`}
+                    >
+                      {result.decision === 'APPROVED' ? 'Approved' : 'Blocked'}
+                      <sub>{result.verificationId}</sub>
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <p className="mt-5 text-center text-xl font-bold text-yellow-400">
-                Payment Verified ≠ Purchase Approved
+              <p className="display mt-8 text-center text-[clamp(20px,3vw,30px)]">
+                Payment verified <span style={{ color: 'var(--oxblood)'
+}}>≠</span> purchase approved
               </p>
-              <p className="mt-1 text-center text-sm text-slate-400">
-                x402 verifies payment. MandateGuard verifies intent.
+              <p className="label mt-2 text-center">
+                x402 verifies payment · MandateGuard verifies intent
               </p>
 
               {result.decision === 'BLOCKED' ? (
-                <div className="mt-6 rounded-xl border border-red-500/40 bg-red-500/5 p-5">
-                  <p className="font-semibold text-red-400">
-                    The verification fee was paid successfully, but the AI purchase was
-                    blocked.
+                <div
+                  className="mt-8 border-l-4 p-6"
+                  style={{ borderColor: 'var(--oxblood)', background: 'rgba(140,29,24,0.05)'
+}}
+                >
+                  <p className="display text-[19px]" style={{ color: 'var(--oxblood)'
+}}>
+                    The payment worked. The purchase was blocked.
                   </p>
-                  <ul className="mt-3 space-y-1 text-sm text-slate-200">
-                    {result.violations.map((v) => (
-                      <li key={v}>✕ {v}</li>
+                  <ol className="mt-4 space-y-1.5">
+                    {result.violations.map((v, i) => (
+                      <li key={v} className="flex gap-3 text-[14px]">
+                        <span className="mono" style={{ color: 'var(--oxblood)'
+}}>
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        {v}
+                      </li>
                     ))}
-                  </ul>
+                  </ol>
                 </div>
               ) : (
-                <p className="mt-6 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-5 py-4 text-emerald-300">
-                  This AI order matches the human-approved policy.
+                <p
+                  className="display mt-8 border-l-4 py-3 pl-5 text-[19px]"
+                  style={{ borderColor: 'var(--forest)', color: 'var(--forest)'
+}}
+                >
+                  This order matches the policy you approved.
                 </p>
               )}
 
@@ -850,8 +873,8 @@ export default function Dashboard() {
               </div>
 
               {/* Step 8 - blockchain proof */}
-              <div className="mt-8 rounded-xl border border-blue-500/40 bg-blue-500/5 p-5">
-                <h4 className="font-semibold text-blue-300">Step 8 — Blockchain proof</h4>
+              <div className="block mt-10 p-6">
+                <span className="gutter-mark">Step 8 — Blockchain proof</span>
                 <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
                   <Row label="Network" value={result.payment.network} />
                   <Row
@@ -865,8 +888,8 @@ export default function Dashboard() {
                   />
                 </dl>
                 <p className="mt-3 text-sm">
-                  <span className="text-slate-400">Transaction ID: </span>
-                  <span className="font-mono break-all text-white">
+                  <span className="text-[var(--ink-soft)]">Transaction ID: </span>
+                  <span className="mono break-all text-[var(--ink)]">
                     {result.payment.transactionId ?? 'not returned by the facilitator'}
                   </span>
                 </p>
@@ -875,7 +898,7 @@ export default function Dashboard() {
                     href={result.payment.explorerUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-4 inline-block rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition-colors duration-200 hover:bg-blue-400"
+                    className="btn btn-solid mt-4"
                   >
                     View x402 Payment on Algorand Explorer ↗
                   </a>
@@ -883,21 +906,27 @@ export default function Dashboard() {
               </div>
 
               {result.decision === 'APPROVED' && (
-                <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-                  <h4 className="font-semibold text-white">Approved for Execution</h4>
-                  <p className="mt-2 text-sm text-slate-400">
+                <div className="block mt-8 p-6">
+                  <span className="gutter-mark">Step 9 — Execution</span>
+                  <h4 className="display mt-2 text-[21px]">Approved for execution</h4>
+                  <p className="mt-2 text-[14px]" style={{ color: 'var(--ink-soft)'
+}}>
                     Approval is not a purchase. Recording the execution is what consumes the
                     mandate and adds to today's spending.
                   </p>
                   {executed ? (
-                    <p className="mt-4 rounded-lg border border-blue-500/40 bg-blue-500/10 px-5 py-3 text-blue-300">
+                    <p
+                      className="mono mt-4 border-l-4 py-2 pl-4 text-[12px]"
+                      style={{ borderColor: 'var(--indigo)', color: 'var(--indigo)'
+}}
+                    >
                       {executionNote || 'Execution recorded. Mandate marked USED.'}
                     </p>
                   ) : (
                     <button
                       onClick={() => void handleExecute()}
                       disabled={busy !== ''}
-                      className="mt-4 rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition-colors duration-200 hover:bg-cyan-400 disabled:opacity-50"
+                      className="btn btn-solid mt-4"
                     >
                       {busy === 'exec' ? 'Recording…' : 'Record Approved Execution'}
                     </button>
@@ -908,13 +937,13 @@ export default function Dashboard() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   to={`/history/${result.verificationId}`}
-                  className="rounded-lg border border-slate-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:border-cyan-400"
+                  className="btn"
                 >
                   View full transaction detail
                 </Link>
                 <Link
                   to="/history"
-                  className="rounded-lg border border-slate-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:border-cyan-400"
+                  className="btn"
                 >
                   Audit history
                 </Link>
@@ -930,22 +959,22 @@ export default function Dashboard() {
 // ── small presentational helpers ──────────────────────────
 
 function Card({
-  title,
+  label,
   value,
-  tone,
+  state,
 }: {
-  title: string
+  label: string
   value: string
-  tone?: 'ok' | 'warn'
+  state?: boolean
 }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-      <p className="text-xs text-slate-400">{title}</p>
+    <div className="px-4 py-3" style={{ background: 'var(--paper-card)'
+}}>
+      <span className="label">{label}</span>
       <p
-        className={[
-          'mt-1 font-semibold break-words',
-          tone === 'ok' ? 'text-emerald-400' : tone === 'warn' ? 'text-yellow-300' : 'text-white',
-        ].join(' ')}
+        className="mono mt-1 text-[12.5px] leading-snug break-words"
+        style={{ color: state === false ? 'var(--ochre)' : 'var(--ink)'
+}}
       >
         {value}
       </p>
@@ -953,41 +982,26 @@ function Card({
   )
 }
 
-function Mini({
-  label,
-  value,
-  tone,
-}: {
-  label: string
-  value: number
-  tone?: 'ok' | 'bad' | 'info'
-}) {
+function Tally({ label, n, tone }: { label: string; n: number; tone?: string }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-center">
-      <p
-        className={[
-          'text-2xl font-bold',
-          tone === 'ok'
-            ? 'text-emerald-400'
-            : tone === 'bad'
-              ? 'text-red-400'
-              : tone === 'info'
-                ? 'text-blue-300'
-                : 'text-white',
-        ].join(' ')}
-      >
-        {value}
-      </p>
-      <p className="mt-1 text-xs text-slate-400">{label}</p>
-    </div>
+    <span className="flex items-baseline gap-2">
+      <span className="display text-[26px]" style={{ color: tone ?? 'var(--ink)'
+}}>
+        {n}
+      </span>
+      <span className="label">{label}</span>
+    </span>
   )
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+  const [mark, ...rest] = title.split(' — ')
   return (
-    <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-      <h3 className="text-lg font-bold text-white">{title}</h3>
-      <div className="mt-4">{children}</div>
+    <div className="sheet reveal mt-8 p-8">
+      <span className="gutter-mark">{mark}</span>
+      <h3 className="display mt-2 text-[27px]">{rest.join(' — ') || title}</h3>
+      <div className="rule-line mt-4 mb-6" />
+      {children}
     </div>
   )
 }
@@ -1009,44 +1023,11 @@ function Field({
   )
 }
 
-function Big({
-  label,
-  value,
-  tone,
-}: {
-  label: string
-  value: string
-  tone: 'ok' | 'bad' | 'warn'
-}) {
-  return (
-    <div
-      className={[
-        'rounded-xl border p-6 text-center',
-        tone === 'ok'
-          ? 'border-emerald-500/40 bg-emerald-500/5'
-          : tone === 'bad'
-            ? 'border-red-500/40 bg-red-500/5'
-            : 'border-yellow-500/40 bg-yellow-500/5',
-      ].join(' ')}
-    >
-      <p className="text-sm text-slate-400">{label}</p>
-      <p
-        className={[
-          'mt-2 text-2xl font-bold',
-          tone === 'ok' ? 'text-emerald-400' : tone === 'bad' ? 'text-red-400' : 'text-yellow-300',
-        ].join(' ')}
-      >
-        {value}
-      </p>
-    </div>
-  )
-}
-
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs text-slate-400">{label}</dt>
-      <dd className="text-white">{value}</dd>
+      <dt className="label">{label}</dt>
+      <dd className="mono mt-0.5 text-[12.5px] break-all">{value}</dd>
     </div>
   )
 }
@@ -1070,53 +1051,69 @@ function PaymentStateView({
   return (
     <div>
       {status?.services.x402.state === 'OK' && (
-        <dl className="mb-5 grid gap-3 text-sm sm:grid-cols-4">
-          <Row label="Verification Fee" value={status.services.x402.price ?? '—'} />
-          <Row label="Network" value="Algorand TestNet" />
+        <dl className="mb-7 grid gap-4 border-b pb-5 sm:grid-cols-4" style={{ borderColor: 'var(--rule)'
+}}>
+          <Row label="Fee" value={status.services.x402.price ?? '—'} />
+          <Row label="Blockchain" value="Algorand TestNet" />
           <Row label="Asset" value="Test USDC" />
           <Row
             label="Receiver"
             value={
               status.services.x402.receiver
-                ? `${status.services.x402.receiver.slice(0, 6)}...${status.services.x402.receiver.slice(-4)}`
+                ? `${status.services.x402.receiver.slice(0, 6)}…${status.services.x402.receiver.slice(-4)}`
                 : '—'
-            }
+}
           />
         </dl>
       )}
 
-      <ol className="space-y-2 text-sm">
+      <ol className="space-y-0">
         {order.map((s, i) => {
           const done = current > i
           const active = current === i
           return (
             <li
               key={s}
-              className={[
-                'flex items-center gap-2',
-                done ? 'text-emerald-400' : active ? 'text-cyan-300' : 'text-slate-600',
-              ].join(' ')}
+              className="flex items-center gap-4 border-b py-2.5"
+              style={{ borderColor: 'var(--rule-soft)'
+}}
             >
-              <span>{done ? '✓' : active ? '●' : '○'}</span>
-              {s.replace(/_/g, ' ')}
+              <span
+                className="mono text-[10px]"
+                style={{ color: done ? 'var(--forest)' : active ? 'var(--oxblood)' : 'var(--ink-faint)'
+}}
+              >
+                {done ? '✓' : active ? '▸' : '·'}
+              </span>
+              <span
+                className="mono text-[12px] tracking-[0.12em] uppercase"
+                style={{
+                  color: done ? 'var(--forest)' : active ? 'var(--ink)' : 'var(--ink-faint)',
+                  fontWeight: active ? 600 : 400,
+                }}
+              >
+                {s.replace(/_/g, ' ')}
+              </span>
             </li>
           )
         })}
       </ol>
 
       {state === 'WAITING_FOR_WALLET' && (
-        <p className="mt-4 rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-200">
+        <p className="notice mt-6">
           Open your wallet and approve the payment. Nothing happens until you sign.
         </p>
       )}
       {state === 'CANCELLED' && (
-        <p className="mt-4 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
-          Payment cancelled. MandateGuard did not run.
-        </p>
+        <p className="notice mt-6">Payment cancelled. MandateGuard did not run.</p>
       )}
       {state === 'FAILED' && (
-        <p className="mt-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-          Blockchain payment failed. Nothing was marked as paid.
+        <p
+          className="mt-6 border-l-4 py-3 pl-4 text-[14px]"
+          style={{ borderColor: 'var(--oxblood)', color: 'var(--oxblood)', background: 'rgba(140,29,24,0.05)'
+}}
+        >
+          Payment failed. Nothing was recorded as paid.
         </p>
       )}
     </div>

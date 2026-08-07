@@ -15,37 +15,37 @@ export default function UnsafeFlow({ orderPrice, maxPrice }: Props) {
       tone: 'warn' as const,
     },
     { text: 'APPROVED', tone: 'ok' as const },
-    { text: '⚠️ SIMULATED PAYMENT WOULD PROCEED', tone: 'danger' as const },
+    { text: 'SIMULATED PAYMENT WOULD PROCEED', tone: 'danger' as const },
   ]
 
   const toneClass = {
-    normal: 'border-slate-700 bg-slate-900 text-slate-200',
-    warn: 'border-yellow-500/50 bg-yellow-500/10 text-yellow-300',
-    ok: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400',
-    danger: 'border-red-500/60 bg-red-500/10 text-red-400 font-bold',
+    normal: 'border-[var(--rule)]  text-[var(--ink)]',
+    warn: 'border-[var(--ochre)] bg-[rgba(146,101,15,0.08)] text-[var(--ochre)]',
+    ok: 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]',
+    danger: 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)] font-bold',
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-8">
-      <h3 className="text-center text-xl font-bold text-white">Simulated Payment Flow</h3>
+    <div className="block p-8">
+      <h3 className="text-center display text-[23px] text-[var(--ink)]">Simulated Payment Flow</h3>
 
       <div className="mt-8 flex flex-col items-center gap-2">
         {steps.map((step, i) => (
           <div key={step.text} className="flex w-full flex-col items-center gap-2">
             <div
               className={[
-                'rounded-lg border px-6 py-2.5 text-center text-sm',
+                ' border px-6 py-2.5 text-center text-sm',
                 toneClass[step.tone],
               ].join(' ')}
             >
               {step.text}
             </div>
-            {i < steps.length - 1 && <span className="text-slate-600">↓</span>}
+            {i < steps.length - 1 && <span className="text-[var(--ink-soft)]">↓</span>}
           </div>
         ))}
       </div>
 
-      <p className="mt-8 text-center text-sm font-semibold text-yellow-400">
+      <p className="mt-8 text-center text-sm font-semibold text-[var(--ochre)]">
         MandateGuard is disabled in this demonstration.
       </p>
     </div>

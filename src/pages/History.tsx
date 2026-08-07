@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
+import Sheet from '../components/Sheet'
 import TransactionTable from '../components/TransactionTable'
 import { getAudit } from '../services/api'
 import type { AuditEntry } from '../types'
-
 export default function History() {
   const [entries, setEntries] = useState<AuditEntry[]>([])
   const [spentToday, setSpentToday] = useState(0)
@@ -17,7 +17,7 @@ export default function History() {
       setEntries(data.entries)
       setSpentToday(data.spentToday)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load the audit log.')
+      setError(err instanceof Error ? err.message : 'Could not load the history.')
     } finally {
       setLoading(false)
     }
@@ -31,69 +31,81 @@ export default function History() {
   const blocked = entries.filter((e) => e.decision === 'BLOCKED').length
 
   return (
-    <section className="mx-auto max-w-6xl px-6 py-12">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <section className="pt-10">
+      <div className="reveal d1 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Audit History</h1>
-          <p className="mt-2 text-slate-400">
-            Every verification the engine made, newest first. Loaded live from the server.
-          </p>
+          <span className="label">Audit history</span>
+          <h1 className="display mt-1 text-[clamp(34px,5vw,52px)]">History</h1>
         </div>
-        <button
-          onClick={() => void load()}
-          className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:border-cyan-400 hover:text-cyan-300"
-        >
+        <button onClick={() => void load()} className="btn btn-sm">
           Refresh
         </button>
       </div>
+      <div className="rule-double mt-6" />
 
-      {/* Summary */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-          <p className="text-sm text-slate-400">Total Verifications</p>
-          <p className="mt-1 text-2xl font-bold text-white">{entries.length}</p>
-        </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-          <p className="text-sm text-slate-400">Approved</p>
-          <p className="mt-1 text-2xl font-bold text-emerald-400">{approved}</p>
-        </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-          <p className="text-sm text-slate-400">Blocked</p>
-          <p className="mt-1 text-2xl font-bold text-red-400">{blocked}</p>
-        </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-          <p className="text-sm text-slate-400">Simulated spend today</p>
-          <p className="mt-1 text-2xl font-bold text-blue-300">
-            ₹{spentToday.toLocaleString('en-IN')}
-          </p>
-        </div>
+      {/* Standing */}
+      <div className="reveal d2 mt-5 flex flex-wrap gap-x-10 gap-y-3">
+        <Tally n={entries.length} label="entries" />
+        <Tally n={approved} label="approved" tone="var(--forest)" />
+        <Tally n={blocked} label="blocked" tone="var(--oxblood)" />
+        <span className="flex items-baseline gap-2">
+          <span className="display text-[28px]">₹{spentToday.toLocaleString('en-IN')}</span>
+          <span className="label">spent today</span>
+        </span>
       </div>
 
-      {error && (
-        <p className="mt-8 rounded-lg border border-red-500/40 bg-red-500/10 px-5 py-4 text-red-300">
-          {error}
-        </p>
-      )}
+      <div className="mt-10">
+        <Sheet mark="01">
+          {error && (
+            <p
+              className="border-l-4 py-3 pl-4 text-[14px]"
+              style={{ borderColor: 'var(--oxblood)', color: 'var(--oxblood)'
+}}
+            >
+              {error}
+            </p>
+          )}
 
-      {!error && loading && <p className="mt-8 text-slate-400">Loading…</p>}
+          {!error && loading && <p className="label">loading…</p>}
 
-      {!error && !loading && entries.length === 0 && (
-        <p className="mt-8 rounded-xl border border-dashed border-slate-800 px-6 py-10 text-center text-slate-500">
-          No verifications yet. Send an order from the AI Order page.
-        </p>
-      )}
+          {!error && !loading && entries.length === 0 && (
+            <div
+              className="border border-dashed px-6 py-16 text-center"
+              style={{ borderColor: 'var(--rule)'
+}}
+            >
+              <p className="display text-[22px]" style={{ color: 'var(--ink-faint)'
+}}>
+                No entries yet.
+              </p>
+              <p className="label mt-2">Run a verification from the Dashboard.</p>
+            </div>
+          )}
 
-      {!error && !loading && entries.length > 0 && (
-        <div className="mt-8">
-          <TransactionTable entries={entries} />
-        </div>
-      )}
-
-      <p className="mt-4 text-sm text-slate-500">
-        Rows paid through x402 carry a real Algorand TestNet transaction — click the id to
-        open it in the explorer. Rows marked FREE ROUTE skipped the payment layer. The
-        audit log lives in server memory and resets when the server restarts.
-      </p>
+          {!error && !loading && entries.length > 0 && (
+            <>
+              <TransactionTable entries={entries} />
+              <p className="label mt-5 max-w-3xl leading-relaxed">
+                Entries paid through x402 carry a real Algorand TestNet transaction — the
+                proof column links to the explorer. Entries marked “free route” skipped the
+                payment layer. History is stored in MySQL and survives a restart.
+              </p>
+            </>
+          )}
+        </Sheet>
+      </div>
     </section>
+  )
+}
+
+function Tally({ n, label, tone }: { n: number; label: string; tone?: string }) {
+  return (
+    <span className="flex items-baseline gap-2">
+      <span className="display text-[28px]" style={{ color: tone ?? 'var(--ink)'
+}}>
+        {n}
+      </span>
+      <span className="label">{label}</span>
+    </span>
   )
 }

@@ -1,14 +1,13 @@
 import type { SpendingPolicy } from '../types'
-
 interface Props {
   policy: SpendingPolicy
 }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-b border-slate-800 py-2.5 last:border-b-0">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className="mt-0.5 font-medium text-white">{value}</p>
+    <div className="border-b border-[var(--rule)] py-2.5 last:border-b-0">
+      <p className="text-xs text-[var(--ink-soft)]">{label}</p>
+      <p className="mt-0.5 font-medium text-[var(--ink)]">{value}</p>
     </div>
   )
 }
@@ -16,12 +15,12 @@ function Row({ label, value }: { label: string; value: string }) {
 /** Phase 3 - the rules the human approved. Calm blue/green styling. */
 export default function HumanPolicyCard({ policy }: Props) {
   return (
-    <div className="h-full rounded-xl border border-cyan-500/40 bg-cyan-500/5 p-6">
+    <div className="h-full sheet p-6">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="flex items-center gap-2 font-bold tracking-wide text-cyan-300">
-          <span>👤</span> HUMAN APPROVED POLICY
+        <h3 className="flex items-center gap-2 font-bold tracking-wide text-[var(--indigo)]">
+           HUMAN APPROVED POLICY
         </h3>
-        <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400">
+        <span className="border border-[var(--forest)] bg-[rgba(39,81,47,0.07)] px-3 py-1 text-xs font-semibold text-[var(--forest)]">
           ACTIVE
         </span>
       </div>

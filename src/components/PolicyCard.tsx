@@ -1,5 +1,4 @@
 import type { SpendingPolicy } from '../types'
-
 interface Props {
   policy: SpendingPolicy
   /** Extra rows are hidden by default to keep the card clean. */
@@ -8,19 +7,19 @@ interface Props {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-slate-800 py-2 last:border-b-0">
-      <span className="text-slate-400">{label}</span>
-      <span className="text-right font-medium text-white">{value}</span>
+    <div className="flex justify-between gap-4 border-b border-[var(--rule)] py-2 last:border-b-0">
+      <span className="text-[var(--ink-soft)]">{label}</span>
+      <span className="text-right font-medium text-[var(--ink)]">{value}</span>
     </div>
   )
 }
 
 export default function PolicyCard({ policy, detailed = false }: Props) {
   return (
-    <div className="rounded-xl border border-cyan-500/30 bg-slate-900/60 p-6">
+    <div className="border border-[var(--indigo)] p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-semibold text-white">Human Spending Policy</h3>
-        <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400">
+        <h3 className="display text-[19px]">Human Spending Policy</h3>
+        <span className="border border-[var(--forest)] bg-[rgba(39,81,47,0.07)] px-3 py-1 text-xs font-semibold text-[var(--forest)]">
           {policy.status}
         </span>
       </div>

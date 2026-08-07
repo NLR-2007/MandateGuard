@@ -11,7 +11,6 @@ import History from './pages/History'
 import Home from './pages/Home'
 import UnsafeDemo from './pages/UnsafeDemo'
 import Verification from './pages/Verification'
-
 /**
  * Built ONCE at module level, never inside the component.
  * Re-creating it on every render would drop the live wallet connection
@@ -30,7 +29,7 @@ export default function App() {
       <div className="min-h-screen">
         <Navbar />
 
-        <main>
+        <main className="mx-auto max-w-[1180px] px-6 pb-24">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
@@ -44,9 +43,16 @@ export default function App() {
           </Routes>
         </main>
 
-        <footer className="mt-16 border-t border-slate-800 py-8 text-center text-sm text-slate-500">
-          MandateGuard — NVIDIA NIM · x402 · Algorand TestNet. Test funds only, never
-          MainNet.
+        <footer className="mx-auto max-w-[1180px] px-6 pb-14">
+          <div className="rule-double" />
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
+            <span className="label">
+              MandateGuard · Bureau of Machine Mandates
+            </span>
+            <span className="label">
+              NVIDIA NIM · x402 · Algorand TestNet · test funds only
+            </span>
+          </div>
         </footer>
       </div>
     </BrowserRouter>

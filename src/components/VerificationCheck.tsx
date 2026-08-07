@@ -1,48 +1,52 @@
 import type { VerificationCheck as Check } from '../types'
-
 interface Props {
   check: Check
 }
 
-/** One rule from the backend response. */
+/** One rule, ruled like a line in a register. */
 export default function VerificationCheck({ check }: Props) {
   return (
     <div
-      className={[
-        'rounded-lg border px-4 py-3 transition-colors duration-200',
-        check.passed
-          ? 'border-emerald-500/30 bg-emerald-500/5'
-          : 'border-red-500/40 bg-red-500/10',
-      ].join(' ')}
+      className="flex gap-4 border-b py-3"
+      style={{ borderColor: 'var(--rule-soft)'
+}}
     >
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-slate-100">{check.rule}</span>
-        <span
-          className={[
-            'text-lg font-bold',
-            check.passed ? 'text-emerald-400' : 'text-red-400',
-          ].join(' ')}
-        >
-          {check.passed ? '✓' : '✕'}
-        </span>
-      </div>
-
-      <p
-        className={[
-          'mt-1 text-xs',
-          check.passed ? 'text-slate-400' : 'text-red-300',
-        ].join(' ')}
+      <span
+        className="mono w-4 shrink-0 text-[13px]"
+        style={{ color: check.passed ? 'var(--forest)' : 'var(--oxblood)'
+}}
       >
-        {check.message}
-      </p>
+        {check.passed ? '✓' : '✕'}
+      </span>
 
-      {!check.passed && (
-        <p className="mt-2 text-xs text-slate-400">
-          Approved: <span className="text-slate-200">{String(check.expected)}</span>
-          <span className="mx-2 text-red-400">→</span>
-          AI order: <span className="text-red-300">{String(check.actual)}</span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <span
+            className="text-[14px]"
+            style={{ color: check.passed ? 'var(--ink)' : 'var(--oxblood)'
+}}
+          >
+            {check.rule}
+          </span>
+          <span className="label">{check.passed ? 'in order' : 'refused'}</span>
+        </div>
+
+        <p className="mt-0.5 text-[13px]" style={{ color: 'var(--ink-soft)'
+}}>
+          {check.message}
         </p>
-      )}
+
+        {!check.passed && (
+          <p className="mono mt-1.5 text-[11px]" style={{ color: 'var(--ink-faint)'
+}}>
+            approved <span style={{ color: 'var(--ink)'
+}}>{String(check.expected)}</span>
+            {' →  '}
+            ordered <span style={{ color: 'var(--oxblood)'
+}}>{String(check.actual)}</span>
+          </p>
+        )}
+      </div>
     </div>
   )
 }

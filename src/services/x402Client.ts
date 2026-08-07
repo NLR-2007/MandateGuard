@@ -160,7 +160,8 @@ export async function verifyWithX402(params: {
 
   const response = await fetchWithPayment(`${API_BASE}/api/x402/verify-mandate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json'
+},
     body: JSON.stringify({ policyId, order, policySource, orderSource }),
   })
 

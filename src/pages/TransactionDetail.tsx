@@ -3,14 +3,14 @@ import { Link, useParams } from 'react-router-dom'
 import Badge from '../components/Badge'
 import { getAuditEntry } from '../services/api'
 import type { AuditEntry, FlowEvent } from '../types'
-
 function timeOf(iso: string): string {
   const d = new Date(iso)
   return Number.isFinite(d.getTime()) ? d.toLocaleTimeString() : iso
 }
 
 export default function TransactionDetail() {
-  const { verificationId = '' } = useParams()
+  const { verificationId = ''
+} = useParams()
   const [entry, setEntry] = useState<AuditEntry | null>(null)
   const [timeline, setTimeline] = useState<FlowEvent[]>([])
   const [error, setError] = useState('')
@@ -38,17 +38,17 @@ export default function TransactionDetail() {
   }, [verificationId])
 
   if (loading) {
-    return <p className="mx-auto max-w-4xl px-6 py-20 text-slate-400">Loading…</p>
+    return <p className="label pt-20">loading…</p>
   }
 
   if (error || !entry) {
     return (
-      <section className="mx-auto max-w-4xl px-6 py-20 text-center">
-        <h1 className="text-2xl font-bold text-white">Transaction not found</h1>
-        <p className="mt-3 text-slate-400">{error}</p>
+      <section className="pt-24 text-center">
+        <h1 className="display text-[32px]">Not found</h1>
+        <p className="label mt-3">{error}</p>
         <Link
           to="/history"
-          className="mt-8 inline-block rounded-lg bg-cyan-500 px-6 py-3 font-semibold text-slate-950 hover:bg-cyan-400"
+          className="btn btn-solid mt-8 inline-block"
         >
           Back to history
         </Link>
@@ -57,15 +57,14 @@ export default function TransactionDetail() {
   }
 
   const approved = entry.decision === 'APPROVED'
-
-  return (
-    <section className="mx-auto max-w-4xl px-6 py-12">
-      <Link to="/history" className="text-sm text-slate-400 hover:text-cyan-300">
+return (
+    <section className="pt-10">
+      <Link to="/history" className="label ink-link">
         ← Back to history
       </Link>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold text-white">{entry.verificationId}</h1>
+        <h1 className="display text-[clamp(32px,5vw,46px)]">{entry.verificationId}</h1>
         <div className="flex flex-wrap gap-2">
           <Badge tone={approved ? 'human' : 'blocked'}>{entry.decision}</Badge>
           <Badge tone={entry.x402PaymentStatus === 'VERIFIED' ? 'verified' : 'neutral'}>
@@ -76,9 +75,10 @@ export default function TransactionDetail() {
       </div>
 
       {/* Order + policy */}
+      <div className="rule-double mt-6" />
       <div className="mt-8 grid gap-6 sm:grid-cols-2">
-        <div className="rounded-xl border border-cyan-500/30 bg-slate-900/60 p-6">
-          <h3 className="font-semibold text-cyan-300">Human Policy</h3>
+        <div className="sheet p-6">
+          <h3 className="display text-[21px]">Human policy</h3>
           <dl className="mt-4 space-y-2 text-sm">
             <Row label="Policy ID" value={entry.policyId} />
             <Row label="Mandate Status" value={entry.mandateStatus ?? '—'} />
@@ -89,8 +89,8 @@ export default function TransactionDetail() {
           </dl>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
-          <h3 className="font-semibold text-white">AI Order</h3>
+        <div className="block p-6">
+          <h3 className="display text-[21px]">AI order</h3>
           <dl className="mt-4 space-y-2 text-sm">
             <Row label="Order ID" value={entry.orderId} />
             <Row label="Product" value={entry.product} />
@@ -102,14 +102,16 @@ export default function TransactionDetail() {
       </div>
 
       {/* Violations */}
-      <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-6">
-        <h3 className="font-semibold text-white">MandateGuard result</h3>
+      <div className="block mt-6 p-6">
+        <h3 className="display text-[21px]">MandateGuard result</h3>
         {entry.violations.length === 0 ? (
-          <p className="mt-3 text-emerald-300">
+          <p className="mt-3 text-[14px]" style={{ color: 'var(--forest)'
+}}>
             All checks passed — this order matched the human-approved policy.
           </p>
         ) : (
-          <ul className="mt-3 space-y-1 text-sm text-red-300">
+          <ul className="mt-3 space-y-1 text-[13px]" style={{ color: 'var(--oxblood)'
+}}>
             {entry.violations.map((v) => (
               <li key={v}>✕ {v}</li>
             ))}
@@ -118,8 +120,8 @@ export default function TransactionDetail() {
       </div>
 
       {/* Blockchain */}
-      <div className="mt-6 rounded-xl border border-blue-500/40 bg-blue-500/5 p-6">
-        <h3 className="font-semibold text-blue-300">Blockchain</h3>
+      <div className="block mt-6 p-6">
+        <h3 className="display text-[21px]">Blockchain proof</h3>
         <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
           <Row label="Network" value={entry.blockchainNetwork ?? '—'} />
           <Row label="x402 Payment" value={entry.x402PaymentStatus} />
@@ -133,8 +135,8 @@ export default function TransactionDetail() {
         </dl>
 
         <p className="mt-4 text-sm">
-          <span className="text-slate-400">Algorand transaction: </span>
-          <span className="font-mono break-all text-white">
+          <span className="label">Algorand transaction </span>
+          <span className="mono break-all">
             {entry.x402TransactionId ?? 'none for this verification'}
           </span>
         </p>
@@ -144,7 +146,7 @@ export default function TransactionDetail() {
             href={`https://lora.algokit.io/testnet/transaction/${entry.x402TransactionId}`}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 inline-block rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-blue-400"
+            className="btn btn-solid mt-4 inline-block"
           >
             View x402 Payment on Algorand Explorer ↗
           </a>
@@ -152,23 +154,25 @@ export default function TransactionDetail() {
       </div>
 
       {/* Timeline */}
-      <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-6">
-        <h3 className="font-semibold text-white">Audit timeline</h3>
+      <div className="block mt-6 p-6">
+        <h3 className="display text-[21px]">Timeline</h3>
         {timeline.length === 0 ? (
-          <p className="mt-3 text-sm text-slate-500">
+          <p className="label mt-3">
             No timeline events recorded for this verification.
           </p>
         ) : (
           <ol className="mt-4 space-y-3">
             {timeline.map((event, i) => (
               <li key={`${event.at}-${i}`} className="flex gap-4 text-sm">
-                <span className="w-24 shrink-0 font-mono text-slate-400">
+                <span className="mono w-24 shrink-0 text-[11px]" style={{ color: 'var(--oxblood)'
+}}>
                   {timeOf(event.at)}
                 </span>
                 <span>
-                  <span className="text-white">{event.step}</span>
+                  <span className="text-[14px]">{event.step}</span>
                   {event.detail && (
-                    <span className="block text-xs text-slate-500">{event.detail}</span>
+                    <span className="mono block text-[11px]" style={{ color: 'var(--ink-faint)'
+}}>{event.detail}</span>
                   )}
                 </span>
               </li>
@@ -182,9 +186,10 @@ export default function TransactionDetail() {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-4">
-      <dt className="text-slate-400">{label}</dt>
-      <dd className="text-right break-all text-white">{value}</dd>
+    <div className="flex justify-between gap-4 border-b py-1.5" style={{ borderColor: 'var(--rule-soft)'
+}}>
+      <dt className="label">{label}</dt>
+      <dd className="mono text-right text-[12px] break-all">{value}</dd>
     </div>
   )
 }

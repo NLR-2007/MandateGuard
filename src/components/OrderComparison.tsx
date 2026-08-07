@@ -1,6 +1,5 @@
 import type { AIOrder, SpendingPolicy } from '../types'
 import PolicyCard from './PolicyCard'
-
 interface Props {
   policy: SpendingPolicy
   order: AIOrder
@@ -18,16 +17,16 @@ function OrderRow({
   changed: boolean
 }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-slate-800 py-2 last:border-b-0">
-      <span className="text-slate-400">{label}</span>
+    <div className="flex justify-between gap-4 border-b border-[var(--rule)] py-2 last:border-b-0">
+      <span className="text-[var(--ink-soft)]">{label}</span>
       <span
         className={[
           'text-right font-medium',
-          changed ? 'text-red-400' : 'text-white',
+          changed ? 'text-[var(--oxblood)]' : 'text-[var(--ink)]',
         ].join(' ')}
       >
         {value}
-        {changed && <span className="ml-2 text-xs text-red-500">changed</span>}
+        {changed && <span className="ml-2 text-xs text-[var(--oxblood)]">changed</span>}
       </span>
     </div>
   )
@@ -48,18 +47,17 @@ export default function OrderComparison({ policy, order, unsafe }: Props) {
       {/* Right: what the AI prepared */}
       <div
         className={[
-          'rounded-xl border bg-slate-900/60 p-6',
-          unsafe ? 'border-red-500/40' : 'border-emerald-500/30',
+          ' border  p-6',
+          unsafe ? 'border-[var(--oxblood)]' : 'border-[var(--forest)]',
         ].join(' ')}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-semibold text-white">AI Prepared Order</h3>
+          <h3 className="display text-[19px]">AI Prepared Order</h3>
           <span
             className={[
-              'rounded-full border px-3 py-1 text-xs font-semibold',
+              'tag',
               unsafe
-                ? 'border-red-500/40 bg-red-500/10 text-red-400'
-                : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400',
+                ? 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)]' : 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]',
             ].join(' ')}
           >
             {unsafe ? 'Unsafe Demo' : 'Safe Demo'}
