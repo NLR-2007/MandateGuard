@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { type CSSProperties, useCallback, useEffect, useState } from 'react'
 import { useWallet } from '@txnlab/use-wallet-react'
 import {
   ANCHOR_FEE_ALGO,
@@ -75,9 +75,10 @@ export default function MandateAnchor({ mandateId }: { mandateId: string }) {
     setRechecking(false)
   }
 
+  const busy = stage !== 'idle' && stage !== 'done' && stage !== 'failed'
+
   if (!status) return null
 
-  const busy = stage !== 'idle' && stage !== 'done' && stage !== 'failed'
   const anchored = status.anchored && status.anchor
 
   return (
@@ -99,7 +100,12 @@ export default function MandateAnchor({ mandateId }: { mandateId: string }) {
 
       <div className="mt-4">
         <span className="label">Fingerprint written to the chain</span>
-        <p className="mono mt-1 break-all text-[12px]" style={{ color: 'var(--ink-soft)' }}>
+        {/* While the write is in flight the fingerprint shimmers, so the moment
+            it travels to the chain is visible rather than a frozen screen. */}
+        <p
+          className={`mono mt-1 break-all text-[12px] ${busy ? 'to-chain' : ''}`}
+          style={busy ? undefined : { color: 'var(--ink-soft)' }}
+        >
           {status.expectedNote}
         </p>
       </div>
@@ -123,8 +129,8 @@ export default function MandateAnchor({ mandateId }: { mandateId: string }) {
 
       {anchored && status.anchor && (
         <div className="mt-5 space-y-2">
-          <Line label="Transaction" value={status.anchor.txId} mono />
-          <Line label="Block" value={`round ${status.anchor.confirmedRound}`} />
+          <Line label="Transaction" value={status.anchor.txId} mono i={0} />
+          <Line label="Block" value={`round ${status.anchor.confirmedRound}`} i={1} />
           <Line
             label="Written at"
             value={
@@ -132,8 +138,9 @@ export default function MandateAnchor({ mandateId }: { mandateId: string }) {
                 ? new Date(status.anchor.roundTime * 1000).toLocaleString()
                 : '—'
             }
+            i={2}
           />
-          <Line label="Network" value={status.anchor.network} />
+          <Line label="Network" value={status.anchor.network} i={3} />
 
           <div className="flex flex-wrap gap-3 pt-3">
             <a
@@ -172,9 +179,22 @@ export default function MandateAnchor({ mandateId }: { mandateId: string }) {
   )
 }
 
-function Line({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function Line({
+  label,
+  value,
+  mono,
+  i = 0,
+}: {
+  label: string
+  value: string
+  mono?: boolean
+  i?: number
+}) {
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-2">
+    <div
+      className="tick flex flex-wrap items-baseline justify-between gap-2"
+      style={{ '--i': i } as CSSProperties}
+    >
       <span className="label">{label}</span>
       <span
         className={`${mono ? 'mono break-all' : ''} text-[13px]`}

@@ -541,3 +541,158 @@ select.field {
   border: 1px solid var(--lp-line);
 }
 .lp-btn-ghost:hover { border-color: var(--lp-accent); filter: none; }
+
+
+/* ═══════════════════════════════════════════════════════════
+   Motion
+   Every animation here is meant to explain something. The rules
+   tick through one at a time because the point is that ten
+   discrete checks really run; the verdict lands hard because it
+   is the answer; the payment steps breathe because the network
+   is genuinely working. Nothing moves purely for decoration.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Staggered entrance. Set --i on each item and they resolve in order. */
+.tick {
+  opacity: 0;
+  animation: tick-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 85ms);
+}
+
+@keyframes tick-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* The ✓ / ✕ arriving on a rule: a small snap, so each verdict registers. */
+.pop {
+  animation: pop-in 0.34s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+  animation-delay: calc(var(--i, 0) * 85ms + 120ms);
+}
+
+@keyframes pop-in {
+  0%   { opacity: 0; transform: scale(0.2); }
+  70%  { opacity: 1; transform: scale(1.25); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* A refused rule pulses its background once - the eye is pulled to it. */
+.flag {
+  animation: flag 1.1s ease-out both;
+  animation-delay: calc(var(--i, 0) * 85ms + 200ms);
+}
+
+@keyframes flag {
+  0%, 100% { background: transparent; }
+  25%      { background: var(--wash-red); }
+}
+
+/* The scan bar that sweeps the rule list while checking. */
+.scan {
+  position: relative;
+  overflow: hidden;
+}
+
+.scan::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scan-down 1.15s ease-in-out infinite;
+}
+
+@keyframes scan-down {
+  0%   { transform: translateY(0); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(var(--scan-h, 300px)); opacity: 0; }
+}
+
+/* Impact ring behind the verdict stamp. */
+.stamp-hit {
+  position: relative;
+}
+
+.stamp-hit::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  opacity: 0;
+  animation: hit 0.7s cubic-bezier(0.2, 1, 0.3, 1) 0.12s both;
+}
+
+@keyframes hit {
+  0%   { opacity: 0.9; transform: scale(0.8); }
+  100% { opacity: 0;   transform: scale(1.5); }
+}
+
+/* A step that is currently running. */
+.live {
+  position: relative;
+}
+
+.live::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-left: 2px solid var(--accent);
+  animation: breathe 1.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 1; }
+}
+
+/* The small round indicator on a live step. */
+.dot-live {
+  animation: dot-live 1.4s ease-in-out infinite;
+}
+
+@keyframes dot-live {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent); opacity: 1; }
+  70%      { box-shadow: 0 0 0 7px transparent; opacity: 0.7; }
+}
+
+/* The mandate fingerprint travelling to the chain. */
+.to-chain {
+  background: linear-gradient(
+    90deg,
+    var(--ink-faint) 0%,
+    var(--accent) 50%,
+    var(--ink-faint) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: to-chain 1.6s linear infinite;
+}
+
+@keyframes to-chain {
+  from { background-position: 100% 0; }
+  to   { background-position: -100% 0; }
+}
+
+/* Nothing above is load-bearing: without motion the content is simply there. */
+@media (prefers-reduced-motion: reduce) {
+  .tick,
+  .pop,
+  .flag,
+  .stamp-hit::before,
+  .scan::after,
+  .live::after,
+  .dot-live,
+  .to-chain {
+    animation: none;
+  }
+  .tick,
+  .pop { opacity: 1; transform: none; }
+  .to-chain {
+    -webkit-text-fill-color: var(--ink);
+    background: none;
+  }
+}

@@ -107,6 +107,13 @@ export default function Dashboard() {
   const [aiReason, setAiReason] = useState('')
 
   const [paymentState, setPaymentState] = useState<PaymentState>('NOT_STARTED')
+  /**
+   * How long each payment step actually took, in milliseconds.
+   * Measured, never estimated - a judge asking "is that real?" can compare it
+   * against the backend log, which is why it is worth showing at all.
+   */
+  const [stageTimings, setStageTimings] = useState<Partial<Record<PaymentState, number>>>({})
+  const stageMark = useRef<{ state: PaymentState; at: number } | null>(null)
   const [result, setResult] = useState<PaidVerificationResult | null>(null)
   const [executed, setExecuted] = useState(false)
   const [executionNote, setExecutionNote] = useState('')
@@ -254,11 +261,30 @@ export default function Dashboard() {
         policySource: 'NVIDIA_NIM_ASSISTED',
         orderSource,
         onStage: (stage) => {
-          if (isCurrent()) setPaymentState(STAGE_TO_STATE[stage])
+          if (!isCurrent()) return
+          const next = STAGE_TO_STATE[stage]
+          const previous = stageMark.current
+
+          // Close off the step that just finished before opening the next.
+          if (previous && previous.state !== next) {
+            const took = Date.now() - previous.at
+            setStageTimings((t) => ({ ...t, [previous.state]: took }))
+          }
+          if (!previous || previous.state !== next) {
+            stageMark.current = { state: next, at: Date.now() }
+          }
+
+          setPaymentState(next)
         },
       })
 
       if (!isCurrent()) return
+
+      const last = stageMark.current
+      if (last) {
+        setStageTimings((t) => ({ ...t, [last.state]: Date.now() - last.at }))
+        stageMark.current = null
+      }
 
       setResult(paid)
       setMandateHash(paid.mandate?.mandateHash ?? null)
@@ -343,6 +369,8 @@ export default function Dashboard() {
     setPaymentState('NOT_STARTED')
     setError('')
     setMandateHash(null)
+    setStageTimings({})
+    stageMark.current = null
     setBusy('')
     setCanResend(false)
     attemptRef.current += 1
@@ -754,7 +782,7 @@ export default function Dashboard() {
           {/* STEP 6 - payment */}
           {step === 6 && (
             <Panel title="Step 6 — x402 payment">
-              <PaymentStateView state={paymentState} status={status} />
+              <PaymentStateView state={paymentState} status={status} timings={stageTimings} />
 
               {/* Missed the phone notification? Send a fresh request. */}
               {paymentState === 'WAITING_FOR_WALLET' && (
@@ -824,7 +852,7 @@ export default function Dashboard() {
                   <span className="label">MandateGuard decision</span>
                   <div className="mt-4 flex justify-center">
                     <span
-                      className={`stamp stamp-lg ${result.decision === 'APPROVED' ? 'stamp-approved' : 'stamp-blocked'}`}
+                      className={`stamp stamp-hit stamp-lg ${result.decision === 'APPROVED' ? 'stamp-approved' : 'stamp-blocked'}`}
                     >
                       {result.decision === 'APPROVED' ? 'Approved' : 'Blocked'}
                       <sub>{result.verificationId}</sub>
@@ -874,8 +902,8 @@ export default function Dashboard() {
               )}
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {result.checks.map((c) => (
-                  <VerificationCheck key={c.rule} check={c} />
+                {result.checks.map((c, i) => (
+                  <VerificationCheck key={c.rule} check={c} index={i} />
                 ))}
               </div>
 
@@ -1039,12 +1067,26 @@ function Row({ label, value }: { label: string; value: string }) {
   )
 }
 
+/** Counts up while a step is running, so the wait is visibly real. */
+function Elapsed() {
+  const [ms, setMs] = useState(0)
+  useEffect(() => {
+    const started = Date.now()
+    const id = setInterval(() => setMs(Date.now() - started), 100)
+    return () => clearInterval(id)
+  }, [])
+  return <>{ms} ms</>
+}
+
 function PaymentStateView({
   state,
   status,
+  timings,
 }: {
   state: PaymentState
   status: SystemStatus | null
+  /** How long each finished step actually took. */
+  timings: Partial<Record<PaymentState, number>>
 }) {
   const order: PaymentState[] = [
     'PAYMENT_REQUIRED',
@@ -1081,16 +1123,17 @@ function PaymentStateView({
           return (
             <li
               key={s}
-              className="flex items-center gap-4 border-b py-2.5"
-              style={{ borderColor: 'var(--rule-soft)'
-}}
+              className={`flex items-center gap-4 border-b py-2.5 pl-3 ${active ? 'live' : ''}`}
+              style={{ borderColor: 'var(--rule-soft)' }}
             >
               <span
-                className="mono text-[10px]"
-                style={{ color: done ? 'var(--forest)' : active ? 'var(--oxblood)' : 'var(--ink-faint)'
-}}
+                className={`mono text-[10px] ${active ? 'dot-live' : ''}`}
+                style={{
+                  color: done ? 'var(--forest)' : active ? 'var(--accent)' : 'var(--ink-faint)',
+                  borderRadius: '50%',
+                }}
               >
-                {done ? '✓' : active ? '▸' : '·'}
+                {done ? '✓' : active ? '●' : '·'}
               </span>
               <span
                 className="mono text-[12px] tracking-[0.12em] uppercase"
@@ -1101,6 +1144,13 @@ function PaymentStateView({
               >
                 {s.replace(/_/g, ' ')}
               </span>
+
+              {/* Real measured time, not a decorative progress bar. */}
+              {(done || active) && (
+                <span className="mono ml-auto text-[11px]" style={{ color: 'var(--ink-faint)' }}>
+                  {timings[s] != null ? `${timings[s]} ms` : active ? <Elapsed /> : ''}
+                </span>
+              )}
             </li>
           )
         })}

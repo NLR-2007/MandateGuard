@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { Violation } from '../types'
 interface Props {
   violation: Violation
@@ -6,7 +7,10 @@ interface Props {
 
 export default function ViolationCard({ violation, index }: Props) {
   return (
-    <div className="notice p-5 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--oxblood)]">
+    <div
+      className="notice tick p-5 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--oxblood)]"
+      style={{ '--i': index } as CSSProperties}
+    >
       <div className="flex items-center gap-2">
         <span className="flex h-6 w-6 items-center justify-center bg-[var(--wash-red)] text-xs font-bold text-[var(--oxblood)]">
           {index}

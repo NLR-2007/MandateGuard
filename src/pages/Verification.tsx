@@ -184,8 +184,8 @@ const amountCheck = result.checks.find((c) => c.rule === 'Maximum Price')
           {result.checks.length} passed)
         </h3>
         <div className="grid gap-3 sm:grid-cols-2">
-          {result.checks.map((check) => (
-            <VerificationCheck key={check.rule} check={check} />
+          {result.checks.map((check, i) => (
+            <VerificationCheck key={check.rule} check={check} index={i} />
           ))}
         </div>
       </div>
