@@ -4,12 +4,14 @@
 import type {
   AIOrder,
   AuditEntry,
+  FlowEvent,
   HealthResponse,
   OrderSource,
   ParsePolicyResponse,
   PolicySource,
   PreparedOrderResponse,
   SpendingPolicy,
+  SystemStatus,
   VerificationResult,
 } from '../types'
 
@@ -112,4 +114,65 @@ export async function recordExecution(verificationId: string): Promise<AuditEntr
     body: JSON.stringify({ verificationId }),
   })
   return data.entry
+}
+
+// ── Phase 7 - system status, timeline, demo reset ─────────
+
+export async function getSystemStatus(): Promise<SystemStatus> {
+  return request<SystemStatus>('/api/system/status')
+}
+
+export async function getTimeline(requestId: string): Promise<FlowEvent[]> {
+  const data = await request<{ events: FlowEvent[] }>(
+    `/api/system/timeline/${encodeURIComponent(requestId)}`,
+  )
+  return data.events
+}
+
+export async function getAuditEntry(
+  verificationId: string,
+): Promise<{ entry: AuditEntry; timeline: FlowEvent[] }> {
+  return request<{ entry: AuditEntry; timeline: FlowEvent[] }>(
+    `/api/audit/${encodeURIComponent(verificationId)}`,
+  )
+}
+
+/** Clears the in-memory demo state. Cannot touch Algorand history. */
+export async function resetDemo(): Promise<{ message: string; note: string }> {
+  return request<{ message: string; note: string }>('/api/demo/reset', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  })
+}
+
+/** Policy creation that also carries the journey's request id. */
+export async function createPolicyForRequest(
+  input: NewPolicy,
+  requestId: string,
+): Promise<SpendingPolicy> {
+  const data = await request<{ policy: SpendingPolicy }>('/api/policies', {
+    method: 'POST',
+    body: JSON.stringify({ ...input, requestId }),
+  })
+  return data.policy
+}
+
+export async function parsePolicyForRequest(
+  instruction: string,
+  requestId?: string,
+): Promise<ParsePolicyResponse & { requestId: string }> {
+  return request<ParsePolicyResponse & { requestId: string }>('/api/ai/parse-policy', {
+    method: 'POST',
+    body: JSON.stringify({ instruction, requestId }),
+  })
+}
+
+export async function prepareAiOrderForRequest(
+  policyId: string,
+  requestId: string,
+): Promise<PreparedOrderResponse & { requestId: string }> {
+  return request<PreparedOrderResponse & { requestId: string }>('/api/ai/prepare-order', {
+    method: 'POST',
+    body: JSON.stringify({ policyId, requestId }),
+  })
 }

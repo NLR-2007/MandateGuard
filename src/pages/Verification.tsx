@@ -1,16 +1,19 @@
 import { useState } from 'react'
+import DemoPageNote from '../components/DemoPageNote'
 import { Link } from 'react-router-dom'
 import Badge from '../components/Badge'
 import VerificationCheck from '../components/VerificationCheck'
 import { loadVerification } from '../data/demoData'
 import { recordExecution } from '../services/api'
+import type { PaidVerificationResult } from '../services/x402Client'
 import type { VerificationResult } from '../types'
+
+/** The paid route adds payment + mandate proof; the free route does not. */
+type StoredResult = VerificationResult & Partial<PaidVerificationResult>
 
 export default function Verification() {
   // The real answer from the backend, saved by the AI Order page.
-  const [result] = useState<VerificationResult | null>(() =>
-    loadVerification<VerificationResult>(),
-  )
+  const [result] = useState<StoredResult | null>(() => loadVerification<StoredResult>())
   const [executed, setExecuted] = useState(false)
   const [execError, setExecError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -50,6 +53,7 @@ export default function Verification() {
 
   return (
     <section className="mx-auto max-w-4xl px-6 py-12">
+      <DemoPageNote />
       <h1 className="text-3xl font-bold text-white">Verification Result</h1>
       <p className="mt-2 text-slate-400">
         Decided by the MandateGuard engine — {result.verificationId} · policy{' '}
@@ -87,6 +91,65 @@ export default function Verification() {
           </Badge>
         </div>
       </div>
+
+      {/* TWO SEPARATE ANSWERS - payment vs intent */}
+      {result.payment && (
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div
+            className={[
+              'rounded-xl border p-6 text-center',
+              result.payment.status === 'VERIFIED'
+                ? 'border-emerald-500/40 bg-emerald-500/5'
+                : 'border-yellow-500/40 bg-yellow-500/5',
+            ].join(' ')}
+          >
+            <p className="text-sm text-slate-400">x402 Payment</p>
+            <p
+              className={[
+                'mt-2 text-2xl font-bold',
+                result.payment.status === 'VERIFIED'
+                  ? 'text-emerald-400'
+                  : 'text-yellow-300',
+              ].join(' ')}
+            >
+              {result.payment.status === 'VERIFIED' ? '✓ VERIFIED' : '? UNKNOWN'}
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              {result.payment.amount} {result.payment.asset}
+            </p>
+          </div>
+
+          <div
+            className={[
+              'rounded-xl border p-6 text-center',
+              approved
+                ? 'border-emerald-500/40 bg-emerald-500/5'
+                : 'border-red-500/40 bg-red-500/5',
+            ].join(' ')}
+          >
+            <p className="text-sm text-slate-400">MandateGuard Decision</p>
+            <p
+              className={[
+                'mt-2 text-2xl font-bold',
+                approved ? 'text-emerald-400' : 'text-red-400',
+              ].join(' ')}
+            >
+              {approved ? '✓ APPROVED' : '✕ BLOCKED'}
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              {result.violations.length} violation
+              {result.violations.length === 1 ? '' : 's'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* The message that makes the whole point */}
+      {result.payment?.status === 'VERIFIED' && !approved && (
+        <p className="mt-4 rounded-xl border border-yellow-500/40 bg-yellow-500/10 px-6 py-4 text-center text-lg font-semibold text-yellow-200">
+          Payment for verification succeeded. The unsafe AI purchase was blocked.
+        </p>
+      )}
 
       {/* The headline message for a blocked order */}
       {!approved && amountCheck?.passed && (
@@ -134,6 +197,105 @@ export default function Verification() {
           ))}
         </div>
       </div>
+
+      {/* BLOCKCHAIN PROOF */}
+      {result.payment && (
+        <div className="mt-10 rounded-xl border border-blue-500/40 bg-blue-500/5 p-6">
+          <h3 className="flex items-center gap-2 font-semibold text-blue-300">
+            ⛓️ Blockchain Proof
+          </h3>
+
+          <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div>
+              <dt className="text-xs text-slate-400">Network</dt>
+              <dd className="text-white">{result.payment.network}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-slate-400">x402 Payment</dt>
+              <dd
+                className={
+                  result.payment.status === 'VERIFIED'
+                    ? 'text-emerald-400'
+                    : 'text-yellow-300'
+                }
+              >
+                {result.payment.status === 'VERIFIED' ? 'Verified' : 'Not Verified'}
+              </dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-xs text-slate-400">Transaction ID</dt>
+              <dd className="font-mono text-sm break-all text-white">
+                {result.payment.transactionId ?? (
+                  <span className="text-slate-500">
+                    Not returned by the facilitator for this payment
+                  </span>
+                )}
+              </dd>
+            </div>
+            {result.payment.payer && (
+              <div className="sm:col-span-2">
+                <dt className="text-xs text-slate-400">Payer</dt>
+                <dd className="font-mono text-sm break-all text-white">
+                  {result.payment.payer}
+                </dd>
+              </div>
+            )}
+            <div>
+              <dt className="text-xs text-slate-400">Asset / Amount</dt>
+              <dd className="text-white">
+                {result.payment.asset} · {result.payment.amount}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-slate-400">Verified At</dt>
+              <dd className="text-white">
+                {new Date(result.payment.verifiedAt).toLocaleString()}
+              </dd>
+            </div>
+
+            {result.mandate && (
+              <>
+                <div>
+                  <dt className="text-xs text-slate-400">Mandate Proof</dt>
+                  <dd className="text-white">
+                    {result.mandate.onChain ? 'Registered on-chain' : 'Registered (server)'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-slate-400">Mandate Status</dt>
+                  <dd className="text-white">{result.mandate.status}</dd>
+                </div>
+                <div className="sm:col-span-2">
+                  <dt className="text-xs text-slate-400">Mandate Hash (SHA-256)</dt>
+                  <dd className="font-mono text-xs break-all text-slate-300">
+                    {result.mandate.mandateHash}
+                  </dd>
+                </div>
+              </>
+            )}
+          </dl>
+
+          {result.payment.explorerUrl ? (
+            <a
+              href={result.payment.explorerUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-block rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition-colors duration-200 hover:bg-blue-400"
+            >
+              View on Algorand Explorer ↗
+            </a>
+          ) : (
+            <p className="mt-5 text-sm text-slate-500">
+              No explorer link — a transaction id was not returned, so nothing is invented
+              here.
+            </p>
+          )}
+
+          {result.mandate && !result.mandate.onChain && (
+            <p className="mt-4 text-xs text-slate-500">{result.mandate.note}</p>
+          )}
+        </div>
+      )}
 
       {/* Simulated execution - only for approved results */}
       {approved && (

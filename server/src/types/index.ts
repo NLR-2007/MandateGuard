@@ -58,8 +58,12 @@ export type PolicySource = 'MANUAL' | 'NVIDIA_NIM_ASSISTED'
 /** Where the order came from. */
 export type OrderSource = 'MANUAL_DEMO' | 'NVIDIA_NIM' | 'SECURITY_SIMULATION'
 
+export type X402PaymentStatus = 'NOT_PAID' | 'VERIFIED' | 'UNKNOWN'
+
 /** One row of the audit log. */
 export interface AuditEntry {
+  /** Links every step of one journey together. Phase 7. */
+  requestId: string | null
   verificationId: string
   policyId: string
   orderId: string
@@ -72,4 +76,13 @@ export interface AuditEntry {
   executionStatus: ExecutionStatus
   policySource: PolicySource
   orderSource: OrderSource
+
+  // ── Phase 6: blockchain proof. Real values only, never invented. ──
+  x402PaymentStatus: X402PaymentStatus
+  x402TransactionId: string | null
+  x402Amount: string | null
+  blockchainNetwork: string | null
+  paymentVerifiedAt: string | null
+  mandateHash: string | null
+  mandateStatus: string | null
 }

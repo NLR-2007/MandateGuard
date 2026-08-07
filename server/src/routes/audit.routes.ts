@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { getSpentToday } from '../data/memoryStore.js'
 import { listAudit, recordExecution } from '../services/auditService.js'
+import { getTimeline } from '../services/flowService.js'
 
 export const auditRoutes = new Hono()
 
@@ -34,7 +35,16 @@ auditRoutes.post('/executions', async (c) => {
   const outcome = recordExecution(verificationId)
 
   if (!outcome.ok) {
-    return c.json({ success: false, error: outcome.error }, outcome.status === 404 ? 404 : 400)
+    const status = outcome.status === 404 ? 404 : outcome.status === 409 ? 409 : 400
+    return c.json(
+      {
+        success: false,
+        error: outcome.error,
+        alreadyExecuted: outcome.alreadyExecuted ?? false,
+        entry: outcome.entry ?? null,
+      },
+      status,
+    )
   }
 
   console.log(`  ⚑ ${verificationId} marked SIMULATED_EXECUTED`)
@@ -44,5 +54,21 @@ auditRoutes.post('/executions', async (c) => {
     note: 'No real payment occurred. This is a simulated execution.',
     entry: outcome.entry,
     spentToday: outcome.spentToday,
+    mandateStatus: outcome.mandateStatus,
+  })
+})
+
+/** GET /api/audit/:verificationId - one full record for the detail page. */
+auditRoutes.get('/audit/:verificationId', (c) => {
+  const entry = listAudit().find((e) => e.verificationId === c.req.param('verificationId'))
+
+  if (!entry) {
+    return c.json({ success: false, error: 'Verification not found.' }, 404)
+  }
+
+  return c.json({
+    success: true,
+    entry,
+    timeline: getTimeline(entry.requestId ?? ''),
   })
 })

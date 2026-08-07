@@ -1,7 +1,10 @@
+import { useWallet } from '@txnlab/use-wallet-react'
+import DemoPageNote from '../components/DemoPageNote'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Badge from '../components/Badge'
 import OrderComparison from '../components/OrderComparison'
+import WalletBar from '../components/WalletBar'
 import {
   defaultPolicyInput,
   demoPolicy,
@@ -20,10 +23,28 @@ import {
   simulateUnsafeOrder,
   verifyMandate,
 } from '../services/api'
+import {
+  STAGE_LABELS,
+  describePaymentError,
+  verifyWithX402,
+  type PaymentStage,
+} from '../services/x402Client'
 import type { AIOrder, DemoMode, OrderSource, SpendingPolicy } from '../types'
+
+const STAGE_ORDER: PaymentStage[] = [
+  'requesting',
+  'payment-required',
+  'awaiting-wallet',
+  'payment-submitted',
+  'verifying-payment',
+  'running-mandateguard',
+  'done',
+]
 
 export default function AIOrder() {
   const navigate = useNavigate()
+  const { activeAddress, signTransactions } = useWallet()
+  const [stage, setStage] = useState<PaymentStage>('idle')
   const [mode, setMode] = useState<DemoMode>(loadDemoMode)
   const [policy, setPolicy] = useState<SpendingPolicy | null>(loadPolicy)
 
@@ -132,8 +153,47 @@ export default function AIOrder() {
     }
   }
 
+  /** The paid path: x402 asks for Test USDC, then MandateGuard decides. */
+  const handleVerifyWithX402 = async () => {
+    if (!activeAddress || !signTransactions) {
+      setError('Connect an Algorand TestNet wallet first.')
+      return
+    }
+
+    setBusy('x402')
+    setError('')
+    setStage('requesting')
+
+    try {
+      const current = policy ?? (await ensurePolicy())
+
+      const result = await verifyWithX402({
+        policyId: current.id,
+        order,
+        wallet: {
+          address: activeAddress,
+          signTransactions: signTransactions as unknown as (
+            txns: Uint8Array[],
+          ) => Promise<(Uint8Array | null)[]>,
+        },
+        policySource: loadPolicySource(),
+        orderSource,
+        onStage: setStage,
+      })
+
+      saveVerification(result)
+      navigate('/verify')
+    } catch (err) {
+      setStage('failed')
+      setError(describePaymentError(err))
+    } finally {
+      setBusy('')
+    }
+  }
+
   return (
     <section className="mx-auto max-w-6xl px-6 py-12">
+      <DemoPageNote />
       <h1 className="text-3xl font-bold text-white">AI Prepared Order</h1>
       <p className="mt-2 text-slate-400">
         Left is what the human approved. Right is what the AI agent wants to buy.
@@ -241,13 +301,87 @@ export default function AIOrder() {
           engine checks it. The AI never approves its own order.
         </p>
 
-        <button
-          onClick={() => void handleVerify()}
-          disabled={busy !== ''}
-          className="mt-4 rounded-lg bg-cyan-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-cyan-400 disabled:opacity-50"
-        >
-          {busy === 'verify' ? 'Checking…' : '🛡️ Verify with MandateGuard'}
-        </button>
+        <div className="mt-5">
+          <WalletBar />
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button
+            onClick={() => void handleVerifyWithX402()}
+            disabled={busy !== '' || !activeAddress}
+            className="rounded-lg bg-emerald-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-emerald-400 disabled:opacity-50"
+          >
+            {busy === 'x402'
+              ? 'Payment in progress…'
+              : '⛓️ Verify with x402 + MandateGuard'}
+          </button>
+
+          <button
+            onClick={() => void handleVerify()}
+            disabled={busy !== ''}
+            className="rounded-lg border border-slate-600 px-6 py-3 font-semibold text-white transition-colors duration-200 hover:border-cyan-400 hover:text-cyan-300 disabled:opacity-50"
+          >
+            {busy === 'verify' ? 'Checking…' : '🛡️ Verify without payment (free route)'}
+          </button>
+        </div>
+
+        <p className="mt-3 text-xs text-slate-500">
+          The paid route costs {' '}
+          <span className="text-cyan-300">0.005 Test USDC</span> on Algorand TestNet. The
+          free route is the same engine without the payment layer.
+        </p>
+
+        {/* Live payment stages */}
+        {stage !== 'idle' && (
+          <div className="mt-6 rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+            <p className="mb-3 text-sm font-semibold text-white">Payment progress</p>
+            <ol className="space-y-2 text-sm">
+              {STAGE_ORDER.map((s) => {
+                const current = STAGE_ORDER.indexOf(stage)
+                const index = STAGE_ORDER.indexOf(s)
+                const state =
+                  stage === 'failed'
+                    ? 'idle'
+                    : index < current
+                      ? 'done'
+                      : index === current
+                        ? 'active'
+                        : 'idle'
+
+                return (
+                  <li
+                    key={s}
+                    className={[
+                      'flex items-center gap-2',
+                      state === 'done'
+                        ? 'text-emerald-400'
+                        : state === 'active'
+                          ? 'text-cyan-300'
+                          : 'text-slate-600',
+                    ].join(' ')}
+                  >
+                    <span>{state === 'done' ? '✓' : state === 'active' ? '●' : '○'}</span>
+                    {STAGE_LABELS[s]}
+                  </li>
+                )
+              })}
+            </ol>
+
+            {stage === 'awaiting-wallet' && (
+              <p className="mt-4 rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-200">
+                Open your wallet and approve the 0.005 Test USDC payment. Nothing happens
+                until you sign.
+              </p>
+            )}
+
+            {stage === 'failed' && (
+              <p className="mt-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                Blockchain payment failed. No result was produced and nothing was marked as
+                paid.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </section>
   )

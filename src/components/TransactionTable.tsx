@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import Badge from './Badge'
 import type { AuditEntry } from '../types'
 
@@ -68,7 +69,9 @@ export default function TransactionTable({ entries }: Props) {
             <th className="px-4 py-3 font-medium">Violations</th>
             <th className="px-4 py-3 font-medium">Time</th>
             <th className="px-4 py-3 font-medium">Execution</th>
-            <th className="px-4 py-3 font-medium">Blockchain</th>
+            <th className="px-4 py-3 font-medium">x402 Payment</th>
+            <th className="px-4 py-3 font-medium">Algorand Tx</th>
+            <th className="px-4 py-3 font-medium">Mandate</th>
           </tr>
         </thead>
         <tbody>
@@ -77,7 +80,14 @@ export default function TransactionTable({ entries }: Props) {
               key={entry.verificationId}
               className="border-t border-slate-800 align-top transition-colors duration-200 hover:bg-slate-900/60"
             >
-              <td className="px-4 py-3 font-medium text-white">{entry.verificationId}</td>
+              <td className="px-4 py-3 font-medium">
+                <Link
+                  to={`/history/${entry.verificationId}`}
+                  className="text-cyan-300 underline underline-offset-2 hover:text-cyan-200"
+                >
+                  {entry.verificationId}
+                </Link>
+              </td>
               <td className="px-4 py-3 text-slate-300">{entry.policyId}</td>
               <td className="px-4 py-3 text-slate-300">{entry.orderId}</td>
               <td className="px-4 py-3 text-slate-300">{entry.product}</td>
@@ -137,7 +147,38 @@ export default function TransactionTable({ entries }: Props) {
                   {executionLabel(entry)}
                 </span>
               </td>
-              <td className="px-4 py-3 text-slate-500">Not Connected — Phase 6</td>
+              <td className="px-4 py-3">
+                <Badge
+                  tone={
+                    entry.x402PaymentStatus === 'VERIFIED'
+                      ? 'verified'
+                      : entry.x402PaymentStatus === 'UNKNOWN'
+                        ? 'simulation'
+                        : 'neutral'
+                  }
+                >
+                  {entry.x402PaymentStatus === 'NOT_PAID'
+                    ? 'FREE ROUTE'
+                    : entry.x402PaymentStatus}
+                </Badge>
+              </td>
+              <td className="max-w-[180px] px-4 py-3">
+                {entry.x402TransactionId ? (
+                  <a
+                    href={`https://lora.algokit.io/testnet/transaction/${entry.x402TransactionId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-mono text-xs break-all text-blue-300 underline underline-offset-2 hover:text-blue-200"
+                  >
+                    {entry.x402TransactionId.slice(0, 10)}…
+                  </a>
+                ) : (
+                  <span className="text-slate-500">—</span>
+                )}
+              </td>
+              <td className="px-4 py-3 text-slate-300">
+                {entry.mandateStatus ?? <span className="text-slate-500">—</span>}
+              </td>
             </tr>
           ))}
         </tbody>

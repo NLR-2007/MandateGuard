@@ -90,8 +90,9 @@ export default function History() {
       )}
 
       <p className="mt-4 text-sm text-slate-500">
-        Blockchain settlement is not connected yet — that arrives in Phase 6. The audit log
-        lives in server memory and resets when the server restarts.
+        Rows paid through x402 carry a real Algorand TestNet transaction — click the id to
+        open it in the explorer. Rows marked FREE ROUTE skipped the payment layer. The
+        audit log lives in server memory and resets when the server restarts.
       </p>
     </section>
   )

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import DemoPageNote from '../components/DemoPageNote'
 import { Link } from 'react-router-dom'
 import AIOrderCard from '../components/AIOrderCard'
 import AttackSelector from '../components/AttackSelector'
@@ -27,6 +28,7 @@ export default function UnsafeDemo() {
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-12">
+      <DemoPageNote />
       {/* Simulation label */}
       <div className="mb-8 flex flex-wrap items-center gap-3 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-5 py-3">
         <span className="text-xl">⚠️</span>

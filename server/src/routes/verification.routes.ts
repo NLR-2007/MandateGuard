@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { getSpentToday, nextVerificationId } from '../data/memoryStore.js'
 import { recordVerification } from '../services/auditService.js'
+import { addEvent } from '../services/flowService.js'
 import { verifyMandate } from '../services/mandateVerifier.js'
 import { getPolicy, validateOrderInput } from '../services/policyService.js'
 import type { AIOrder, OrderSource, PolicySource } from '../types/index.js'
@@ -51,7 +52,14 @@ verificationRoutes.post('/verify-mandate', async (c) => {
     ? (b.orderSource as OrderSource)
     : 'MANUAL_DEMO'
 
-  recordVerification(result, order, { policySource, orderSource })
+  const requestId =
+    typeof b.requestId === 'string' && b.requestId.trim() !== '' ? b.requestId.trim() : null
+
+  if (requestId) {
+    addEvent(requestId, `MandateGuard ${result.decision} (free route, no payment)`)
+  }
+
+  recordVerification(result, order, { policySource, orderSource, requestId })
 
   console.log(
     `  ${result.decision === 'APPROVED' ? '✓' : '✕'} ${result.verificationId} ` +

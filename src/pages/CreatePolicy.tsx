@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import DemoPageNote from '../components/DemoPageNote'
 import { Link } from 'react-router-dom'
 import AiPolicyAssistant from '../components/AiPolicyAssistant'
 import Badge from '../components/Badge'
@@ -74,6 +75,7 @@ export default function CreatePolicy() {
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-12">
+      <DemoPageNote />
       <h1 className="text-3xl font-bold text-white">Create Human Spending Policy</h1>
       <p className="mt-2 text-slate-400">
         These are the rules the AI agent must follow. Write them yourself, or describe them

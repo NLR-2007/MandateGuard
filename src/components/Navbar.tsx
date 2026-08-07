@@ -1,15 +1,30 @@
 import { NavLink } from 'react-router-dom'
+import { useAppMode, type AppMode } from '../services/appMode'
 
-const links = [
-  { to: '/', label: 'Home' },
-  { to: '/unsafe-demo', label: 'Problem Demo' },
-  { to: '/policy', label: 'Create Policy' },
-  { to: '/order', label: 'AI Order' },
-  { to: '/verify', label: 'Verify' },
-  { to: '/history', label: 'History' },
+interface LinkDef {
+  to: string
+  label: string
+  /** Which modes offer this link. Hidden links still work by URL. */
+  modes: AppMode[]
+}
+
+const links: LinkDef[] = [
+  { to: '/', label: 'Home', modes: ['MVP', 'DEMO'] },
+  { to: '/dashboard', label: 'Dashboard', modes: ['MVP', 'DEMO'] },
+  { to: '/history', label: 'History', modes: ['MVP', 'DEMO'] },
+  { to: '/architecture', label: 'Architecture', modes: ['MVP', 'DEMO'] },
+
+  // Teaching pages - shown only in Demo mode so MVP stays uncluttered.
+  { to: '/unsafe-demo', label: 'Problem Demo', modes: ['DEMO'] },
+  { to: '/policy', label: 'Create Policy', modes: ['DEMO'] },
+  { to: '/order', label: 'AI Order', modes: ['DEMO'] },
+  { to: '/verify', label: 'Verify', modes: ['DEMO'] },
 ]
 
 export default function Navbar() {
+  const { mode, setMode } = useAppMode()
+  const visible = links.filter((link) => link.modes.includes(mode))
+
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800 bg-[#060d1c]/95 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-6 py-4">
@@ -23,7 +38,7 @@ export default function Navbar() {
 
         {/* Links */}
         <ul className="ml-auto flex flex-wrap items-center gap-1">
-          {links.map((link) => (
+          {visible.map((link) => (
             <li key={link.to}>
               <NavLink
                 to={link.to}
@@ -43,11 +58,40 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Demo badge */}
-        <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-300">
-          Demo Mode
-        </span>
+        {/* Mode toggle */}
+        <div
+          className="flex items-center rounded-full border border-slate-700 bg-slate-900 p-1"
+          title={
+            mode === 'MVP'
+              ? 'MVP: the product — Home, Dashboard, History, Architecture'
+              : 'Demo: adds the step-by-step teaching pages'
+          }
+        >
+          {(['MVP', 'DEMO'] as AppMode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={[
+                'rounded-full px-3 py-1 text-xs font-semibold transition-colors duration-200',
+                mode === m
+                  ? m === 'MVP'
+                    ? 'bg-cyan-500 text-slate-950'
+                    : 'bg-yellow-500 text-slate-950'
+                  : 'text-slate-400 hover:text-white',
+              ].join(' ')}
+            >
+              {m === 'MVP' ? 'MVP' : 'Demo'}
+            </button>
+          ))}
+        </div>
       </nav>
+
+      {/* One-line explanation so the toggle is never a mystery */}
+      <p className="border-t border-slate-800/60 bg-slate-900/40 px-6 py-1.5 text-center text-xs text-slate-500">
+        {mode === 'MVP'
+          ? 'MVP mode — the product: run everything from the Dashboard.'
+          : 'Demo mode — extra pages that explain the problem and each step on its own.'}
+      </p>
     </header>
   )
 }

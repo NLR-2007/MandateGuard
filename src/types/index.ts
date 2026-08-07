@@ -59,8 +59,11 @@ export type PolicySource = 'MANUAL' | 'NVIDIA_NIM_ASSISTED'
 /** Where the order came from. */
 export type OrderSource = 'MANUAL_DEMO' | 'NVIDIA_NIM' | 'SECURITY_SIMULATION'
 
+export type X402PaymentStatus = 'NOT_PAID' | 'VERIFIED' | 'UNKNOWN'
+
 /** One row from GET /api/audit. */
 export interface AuditEntry {
+  requestId: string | null
   verificationId: string
   policyId: string
   orderId: string
@@ -73,6 +76,15 @@ export interface AuditEntry {
   executionStatus: ExecutionStatus
   policySource: PolicySource
   orderSource: OrderSource
+
+  // Phase 6 - blockchain proof. Real values only, never invented.
+  x402PaymentStatus: X402PaymentStatus
+  x402TransactionId: string | null
+  x402Amount: string | null
+  blockchainNetwork: string | null
+  paymentVerifiedAt: string | null
+  mandateHash: string | null
+  mandateStatus: string | null
 }
 
 // ────────────────────────────────────────────────────────────
@@ -164,3 +176,67 @@ export interface ScenarioDemo {
   note: string
   violations: Violation[]
 }
+
+// ────────────────────────────────────────────────────────────
+// Phase 7 - end-to-end integration
+// ────────────────────────────────────────────────────────────
+
+export type ServiceState = 'OK' | 'NOT_CONFIGURED' | 'ERROR'
+
+export interface ServiceInfo {
+  state: ServiceState
+  name: string
+  model?: string | null
+  rules?: number
+  price?: string
+  receiver?: string | null
+  facilitator?: string | null
+  network?: string
+  asset?: string
+  assetId?: number | null
+  applicationId?: string | null
+  note?: string
+}
+
+export interface SystemStatus {
+  success: true
+  services: {
+    ai: ServiceInfo
+    mandateGuard: ServiceInfo
+    x402: ServiceInfo
+    algorand: ServiceInfo
+    smartContract: ServiceInfo
+  }
+  spend: {
+    dailyLimit: number | null
+    spentToday: number
+    remaining: number | null
+  }
+  counts: {
+    policies: number
+    verifications: number
+    approved: number
+    blocked: number
+    executed: number
+  }
+  latestPolicyId: string | null
+}
+
+/** One line of the audit timeline, with a real timestamp. */
+export interface FlowEvent {
+  requestId: string
+  at: string
+  step: string
+  detail: string
+}
+
+/** Payment state - kept separate from the MandateGuard decision. */
+export type PaymentState =
+  | 'NOT_STARTED'
+  | 'PAYMENT_REQUIRED'
+  | 'WAITING_FOR_WALLET'
+  | 'SUBMITTED'
+  | 'VERIFYING'
+  | 'VERIFIED'
+  | 'FAILED'
+  | 'CANCELLED'

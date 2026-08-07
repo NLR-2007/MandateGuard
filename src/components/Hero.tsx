@@ -1,13 +1,31 @@
 import { Link } from 'react-router-dom'
 
-const flow = ['Human', 'AI Agent', 'MandateGuard', 'Approved / Blocked', 'Payment']
+const flow = [
+  'Human',
+  'NVIDIA NIM',
+  'AI Agent',
+  'MandateGuard',
+  'x402',
+  'Algorand',
+  'Approved / Blocked',
+]
+
+const highlighted = new Set(['MandateGuard', 'x402', 'Algorand', 'NVIDIA NIM'])
 
 export default function Hero() {
   return (
     <section className="mx-auto max-w-6xl px-6 pt-16 pb-12 text-center">
-      <span className="inline-block rounded-full border border-slate-700 bg-slate-900 px-4 py-1 text-xs tracking-wide text-slate-300">
-        x402 · Algorand · Hackathon Project
-      </span>
+      <div className="flex flex-wrap justify-center gap-2">
+        <span className="rounded-full border border-violet-500/50 bg-violet-500/10 px-4 py-1 text-xs font-semibold text-violet-300">
+          AI Powered
+        </span>
+        <span className="rounded-full border border-emerald-500/50 bg-emerald-500/10 px-4 py-1 text-xs font-semibold text-emerald-400">
+          x402 Enabled
+        </span>
+        <span className="rounded-full border border-blue-500/50 bg-blue-500/10 px-4 py-1 text-xs font-semibold text-blue-300">
+          Algorand TestNet
+        </span>
+      </div>
 
       <h1 className="mt-6 text-5xl font-bold text-white sm:text-6xl">
         Mandate<span className="text-cyan-400">Guard</span>
@@ -26,16 +44,22 @@ export default function Hero() {
       {/* Buttons */}
       <div className="mt-8 flex flex-wrap justify-center gap-4">
         <Link
-          to="/policy"
+          to="/dashboard"
           className="rounded-lg bg-cyan-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-cyan-400"
         >
-          Create Spending Policy
+          Start Demo
         </Link>
         <Link
-          to="/order"
+          to="/unsafe-demo"
           className="rounded-lg border border-slate-600 px-6 py-3 font-semibold text-white transition-colors duration-200 hover:border-cyan-400 hover:text-cyan-300"
         >
-          View Demo
+          See Problem Without MandateGuard
+        </Link>
+        <Link
+          to="/history"
+          className="rounded-lg border border-slate-600 px-6 py-3 font-semibold text-white transition-colors duration-200 hover:border-cyan-400 hover:text-cyan-300"
+        >
+          View Audit History
         </Link>
       </div>
 
@@ -46,7 +70,7 @@ export default function Hero() {
             <div
               className={[
                 'rounded-lg border px-6 py-2 text-sm font-medium transition-colors duration-200',
-                step === 'MandateGuard'
+                highlighted.has(step)
                   ? 'border-cyan-500/60 bg-cyan-500/10 text-cyan-300'
                   : 'border-slate-700 bg-slate-900 text-slate-200',
               ].join(' ')}

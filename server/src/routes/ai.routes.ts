@@ -4,9 +4,18 @@ import {
   buildSimulatedUnsafeOrder,
   prepareAiOrder,
 } from '../services/aiOrderAgent.js'
+import { addEvent, nextRequestId } from '../services/flowService.js'
 import { describeNimError, getModelName, isNimConfigured } from '../services/nimClient.js'
 import { parseHumanInstruction } from '../services/policyParser.js'
 import { getPolicy } from '../services/policyService.js'
+
+/** Uses the caller's request id when present, otherwise starts a new journey. */
+function resolveRequestId(body: Record<string, unknown>): string {
+  const supplied = body?.requestId
+  return typeof supplied === 'string' && supplied.trim() !== ''
+    ? supplied.trim()
+    : nextRequestId()
+}
 
 export const aiRoutes = new Hono()
 
@@ -36,6 +45,9 @@ aiRoutes.post('/ai/parse-policy', async (c) => {
     return c.json({ success: false, error: 'Please type an instruction first.' }, 400)
   }
 
+  const requestId = resolveRequestId(body as Record<string, unknown>)
+  addEvent(requestId, 'Human instruction submitted')
+
   try {
     const outcome = await parseHumanInstruction(instruction)
 
@@ -43,8 +55,11 @@ aiRoutes.post('/ai/parse-policy', async (c) => {
       `  ◇ NIM parsed an instruction (${outcome.missingFields.length} field(s) missing)`,
     )
 
+    addEvent(requestId, 'NVIDIA NIM created draft', `model ${getModelName() ?? 'unknown'}`)
+
     return c.json({
       success: true,
+      requestId,
       source: 'NVIDIA_NIM',
       model: getModelName(),
       draft: outcome.draft,
@@ -88,13 +103,18 @@ aiRoutes.post('/ai/prepare-order', async (c) => {
     return c.json({ success: false, error: 'Policy not found.' }, 404)
   }
 
+  const requestId = resolveRequestId(body as Record<string, unknown>)
+
   try {
     const prepared = await prepareAiOrder(policy)
 
     console.log(`  ◇ NIM prepared ${prepared.order.orderId} from ${prepared.catalogId}`)
 
+    addEvent(requestId, 'AI created order', `${prepared.order.orderId} (${prepared.catalogId})`)
+
     return c.json({
       success: true,
+      requestId,
       source: 'NVIDIA_NIM',
       model: getModelName(),
       order: prepared.order,
