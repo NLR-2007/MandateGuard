@@ -4,7 +4,7 @@
 
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { demoCatalog, manipulatedOrderTemplate } from '../data/demoCatalog.js'
+import { SELLER_WALLETS, demoCatalog, manipulatedOrderTemplate } from '../data/demoCatalog.js'
 import type { SpendingPolicy } from '../types/index.js'
 import {
   buildOrderFromChoice,
@@ -21,7 +21,7 @@ const policy: SpendingPolicy = {
   maxPrice: 5000,
   approvedSeller: 'SecureStore',
   warrantyAllowed: false,
-  approvedReceiverWallet: 'ALGO-SECURE-STORE',
+  approvedReceiverWallet: SELLER_WALLETS.SecureStore,
   perTransactionLimit: 5000,
   dailyLimit: 10000,
   expiresAt: '2030-12-31T23:59:00.000Z',
@@ -49,7 +49,7 @@ test('1. a good AI choice becomes a valid order', async () => {
   assert.equal(prepared.order.product, '1TB SSD')
   assert.equal(prepared.order.price, 4800)
   assert.equal(prepared.order.seller, 'SecureStore')
-  assert.equal(prepared.order.receiverWallet, 'ALGO-SECURE-STORE')
+  assert.equal(prepared.order.receiverWallet, SELLER_WALLETS.SecureStore)
   assert.ok(prepared.order.orderId.startsWith('AI-ORDER-'))
 })
 
@@ -66,7 +66,7 @@ test('2. price, seller and wallet always come from the catalog, never from the A
 
   assert.equal(prepared.order.price, 4800, 'price must come from the catalog')
   assert.equal(prepared.order.seller, 'SecureStore')
-  assert.equal(prepared.order.receiverWallet, 'ALGO-SECURE-STORE')
+  assert.equal(prepared.order.receiverWallet, SELLER_WALLETS.SecureStore)
 })
 
 test('3. an item that is not in the catalog is rejected', () => {
@@ -150,7 +150,17 @@ test('11. an AI that picks the wrong product is BLOCKED', async () => {
   assert.ok(result.violations.includes('Product does not match the approved policy.'))
 })
 
-test('12. the catalog itself is unchanged sample data', () => {
-  assert.equal(demoCatalog.length, 3)
+test('12. the catalog is real sample data with real seller wallets', () => {
+  assert.ok(demoCatalog.length >= 3)
   assert.equal(demoCatalog[0].id, 'SSD-001')
+
+  // Every wallet must be a genuine Algorand address, because an approved
+  // seller actually receives test USDC at it.
+  for (const item of demoCatalog) {
+    assert.match(
+      item.receiverWallet,
+      /^[A-Z2-7]{58}$/,
+      `${item.id} has a wallet that Algorand would reject`,
+    )
+  }
 })
