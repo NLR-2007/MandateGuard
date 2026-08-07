@@ -21,6 +21,7 @@ import {
   setMandateAnchor,
 } from '../services/mandateProof.js'
 import { expectedNote, verifyAnchor } from '../services/chainAnchor.js'
+import { notifyAnchored, notifyApproved, notifyBlocked } from '../services/notifier.js'
 import { verifyMandate } from '../services/mandateVerifier.js'
 import { getPolicy, validateOrderInput } from '../services/policyService.js'
 import type { AIOrder, OrderSource, PolicySource } from '../types/index.js'
@@ -212,6 +213,11 @@ export function createX402Routes(): Hono {
         `(${violations.length} violation(s))`,
     )
 
+    // Push the verdict to the user's phone. Fire and forget - a Telegram
+    // outage must never affect the answer we just computed.
+    if (decision === 'APPROVED') notifyApproved(order)
+    else notifyBlocked(order, policy, violations)
+
     return c.json({
       success: true,
       requestId,
@@ -310,6 +316,7 @@ mandateRoutes.post('/mandates/:id/anchor', async (c) => {
   }
 
   const updated = setMandateAnchor(id, check.anchor.txId, check.anchor.roundTime)
+  notifyAnchored(id, check.anchor.txId)
   console.log(
     `  ⛓ Mandate ${id} anchored on Algorand TestNet: ${check.anchor.txId} ` +
       `(round ${check.anchor.confirmedRound})`,

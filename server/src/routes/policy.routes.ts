@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { addEvent } from '../services/flowService.js'
 import { registerMandate } from '../services/mandateProof.js'
+import { notifyPolicyCreated } from '../services/notifier.js'
 import {
   createPolicy,
   getPolicy,
@@ -37,6 +38,9 @@ policyRoutes.post('/policies', async (c) => {
   }
 
   console.log(`  ✓ Policy created: ${policy.id} (mandate ${mandate.mandateHash.slice(0, 12)}…)`)
+
+  // Tell the user on their phone. Never blocks the response.
+  notifyPolicyCreated(policy)
 
   return c.json({ success: true, policy, mandate }, 201)
 })

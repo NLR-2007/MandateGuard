@@ -24,6 +24,8 @@ import { verificationRoutes } from './routes/verification.routes.js'
 import { systemRoutes } from './routes/system.routes.js'
 import { createX402Routes, mandateRoutes } from './routes/x402.routes.js'
 import { getModelName, isNimConfigured } from './services/nimClient.js'
+import { describeTelegram, isTelegramConfigured } from './services/telegram.js'
+import { startTelegramBot } from './services/telegramBot.js'
 import { describeX402, isX402Configured } from './x402/x402Config.js'
 
 const PORT = 4021
@@ -98,6 +100,7 @@ app.get('/health', (c) =>
     network: 'testnet',
     storage: describeStorage(),
     payment: describeX402(),
+    telegram: describeTelegram(),
   }),
 )
 
@@ -168,6 +171,12 @@ const server = serve({ fetch: app.fetch, port: PORT }, () => {
   console.log(
     `  NVIDIA NIM: ${isNimConfigured() ? `configured (${getModelName()})` : 'NOT configured - manual mode only'}`,
   )
+
+  if (isTelegramConfigured()) {
+    startTelegramBot()
+  } else {
+    console.log('  Telegram: OFF — TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required.')
+  }
 
   if (isX402Configured()) {
     const x402 = describeX402()
