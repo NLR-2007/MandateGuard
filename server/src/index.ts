@@ -45,20 +45,10 @@ process.on('unhandledRejection', (reason) => {
 })
 
 process.on('uncaughtException', (error) => {
-  const code = (error as NodeJS.ErrnoException).code
-
-  // A failure to take the port is fatal: pretending to run would leave a
-  // zombie that answers nothing. Say so plainly and stop.
-  if (code === 'EADDRINUSE') {
-    console.error(
-      `\n✕ Port ${PORT} is already in use — another MandateGuard server is running.\n` +
-        '  Stop it first, then start this one again.\n' +
-        '  Windows:  Get-NetTCPConnection -LocalPort 4021 -State Listen |\n' +
-        '              ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }\n',
-    )
-    process.exit(1)
-  }
-
+  // Never call process.exit() from here. On Windows that trips a libuv
+  // assertion (UV_HANDLE_CLOSING) and takes the process down hard, which is
+  // exactly the silent-death we are trying to avoid. Port conflicts are
+  // handled on the server's own 'error' event instead - see below.
   console.error('⚠ Uncaught exception (service kept running):', error.message)
 })
 
@@ -159,7 +149,7 @@ if (dbReady) {
   )
 }
 
-serve({ fetch: app.fetch, port: PORT }, () => {
+const server = serve({ fetch: app.fetch, port: PORT }, () => {
   console.log('\n' + '═'.repeat(56))
   console.log('  MandateGuard — AI Agent Spend Policy Engine')
   console.log('═'.repeat(56))
@@ -189,4 +179,29 @@ serve({ fetch: app.fetch, port: PORT }, () => {
     console.log('  x402:    OFF — AVM_ADDRESS is required for x402 payments.')
   }
   console.log('═'.repeat(56) + '\n')
+})
+
+/**
+ * A port clash is the one failure worth stopping for: a server that cannot
+ * listen is useless, and leaving it "running" hides the problem.
+ * Handling it here (not in uncaughtException) means a clean exit.
+ */
+server.on('error', (error: NodeJS.ErrnoException) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(
+      [
+        '',
+        `✕ Port ${PORT} is already in use — another MandateGuard server is running.`,
+        '  Stop it, then start this one again:',
+        '  Get-NetTCPConnection -LocalPort 4021 -State Listen |',
+        '    ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }',
+        '',
+      ].join('\n'),
+    )
+    process.exitCode = 1
+    server.close()
+    return
+  }
+
+  console.error('✕ Server error:', error.message)
 })

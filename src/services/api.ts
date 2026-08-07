@@ -21,16 +21,36 @@ export const API_BASE = 'http://localhost:4021'
 export const BACKEND_DOWN_MESSAGE =
   'Cannot reach the MandateGuard server. Start it with: cd server && npm run dev'
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+/** NVIDIA can take a while; everything else should be quick. */
+const DEFAULT_TIMEOUT_MS = 90_000
+
+async function request<T>(
+  path: string,
+  init?: RequestInit,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+): Promise<T> {
+  // Without this, a stalled request leaves the button spinning forever with
+  // no explanation. A timeout turns silence into a readable message.
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+
   let response: Response
   try {
     response = await fetch(`${API_BASE}${path}`, {
-      headers: { 'Content-Type': 'application/json'
-},
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
       ...init,
     })
-  } catch {
+  } catch (error) {
+    if ((error as Error)?.name === 'AbortError') {
+      throw new Error(
+        `No answer from the server after ${Math.round(timeoutMs / 1000)} seconds. ` +
+          'It may still be working, or the AI service may be slow. Please try again.',
+      )
+    }
     throw new Error(BACKEND_DOWN_MESSAGE)
+  } finally {
+    clearTimeout(timer)
   }
 
   const data = await response.json().catch(() => null)
