@@ -21,7 +21,7 @@ interface DraftForm {
 }
 
 const EXAMPLE =
-  'Buy one 1TB SSD below ₹5000 from SecureStore.\nNo warranty.\nOnly pay ALGO-SECURE-STORE.\nMaximum ₹5000 per transaction.\nDaily limit ₹10000.'
+  'Buy one 1TB SSD below ₹5000 from SecureStore.\nNo warranty.\nOnly pay MW5HJTYSG2OENK5SQXUUOQZXS2WOMIBID5IECVNGC2YZGBN22RP2GOISDY.\nMaximum ₹5000 per transaction.\nDaily limit ₹10000.'
 /** Turns validForMinutes into a value the datetime-local input understands. */
 function toLocalDateTime(minutesFromNow: number): string {
   const d = new Date(Date.now() + minutesFromNow * 60_000)

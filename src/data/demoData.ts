@@ -20,7 +20,7 @@ export const demoPolicy: SpendingPolicy = {
   maxPrice: 5000,
   approvedSeller: 'SecureStore',
   warrantyAllowed: false,
-  approvedReceiverWallet: 'ALGO-SECURE-STORE',
+  approvedReceiverWallet: 'MW5HJTYSG2OENK5SQXUUOQZXS2WOMIBID5IECVNGC2YZGBN22RP2GOISDY',
   perTransactionLimit: 5000,
   dailyLimit: 10000,
   expiresAt: '2030-12-31T23:59',
@@ -48,7 +48,7 @@ export const safeOrder: AIOrder = {
   price: 4800,
   seller: 'SecureStore',
   warrantyAdded: false,
-  receiverWallet: 'ALGO-SECURE-STORE',
+  receiverWallet: 'MW5HJTYSG2OENK5SQXUUOQZXS2WOMIBID5IECVNGC2YZGBN22RP2GOISDY',
 }
 
 /** DEMO B - the AI changed the deal on its own. */
@@ -59,7 +59,7 @@ export const unsafeOrder: AIOrder = {
   price: 4900,
   seller: 'OtherStore',
   warrantyAdded: true,
-  receiverWallet: 'ALGO-UNKNOWN-WALLET',
+  receiverWallet: 'BI76R3JWX25FG4EAS7ZCN3KYCLLMALOZSNBC6YHJPA73CULCKQGAI23CA4',
 }
 
 // ────────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ export const humanPolicy: SpendingPolicy = {
   maxPrice: 5000,
   approvedSeller: 'SecureStore',
   warrantyAllowed: false,
-  approvedReceiverWallet: 'ALGO-SECURE-STORE',
+  approvedReceiverWallet: 'MW5HJTYSG2OENK5SQXUUOQZXS2WOMIBID5IECVNGC2YZGBN22RP2GOISDY',
   perTransactionLimit: 5000,
   dailyLimit: 10000,
   expiresAt: '2030-12-31T23:59',
@@ -92,7 +92,7 @@ export const correctOrder: AIOrder = {
   price: 4800,
   seller: 'SecureStore',
   warrantyAdded: false,
-  receiverWallet: 'ALGO-SECURE-STORE',
+  receiverWallet: 'MW5HJTYSG2OENK5SQXUUOQZXS2WOMIBID5IECVNGC2YZGBN22RP2GOISDY',
 }
 
 export const quantityAttackOrder: AIOrder = {
@@ -102,7 +102,7 @@ export const quantityAttackOrder: AIOrder = {
   price: 4900,
   seller: 'SecureStore',
   warrantyAdded: false,
-  receiverWallet: 'ALGO-SECURE-STORE',
+  receiverWallet: 'MW5HJTYSG2OENK5SQXUUOQZXS2WOMIBID5IECVNGC2YZGBN22RP2GOISDY',
 }
 
 export const sellerAttackOrder: AIOrder = {
@@ -112,7 +112,7 @@ export const sellerAttackOrder: AIOrder = {
   price: 4700,
   seller: 'OtherStore',
   warrantyAdded: false,
-  receiverWallet: 'ALGO-SECURE-STORE',
+  receiverWallet: 'MW5HJTYSG2OENK5SQXUUOQZXS2WOMIBID5IECVNGC2YZGBN22RP2GOISDY',
 }
 
 export const warrantyAttackOrder: AIOrder = {
@@ -122,7 +122,7 @@ export const warrantyAttackOrder: AIOrder = {
   price: 4950,
   seller: 'SecureStore',
   warrantyAdded: true,
-  receiverWallet: 'ALGO-SECURE-STORE',
+  receiverWallet: 'MW5HJTYSG2OENK5SQXUUOQZXS2WOMIBID5IECVNGC2YZGBN22RP2GOISDY',
 }
 
 export const receiverAttackOrder: AIOrder = {
@@ -132,7 +132,7 @@ export const receiverAttackOrder: AIOrder = {
   price: 4800,
   seller: 'SecureStore',
   warrantyAdded: false,
-  receiverWallet: 'ALGO-UNKNOWN-WALLET',
+  receiverWallet: 'BI76R3JWX25FG4EAS7ZCN3KYCLLMALOZSNBC6YHJPA73CULCKQGAI23CA4',
 }
 
 export const combinedAttackOrder: AIOrder = {
@@ -142,7 +142,7 @@ export const combinedAttackOrder: AIOrder = {
   price: 4900,
   seller: 'OtherStore',
   warrantyAdded: true,
-  receiverWallet: 'ALGO-UNKNOWN-WALLET',
+  receiverWallet: 'BI76R3JWX25FG4EAS7ZCN3KYCLLMALOZSNBC6YHJPA73CULCKQGAI23CA4',
 }
 
 const quantityViolation = {
@@ -165,8 +165,8 @@ const warrantyViolation = {
 
 const receiverViolation = {
   title: 'Receiver Changed',
-  humanApproved: 'ALGO-SECURE-STORE',
-  aiSelected: 'ALGO-UNKNOWN-WALLET',
+  humanApproved: 'MW5HJTYSG2OENK5SQXUUOQZXS2WOMIBID5IECVNGC2YZGBN22RP2GOISDY',
+  aiSelected: 'BI76R3JWX25FG4EAS7ZCN3KYCLLMALOZSNBC6YHJPA73CULCKQGAI23CA4',
 }
 
 /** The six buttons on the problem demo page. */

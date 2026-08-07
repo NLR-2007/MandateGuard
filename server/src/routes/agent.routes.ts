@@ -7,11 +7,17 @@
 import { Hono } from 'hono'
 import { getPolicy } from '../services/policyService.js'
 import { decideRun, getRun, listRuns, runAgent, type AgentMode } from '../services/agentFlow.js'
-import { setBuyHandler, setDecisionHandler } from '../services/telegramBot.js'
+import {
+  setBuyHandler,
+  setDecisionHandler,
+  setPayHandler,
+  setWantHandler,
+} from '../services/telegramBot.js'
 import { agentBuys } from '../services/agentBuyer.js'
 import { isAgentWalletConfigured } from '../services/agentWallet.js'
 import { listPolicies } from '../services/policyService.js'
 import { sendMessage } from '../services/telegram.js'
+import { askWhatToBuy } from '../services/notifier.js'
 import { markRunPaid } from '../services/agentFlow.js'
 import { rupeesToUsdc } from '../services/notifier.js'
 
@@ -33,34 +39,78 @@ setBuyHandler(async () => {
     void sendMessage('⚠️ The agent has no wallet of its own yet, so it cannot buy without you.')
     return
   }
-
-  const policy = listPolicies().find((p) => p.status === 'ACTIVE')
-  if (!policy) {
+  if (!activeRule()) {
     void sendMessage(
-      '⚠️ There is no active rule. Approve one first, or send /resume if you froze spending.',
+      '⚠️ There is no active rule. Approve one on the dashboard first, or send /resume if you froze spending.',
     )
     return
   }
 
+  void askWhatToBuy()
+})
+
+/**
+ * The newest active rule.
+ *
+ * Newest rather than first: older rules linger from earlier runs, and a demo
+ * that silently obeys a stale one is worse than no demo at all.
+ */
+function activeRule() {
+  return listPolicies()
+    .filter((p) => p.status === 'ACTIVE')
+    .at(-1)
+}
+
+/**
+ * The user chose what they want. The agent goes and finds it, and
+ * MandateGuard rules on whatever it comes back with.
+ *
+ * Note that we do NOT steer the agent towards something that will pass. If
+ * the rule allows an SSD and the user asks for a laptop, the agent really
+ * does fetch a laptop and really does get refused. Hiding that would hide the
+ * whole point.
+ */
+setWantHandler(async (want: string) => {
+  const policy = activeRule()
+  if (!policy) {
+    void sendMessage('⚠️ There is no active rule any more.')
+    return
+  }
+
+  const label = want === 'laptop' ? 'a gaming laptop' : 'an SSD'
+  void sendMessage(`🔎 Looking for ${label}…`)
+
   let run
   try {
-    run = await runAgent({ policy, mode: 'AUTONOMOUS' })
+    run = await runAgent({ policy, mode: 'ASK', want: label })
   } catch (error) {
     void sendMessage(`⚠️ The agent could not choose anything: ${(error as Error).message}`)
     return
   }
 
-  // Blocked runs already told the user why. Nothing more to do.
-  if (run.state !== 'READY_TO_PAY' || !run.item) return
+  console.log(
+    `  🤖 /buy(${want}) → ${run.order.product} ₹${run.order.price} from ${run.order.seller} · ${run.result.decision}`,
+  )
+  if (run.result.violations.length > 0) {
+    console.log(`     refused: ${run.result.violations.join(' ')}`)
+  }
+  // Blocked runs have already told the user why, and asked nothing.
+})
+
+/**
+ * The user tapped "Yes, buy it".
+ *
+ * decideRun() releases the run; only then does the agent pay. A refused run
+ * can never reach this point - decideRun rejects it outright.
+ */
+setPayHandler(async (requestId: string) => {
+  const run = getRun(requestId)
+  if (!run?.item) return
 
   try {
-    await agentBuys({
-      itemId: run.item.id,
-      verificationId: null,
-      mandateId: run.policyId,
-    })
-    markRunPaid(run.requestId)
-    // The receipt, with its transaction link, is sent by the shop route.
+    await agentBuys({ itemId: run.item.id, verificationId: null, mandateId: run.policyId })
+    markRunPaid(requestId)
+    // The receipt with its transaction link is sent by the shop route.
   } catch (error) {
     void sendMessage(`⚠️ The payment failed: ${(error as Error).message}`)
   }

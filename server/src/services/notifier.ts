@@ -33,6 +33,28 @@ function usdcLine(amountRupees: number): string {
   return `${rupees(amountRupees)} → <b>${rupeesToUsdc(amountRupees)} test USDC</b>`
 }
 
+/**
+ * The shopping menu.
+ *
+ * Two choices on purpose: one the user's rule allows, one it does not. A
+ * panel watching this needs to see both outcomes, and needs to see that the
+ * SAME engine produced both.
+ */
+export function askWhatToBuy(): Promise<{ ok: boolean; messageId?: number }> {
+  return sendMessage(
+    [
+      '🛒 <b>What should I buy?</b>',
+      '',
+      'I will search the shop, then MandateGuard will check my choice',
+      'against the rule you approved.',
+    ].join(String.fromCharCode(10)),
+    [
+      [{ text: '💾 An SSD', callback_data: 'want:ssd' }],
+      [{ text: '💻 A gaming laptop', callback_data: 'want:laptop' }],
+    ],
+  )
+}
+
 /** The agent has chosen something and is about to be checked. */
 export function notifyAgentPicked(item: {
   product: string
@@ -63,20 +85,21 @@ export function askApproval(
 ): Promise<{ ok: boolean; messageId?: number }> {
   const buttons: InlineButton[][] = [
     [
-      { text: '✅ Approve', callback_data: `ok:${requestId}` },
-      { text: '✖ Reject', callback_data: `no:${requestId}` },
+      { text: '✅ Yes, buy it', callback_data: `ok:${requestId}` },
+      { text: '⏸ No, wait', callback_data: `no:${requestId}` },
     ],
   ]
 
   return sendMessage(
     [
-      '🛒 <b>Order this?</b>',
+      '🛒 <b>Should I buy this?</b>',
       '',
       `<b>${item.product}</b>`,
       `Price   ${usdcLine(item.price)}`,
       `Seller  ${item.seller}`,
       '',
-      '✅ MandateGuard already checked this against your rules and it passed.',
+      '✅ <b>MandateGuard checked it — all 10 rules passed.</b>',
+      'I will pay from my own wallet. Nothing has been paid yet.',
       '',
       `<code>${requestId}</code>`,
     ].join('\n'),

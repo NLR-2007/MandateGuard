@@ -69,11 +69,13 @@ export function listRuns(): AgentRun[] {
 export async function runAgent(params: {
   policy: SpendingPolicy
   mode: AgentMode
+  /** What the user asked for. Absent means "anything that fits the rule". */
+  want?: string
 }): Promise<AgentRun> {
-  const { policy, mode } = params
+  const { policy, mode, want } = params
 
   // 1. The AI searches and picks. Untrusted output.
-  const prepared = await prepareAiOrder(policy)
+  const prepared = await prepareAiOrder(policy, undefined, undefined, want)
   const item = demoCatalog.find((i) => i.id === prepared.catalogId) ?? null
 
   notifyAgentPicked({

@@ -22,7 +22,7 @@ export interface CatalogItem {
   seller: string
   warrantyAvailable: boolean
   receiverWallet: string
-  category: 'storage' | 'books' | 'accessories'
+  category: 'storage' | 'books' | 'accessories' | 'laptops'
   rating: number
   inStock: boolean
 }
@@ -131,6 +131,33 @@ export const demoCatalog: CatalogItem[] = [
     inStock: true,
   },
 
+  // ── Laptops ───────────────────────────────────────────
+  // Far outside any sensible SSD budget. These exist so the demo has a
+  // request that MUST be refused: the product is wrong AND the price is
+  // wrong, which is exactly what an agent going off-script looks like.
+  {
+    id: 'LAP-001',
+    product: 'Gaming Laptop',
+    price: 85000,
+    seller: 'OtherStore',
+    warrantyAvailable: true,
+    receiverWallet: SELLER_WALLETS.OtherStore,
+    category: 'laptops',
+    rating: 4.6,
+    inStock: true,
+  },
+  {
+    id: 'LAP-002',
+    product: 'Ultrabook',
+    price: 62000,
+    seller: 'OtherStore',
+    warrantyAvailable: true,
+    receiverWallet: SELLER_WALLETS.OtherStore,
+    category: 'laptops',
+    rating: 4.4,
+    inStock: true,
+  },
+
   // ── Accessories ───────────────────────────────────────
   {
     id: 'ACC-001',
@@ -180,5 +207,5 @@ export const manipulatedOrderTemplate = {
   price: 4900,
   seller: 'OtherStore',
   warrantyAdded: true,
-  receiverWallet: 'ALGO-UNKNOWN-WALLET',
+  receiverWallet: SELLER_WALLETS.OtherStore,
 }

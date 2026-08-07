@@ -24,12 +24,28 @@ export function setDecisionHandler(handler: DecisionHandler): void {
   onDecision = handler
 }
 
-/** Runs a whole shopping trip from Telegram. Set by the agent routes. */
+/** Shows the shopping menu. Set by the agent routes. */
 type BuyHandler = (what: string) => Promise<void>
 let onBuy: BuyHandler | null = null
 
 export function setBuyHandler(handler: BuyHandler): void {
   onBuy = handler
+}
+
+/** The user picked what they want from the menu. */
+type WantHandler = (want: string) => Promise<void>
+let onWant: WantHandler | null = null
+
+export function setWantHandler(handler: WantHandler): void {
+  onWant = handler
+}
+
+/** The user confirmed the purchase, so the agent pays. */
+type PayHandler = (requestId: string) => Promise<void>
+let onPay: PayHandler | null = null
+
+export function setPayHandler(handler: PayHandler): void {
+  onPay = handler
 }
 
 const HELP = [
@@ -128,14 +144,26 @@ function setAllPolicies(status: 'ACTIVE' | 'DISABLED'): number {
 const NL = String.fromCharCode(10)
 
 async function handle(msg: Incoming): Promise<void> {
-  // A tapped Approve/Reject button.
+  // A tapped button.
   if (msg.callback) {
-    const [action, requestId] = msg.callback.split(':')
+    const [action, value] = msg.callback.split(':')
     if (msg.callbackId) await answerCallback(msg.callbackId, 'Got it')
 
+    // "I want an SSD" / "I want a laptop" - the agent goes shopping.
+    if (action === 'want') {
+      if (onWant) await onWant(value)
+      return
+    }
+
+    // Yes / No on a specific order.
     if (!onDecision) return
-    const reply = await onDecision(requestId, action === 'ok')
+    const approved = action === 'ok'
+    const reply = await onDecision(value, approved)
     if (reply) void sendMessage(reply)
+
+    // Releasing a run is not the same as paying for it. Pay only after the
+    // engine-approved run has actually been released.
+    if (approved && onPay) await onPay(value)
     return
   }
 

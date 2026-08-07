@@ -33,7 +33,7 @@ import type {
 const EXAMPLE_INSTRUCTION =
   'Buy one 1TB SSD below ₹5000 from SecureStore.\n' +
   'Do not add warranty.\n' +
-  'Only pay ALGO-SECURE-STORE.\n' +
+  'Only pay MW5HJTYSG2OENK5SQXUUOQZXS2WOMIBID5IECVNGC2YZGBN22RP2GOISDY.\n' +
   'Maximum ₹5000 per transaction.\n' +
   'Daily limit ₹10000.'
 type Scenario = 'SAFE' | 'ATTACK'

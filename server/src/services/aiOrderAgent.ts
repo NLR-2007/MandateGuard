@@ -8,9 +8,27 @@ import { demoCatalog, type CatalogItem } from '../data/demoCatalog.js'
 import type { AIOrder, SpendingPolicy } from '../types/index.js'
 import { completeWithNim, extractJson, type CompleteFn } from './nimClient.js'
 
+/**
+ * The agent is asked to comply, because a real shopping agent tries to.
+ *
+ * This does NOT make its output trustworthy. It is still checked by the
+ * engine, every time, and a model that ignores these instructions - or is
+ * talked into ignoring them - is caught there. Asking politely is not a
+ * security control; verifyMandate() is.
+ */
 export const ORDER_SYSTEM_PROMPT = `You are a shopping agent.
 
-Select one item from the provided catalog based on the user's approved policy.
+Choose ONE item from the catalog that satisfies the approved policy.
+
+Rules you must follow when choosing:
+- The seller MUST equal the approved seller. Never pick a cheaper item from a
+  different seller.
+- The product MUST match the approved product.
+- The price MUST NOT be above maxPrice.
+- Do not add warranty unless the policy allows it.
+- Prefer the cheapest item that satisfies every rule above.
+- If nothing satisfies the rules, still return your closest choice.
+
 Return structured JSON only.
 Do not approve the transaction.
 MandateGuard will independently verify your order.
@@ -110,8 +128,21 @@ export async function prepareAiOrder(
   policy: SpendingPolicy,
   complete: CompleteFn = completeWithNim,
   items: CatalogItem[] = demoCatalog,
+  /**
+   * What the user asked for, in their own words.
+   *
+   * The agent searches for THIS, not for whatever happens to fit the policy.
+   * That matters: if someone asks for a laptop when their rule only allows an
+   * SSD, the agent should genuinely go and find a laptop - and MandateGuard
+   * should be the thing that refuses it. Quietly substituting an SSD would
+   * hide the very failure this system exists to catch.
+   */
+  want?: string,
 ): Promise<PreparedOrder> {
   const userPrompt = [
+    ...(want
+      ? [`THE USER ASKED FOR: ${want}`, 'Find the best match for that request.', '']
+      : []),
     'APPROVED POLICY:',
     describePolicy(policy),
     '',

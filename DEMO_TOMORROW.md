@@ -101,6 +101,33 @@ Receipt appears. Phone gets the full receipt with the explorer link. **Open the 
 
 ---
 
+## STEP 5b — The same thing, entirely from your phone ⭐
+
+Put Telegram on the projector. Send **`/buy`**.
+
+Two buttons appear: **💾 An SSD** and **💻 A gaming laptop**.
+
+**Tap the laptop first.**
+
+> 🛑 Stopped an order — Gaming Laptop, ₹85,000, OtherStore. Refused for 6 reasons.
+
+> *"I asked for a laptop. The agent genuinely went and found one — it did not
+> quietly swap in something safe. MandateGuard refused it six different ways,
+> and no money moved. No browser is open. This is all from my phone."*
+
+**Now tap `/buy` again → An SSD.**
+
+> 🛒 Should I buy this? · 1TB SSD · ₹4,800 → 0.48 test USDC · SecureStore
+> ✅ MandateGuard checked it — all 10 rules passed.
+> [✅ Yes, buy it] [⏸ No, wait]
+
+Tap **Yes, buy it**. The receipt arrives with a live explorer link. Open it.
+
+> *"The agent paid from its own wallet. I never signed anything. Same engine
+> refused the laptop and allowed this — that is the whole product."*
+
+---
+
 ## STEP 6 — The kill switch (20 seconds)
 
 On your phone, send **`/stop`**.
