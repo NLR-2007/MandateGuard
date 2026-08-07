@@ -24,6 +24,7 @@ import { verificationRoutes } from './routes/verification.routes.js'
 import { systemRoutes } from './routes/system.routes.js'
 import { createX402Routes, mandateRoutes } from './routes/x402.routes.js'
 import { createShopRoutes, shopRoutes } from './routes/shop.routes.js'
+import { agentRoutes } from './routes/agent.routes.js'
 import { getModelName, isNimConfigured } from './services/nimClient.js'
 import { describeTelegram, isTelegramConfigured } from './services/telegram.js'
 import { startTelegramBot } from './services/telegramBot.js'
@@ -112,6 +113,7 @@ app.route('/api', aiRoutes)
 app.route('/api', mandateRoutes)
 app.route('/api', systemRoutes)
 app.route('/api', shopRoutes)
+app.route('/api', agentRoutes)
 
 // The paid endpoint. Mounted only when a receiving address is configured,
 // so a missing AVM_ADDRESS never breaks the free Phase 4/5 endpoints.
