@@ -1,5 +1,5 @@
 import { useWallet } from '@txnlab/use-wallet-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Badge from '../components/Badge'
 import OrderComparison from '../components/OrderComparison'
@@ -119,6 +119,18 @@ export default function Dashboard() {
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
 
+  // Wallet notifications get missed. attemptRef marks which signing request
+  // is the live one; canResend appears a few seconds into the wait.
+  const attemptRef = useRef(0)
+  const [canResend, setCanResend] = useState(false)
+
+  useEffect(() => {
+    if (paymentState !== 'WAITING_FOR_WALLET') return
+    setCanResend(false)
+    const t = setTimeout(() => setCanResend(true), 6000)
+    return () => clearTimeout(t)
+  }, [paymentState])
+
   const refresh = () => setRefreshKey((k) => k + 1)
 
   // ── STEP 1: instruction -> NIM ──────────────────────────
@@ -212,16 +224,25 @@ export default function Dashboard() {
   }
 
   // ── STEPS 5-7: x402 payment then MandateGuard ───────────
-  const handlePayAndVerify = async () => {
+  /**
+   * `attempt` guards against two signing requests racing each other.
+   * Only the newest attempt is allowed to change the screen; an abandoned
+   * one is ignored so a late answer can never overwrite a fresh result.
+   */
+  const startPayment = async () => {
     if (!policy || !order || !requestId) return
     if (!activeAddress || !signTransactions) {
       setError('Connect an Algorand TestNet wallet first.')
       return
     }
-    if (busy === 'pay') return // never start two payments
+
+    const attempt = attemptRef.current + 1
+    attemptRef.current = attempt
+    const isCurrent = () => attemptRef.current === attempt
 
     setBusy('pay')
     setError('')
+    setCanResend(false)
     setStep(6)
     setPaymentState('PAYMENT_REQUIRED')
 
@@ -237,8 +258,12 @@ export default function Dashboard() {
         },
         policySource: 'NVIDIA_NIM_ASSISTED',
         orderSource,
-        onStage: (stage) => setPaymentState(STAGE_TO_STATE[stage]),
+        onStage: (stage) => {
+          if (isCurrent()) setPaymentState(STAGE_TO_STATE[stage])
+        },
       })
+
+      if (!isCurrent()) return
 
       setResult(paid)
       setMandateHash(paid.mandate?.mandateHash ?? null)
@@ -246,12 +271,37 @@ export default function Dashboard() {
       setStep(7)
       refresh()
     } catch (err) {
+      if (!isCurrent()) return
       const message = describePaymentError(err)
       setPaymentState(/cancelled/i.test(message) ? 'CANCELLED' : 'FAILED')
       setError(message)
     } finally {
-      setBusy('')
+      if (isCurrent()) setBusy('')
     }
+  }
+
+  const handlePayAndVerify = () => {
+    if (busy === 'pay') return // never start two payments from one click
+    void startPayment()
+  }
+
+  /**
+   * Sends a FRESH signing request when the phone notification was missed.
+   * The previous attempt is abandoned first, so only one result can win.
+   */
+  const handleResend = () => {
+    attemptRef.current += 1 // abandon whatever is in flight
+    setCanResend(false)
+    setError('')
+    void startPayment()
+  }
+
+  const handleCancelPayment = () => {
+    attemptRef.current += 1 // abandon the in-flight request
+    setBusy('')
+    setCanResend(false)
+    setPaymentState('CANCELLED')
+    setStep(5)
   }
 
   // ── STEP 8: record execution (this is what consumes the mandate) ─
@@ -299,6 +349,8 @@ export default function Dashboard() {
     setError('')
     setMandateHash(null)
     setBusy('')
+    setCanResend(false)
+    attemptRef.current += 1
     refresh()
   }
 
@@ -677,7 +729,7 @@ export default function Dashboard() {
               </div>
 
               <button
-                onClick={() => void handlePayAndVerify()}
+                onClick={handlePayAndVerify}
                 disabled={busy !== '' || !activeAddress}
                 className="mt-6 rounded-lg bg-emerald-500 px-6 py-3 font-semibold text-slate-950 transition-colors duration-200 hover:bg-emerald-400 disabled:opacity-50"
               >
@@ -693,13 +745,48 @@ export default function Dashboard() {
             <Panel title="Step 6 — x402 payment">
               <PaymentStateView state={paymentState} status={status} />
 
+              {/* Missed the phone notification? Send a fresh request. */}
+              {paymentState === 'WAITING_FOR_WALLET' && (
+                <div className="mt-5">
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={handleResend}
+                      disabled={!canResend}
+                      className="rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition-colors duration-200 hover:bg-cyan-400 disabled:opacity-40"
+                    >
+                      {canResend
+                        ? '↻ Resend request to wallet'
+                        : '↻ Resend available in a few seconds…'}
+                    </button>
+                    <button
+                      onClick={handleCancelPayment}
+                      className="rounded-lg border border-slate-600 px-5 py-2.5 text-sm font-semibold text-slate-300 transition-colors duration-200 hover:border-red-500/60 hover:text-red-300"
+                    >
+                      Cancel payment
+                    </button>
+                  </div>
+                  <p className="mt-3 text-xs text-slate-500">
+                    Resending sends a <strong>new</strong> signing request. If an old prompt
+                    is still open on your phone, reject that one and approve the newest.
+                  </p>
+                </div>
+              )}
+
               {(paymentState === 'FAILED' || paymentState === 'CANCELLED') && (
-                <button
-                  onClick={() => setStep(5)}
-                  className="mt-5 rounded-lg border border-slate-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:border-cyan-400"
-                >
-                  Back to the order
-                </button>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <button
+                    onClick={handleResend}
+                    className="rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition-colors duration-200 hover:bg-cyan-400"
+                  >
+                    ↻ Try the payment again
+                  </button>
+                  <button
+                    onClick={() => setStep(5)}
+                    className="rounded-lg border border-slate-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:border-cyan-400"
+                  >
+                    Back to the order
+                  </button>
+                </div>
               )}
             </Panel>
           )}

@@ -96,7 +96,9 @@ cd mandateguard && npm run dev             # http://localhost:5173
 > **"0.005 Test USDC on Algorand TestNet. I approve it myself — the app never
 > holds my keys."**
 
-- **Sign in Pera.**
+- **Sign in Pera.** If the notification never reaches your phone, wait ~6 seconds
+  and click **↻ Resend request to wallet** — then reject any older prompt still
+  open on the phone and approve the newest one.
 - When the result appears, point at the two boxes:
 
 > **"x402 Payment: VERIFIED. MandateGuard: APPROVED."**
@@ -141,6 +143,7 @@ cd mandateguard && npm run dev             # http://localhost:5173
 
 | Problem | What to do, out loud |
 |---|---|
+| **Phone notification missed** | Wait ~6 seconds, then click **↻ Resend request to wallet**. It sends a fresh signing request. |
 | Wallet won't connect | *"Let me show you the recorded proof"* → open `demo-proof/` |
 | Payment hangs / facilitator down | Use the **free route** button on the AI Order page — the same engine, no payment layer. Say: *"The payment layer is optional for the security decision."* |
 | NVIDIA slow or failing | Switch to **Create Policy → Manual Policy** tab. Say: *"AI is assistance only. The security engine does not depend on it."* |
