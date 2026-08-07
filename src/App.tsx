@@ -10,6 +10,7 @@ import CreatePolicy from './pages/CreatePolicy'
 import History from './pages/History'
 import Home from './pages/Home'
 import Landing from './pages/Landing'
+import Shop from './pages/Shop'
 import UnsafeDemo from './pages/UnsafeDemo'
 import Verification from './pages/Verification'
 /**
@@ -36,6 +37,7 @@ function AppShell() {
           <Routes>
             <Route path="/home" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/shop" element={<Shop />} />
             <Route path="/unsafe-demo" element={<UnsafeDemo />} />
             <Route path="/architecture" element={<Architecture />} />
             <Route path="/history/:verificationId" element={<TransactionDetail />} />

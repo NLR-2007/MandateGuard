@@ -241,3 +241,64 @@ export async function confirmMandateAnchor(
     { method: 'POST', body: JSON.stringify({ txId }) },
   )
 }
+
+// ── The shop and the agent ────────────────────────────────
+
+export interface ShopProduct {
+  id: string
+  product: string
+  price: number
+  priceUsdc: number
+  seller: string
+  warrantyAvailable: boolean
+  receiverWallet: string
+  category: string
+  rating: number
+  inStock: boolean
+}
+
+export type AgentMode = 'ASK' | 'AUTONOMOUS'
+export type RunState =
+  | 'BLOCKED'
+  | 'PENDING_APPROVAL'
+  | 'READY_TO_PAY'
+  | 'REJECTED'
+  | 'PAID'
+
+export interface AgentRun {
+  requestId: string
+  policyId: string
+  mode: AgentMode
+  state: RunState
+  order: AIOrder
+  item: ShopProduct | null
+  reason: string
+  decision: 'APPROVED' | 'BLOCKED'
+  violations: string[]
+  checks: VerificationResult['checks']
+  priceUsdc: number
+  createdAt: string
+}
+
+export async function getShopProducts(): Promise<{
+  products: ShopProduct[]
+  demoRate: string
+}> {
+  return request<{ products: ShopProduct[]; demoRate: string }>('/api/shop/products')
+}
+
+export async function sendAgentShopping(
+  policyId: string,
+  mode: AgentMode,
+): Promise<AgentRun> {
+  const data = await request<{ run: AgentRun }>('/api/agent/shop', {
+    method: 'POST',
+    body: JSON.stringify({ policyId, mode }),
+  })
+  return data.run
+}
+
+export async function getAgentRun(requestId: string): Promise<AgentRun> {
+  const data = await request<{ run: AgentRun }>(`/api/agent/run/${requestId}`)
+  return data.run
+}

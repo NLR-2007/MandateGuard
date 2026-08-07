@@ -186,3 +186,76 @@ export async function verifyWithX402(params: {
   onStage('done')
   return data
 }
+
+// ── Paying the seller ─────────────────────────────────────
+//
+// A second, separate x402 payment. The verification fee pays to run the
+// engine; this pays the shop. Same protocol, different price and different
+// recipient - the recipient being the seller's own TestNet wallet.
+
+export interface PurchaseResult {
+  orderId: string
+  item: {
+    id: string
+    product: string
+    price: number
+    seller: string
+    receiverWallet: string
+  }
+  payment: {
+    protocol: string
+    network: string
+    status: string
+    amountRupees: number
+    amountUsdc: number
+    demoRate: string
+    seller: string
+    sellerWallet: string
+    transactionId: string | null
+    payer: string | null
+    explorerUrl: string | null
+    paidAt: string
+  }
+}
+
+/**
+ * Buys one catalogue item, paying the seller in test USDC over x402.
+ *
+ * The item is named in the query string; the server decides the price. The
+ * browser cannot set what it pays.
+ */
+export async function paySeller(params: {
+  itemId: string
+  verificationId?: string | null
+  mandateId?: string | null
+  wallet: WalletSigner
+  onStage: (stage: PaymentStage) => void
+}): Promise<PurchaseResult> {
+  const { itemId, verificationId, mandateId, wallet, onStage } = params
+
+  onStage('requesting')
+  const fetchWithPayment = createX402Fetch(wallet, onStage)
+
+  onStage('payment-required')
+  const response = await fetchWithPayment(
+    `${API_BASE}/api/shop/buy?item=${encodeURIComponent(itemId)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ verificationId, mandateId }),
+    },
+  )
+
+  onStage('verifying-payment')
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null)
+    throw new Error(
+      (body as { error?: string } | null)?.error ??
+        `The purchase failed (HTTP ${response.status}).`,
+    )
+  }
+
+  onStage('done')
+  return (await response.json()) as PurchaseResult
+}
