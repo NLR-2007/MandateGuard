@@ -412,6 +412,12 @@ export default function Dashboard() {
         />
       </div>
 
+      {/* The status grid above reports "not connected" but cannot fix it.
+          The wallet bar lives here so connecting is possible from any step. */}
+      <div className="reveal d4 mt-6">
+        <WalletBar />
+      </div>
+
       {status && (
         <div className="reveal d4 mt-6 flex flex-wrap gap-x-8 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--rule)'
 }}>
@@ -733,10 +739,6 @@ export default function Dashboard() {
                   order={order}
                   unsafe={orderSource === 'SECURITY_SIMULATION'}
                 />
-              </div>
-
-              <div className="mt-6">
-                <WalletBar />
               </div>
 
               <button

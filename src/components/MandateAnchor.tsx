@@ -8,7 +8,6 @@ import {
   writeAnchor,
 } from '../services/anchorClient'
 import { type AnchorStatus, confirmMandateAnchor, getMandateAnchor } from '../services/api'
-import WalletBar from './WalletBar'
 
 /**
  * Writes the approved policy's fingerprint onto Algorand TestNet.
@@ -117,17 +116,8 @@ export default function MandateAnchor({ mandateId }: { mandateId: string }) {
           <p className="footnote mt-2">
             {activeAddress
               ? `Sends a 0 ALGO transaction to your own address. Network fee ${ANCHOR_FEE_ALGO} ALGO. No money moves.`
-              : 'Your wallet signs this. Connect it below.'}
+              : 'Your wallet signs this. Connect it at the top of the page.'}
           </p>
-
-          {/* The wallet bar also appears at the payment step. Repeating it here
-              means this block is usable on its own - being told to connect a
-              wallet with no way to do it is not a working screen. */}
-          {!activeAddress && (
-            <div className="mt-4">
-              <WalletBar />
-            </div>
-          )}
         </>
       )}
 
