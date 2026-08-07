@@ -46,6 +46,25 @@ export interface AgentRun {
 const runs = new Map<string, AgentRun>()
 let counter = 1000
 
+/**
+ * How the agent behaves when it is told to buy something.
+ *
+ * ASK        - it finds something, then waits for a human to say yes.
+ * AUTONOMOUS - it acts alone. Nobody is asked; everything is still checked.
+ *
+ * Defaults to ASK because surprising someone with a purchase is worse than
+ * making them tap once.
+ */
+let currentMode: AgentMode = 'ASK'
+
+export function getAgentMode(): AgentMode {
+  return currentMode
+}
+
+export function setAgentMode(mode: AgentMode): void {
+  currentMode = mode
+}
+
 function nextRequestId(): string {
   counter += 1
   return `RUN-${counter}`

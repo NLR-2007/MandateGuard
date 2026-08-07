@@ -6,7 +6,14 @@
 
 import { Hono } from 'hono'
 import { getPolicy } from '../services/policyService.js'
-import { decideRun, getRun, listRuns, runAgent, type AgentMode } from '../services/agentFlow.js'
+import {
+  decideRun,
+  getAgentMode,
+  getRun,
+  listRuns,
+  runAgent,
+  type AgentMode,
+} from '../services/agentFlow.js'
 import {
   setBuyHandler,
   setDecisionHandler,
@@ -78,34 +85,37 @@ setWantHandler(async (want: string) => {
   }
 
   const label = want === 'laptop' ? 'a gaming laptop' : 'an SSD'
+  const mode = getAgentMode()
   void sendMessage(`🔎 Looking for ${label}…`)
 
   let run
   try {
-    run = await runAgent({ policy, mode: 'ASK', want: label })
+    run = await runAgent({ policy, mode, want: label })
   } catch (error) {
     void sendMessage(`⚠️ The agent could not choose anything: ${(error as Error).message}`)
     return
   }
 
   console.log(
-    `  🤖 /buy(${want}) → ${run.order.product} ₹${run.order.price} from ${run.order.seller} · ${run.result.decision}`,
+    `  🤖 /buy(${want}) [${mode}] → ${run.order.product} ₹${run.order.price} ` +
+      `from ${run.order.seller} · ${run.result.decision}`,
   )
   if (run.result.violations.length > 0) {
     console.log(`     refused: ${run.result.violations.join(' ')}`)
   }
+
   // Blocked runs have already told the user why, and asked nothing.
+  // In ASK mode the run is now waiting on a tap, so we stop here too.
+  if (run.state !== 'READY_TO_PAY' || !run.item) return
+
+  // AUTONOMOUS: the engine approved it and nobody is being asked. Pay.
+  await payForRun(run.requestId)
 })
 
-/**
- * The user tapped "Yes, buy it".
- *
- * decideRun() releases the run; only then does the agent pay. A refused run
- * can never reach this point - decideRun rejects it outright.
- */
-setPayHandler(async (requestId: string) => {
+/** Pays for a run the engine approved and the flow released. */
+async function payForRun(requestId: string): Promise<void> {
   const run = getRun(requestId)
-  if (!run?.item) return
+  if (!run?.item || run.state !== 'READY_TO_PAY') return
 
   try {
     await agentBuys({ itemId: run.item.id, verificationId: null, mandateId: run.policyId })
@@ -114,7 +124,15 @@ setPayHandler(async (requestId: string) => {
   } catch (error) {
     void sendMessage(`⚠️ The payment failed: ${(error as Error).message}`)
   }
-})
+}
+
+/**
+ * The user tapped "Yes, buy it".
+ *
+ * decideRun() releases the run; only then does the agent pay. A refused run
+ * can never reach this point - decideRun rejects it outright.
+ */
+setPayHandler(payForRun)
 
 function view(run: ReturnType<typeof getRun>) {
   if (!run) return null

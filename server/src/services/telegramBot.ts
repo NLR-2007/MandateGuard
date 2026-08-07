@@ -14,6 +14,7 @@ import { rupees } from './notifier.js'
 import { answerCallback, sendMessage, startPolling, type Incoming } from './telegram.js'
 import { describeStorage } from '../data/db.js'
 import { describeAgentWallet } from './agentWallet.js'
+import { getAgentMode, setAgentMode } from './agentFlow.js'
 import { describeX402, isX402Configured } from '../x402/x402Config.js'
 
 /** Called when the user taps Approve or Reject. Set by the agent routes. */
@@ -52,6 +53,8 @@ const HELP = [
   '🛡 <b>MandateGuard</b>',
   '',
   '/buy     — send the agent shopping now',
+  '/auto    — let the agent buy without asking',
+  '/ask     — make it ask me first (default)',
   '/wallet  — the agent’s own balance',
   '/status  — is everything running',
   '/spend   — how much has been spent today',
@@ -101,6 +104,8 @@ function statusSummary(): string {
     `AI        ${isNimConfigured() ? `✅ ${getModelName()}` : '⚠ not configured'}`,
     `Payments  ${isX402Configured() ? `✅ x402 · ${x402.price} · ${x402.network}` : '⚠ off'}`,
     `Storage   ${describeStorage().state === 'MYSQL' ? '✅ MySQL' : '⚠ memory only'}`,
+    '',
+    `Mode      ${getAgentMode() === 'AUTONOMOUS' ? '🤖 autonomous — buys without asking' : '🙋 asks me first'}`,
     '',
     `Rules active   ${active}`,
     disabled > 0 ? `Rules frozen   ${disabled}  ⛔` : '',
@@ -175,6 +180,32 @@ async function handle(msg: Incoming): Promise<void> {
 
     case '/status':
       void sendMessage(statusSummary())
+      return
+
+    case '/auto':
+      setAgentMode('AUTONOMOUS')
+      console.log('  ⚙ Agent mode → AUTONOMOUS')
+      void sendMessage(
+        [
+          '🤖 <b>Autonomous mode</b>',
+          '',
+          'The agent will now buy without asking me anything.',
+          '',
+          'It is still checked every single time — MandateGuard runs all ten',
+          'rules and refuses anything outside them. Nobody being asked is not',
+          'the same as nothing being checked.',
+          '',
+          'Send /ask to make it ask again, or /stop to freeze spending.',
+        ].join(NL),
+      )
+      return
+
+    case '/ask':
+      setAgentMode('ASK')
+      console.log('  ⚙ Agent mode → ASK')
+      void sendMessage(
+        '🙋 <b>Ask-first mode</b>' + NL + NL + 'The agent will ask me before it buys anything.',
+      )
       return
 
     case '/wallet': {
