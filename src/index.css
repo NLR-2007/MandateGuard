@@ -409,3 +409,41 @@ textarea.field {
   background: rgba(23, 22, 15, 0.04);
   color: var(--ink-soft);
 }
+
+/* ── Legibility guarantees ──────────────────────────────────
+   Elements must be readable even if an animation never runs or a
+   utility class conflicts. Text colour is stated explicitly. */
+
+.reveal {
+  opacity: 1; /* base state: visible. The keyframes handle the entrance. */
+}
+
+.btn,
+button.btn {
+  color: var(--ink);
+}
+
+.btn-solid,
+button.btn-solid,
+a.btn-solid {
+  background: var(--ink) !important;
+  color: var(--paper-card) !important;
+}
+
+.btn-red {
+  background: var(--oxblood) !important;
+  color: #f6f3ec !important;
+}
+
+input.field,
+textarea.field,
+select.field {
+  color: var(--ink) !important;
+  background: var(--paper);
+}
+
+/* Anything sitting on the dark ink background must be light. */
+[data-on-ink],
+[data-on-ink] * {
+  color: var(--paper-card);
+}

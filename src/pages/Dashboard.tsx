@@ -779,7 +779,7 @@ export default function Dashboard() {
                 <div className="mt-5 flex flex-wrap gap-3">
                   <button
                     onClick={handleResend}
-                    className="bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-[var(--paper-card)] transition-colors duration-200 hover:bg-cyan-400"
+                    className="btn btn-solid"
                   >
                     ↻ Try the payment again
                   </button>

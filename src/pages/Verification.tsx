@@ -270,7 +270,7 @@ const amountCheck = result.checks.find((c) => c.rule === 'Maximum Price')
               href={result.payment.explorerUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-5 inline-block bg-blue-500 px-5 py-2.5 text-sm font-semibold text-[var(--paper-card)] transition-colors duration-200 hover:bg-blue-400"
+              className="btn btn-solid mt-5 inline-block"
             >
               View on Algorand Explorer ↗
             </a>
