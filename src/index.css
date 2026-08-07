@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+/* MandateGuard base look: dark navy page, white readable text */
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background-color: #060d1c;
+  color: #e6edf7;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
