@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node --env-file-if-exists=.env --watch --import tsx src/index.ts",
     "start": "node --env-file-if-exists=.env --import tsx src/index.ts",
-    "test": "node --import tsx --test src/services/mandateVerifier.test.ts src/services/policyParser.test.ts src/services/aiOrderAgent.test.ts src/services/mandateProof.test.ts src/services/execution.test.ts",
+    "test": "node --import tsx --test src/services/mandateVerifier.test.ts src/services/policyParser.test.ts src/services/aiOrderAgent.test.ts src/services/mandateProof.test.ts src/services/execution.test.ts src/services/chainAnchor.test.ts",
     "test:nim": "node --env-file-if-exists=.env --import tsx scripts/testNim.ts",
     "typecheck": "tsc --noEmit"
   },

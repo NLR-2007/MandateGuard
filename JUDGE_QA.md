@@ -78,17 +78,45 @@ unsafe orders correctly.
 faked.** We found and fixed a real bug here during final testing: a facilitator
 outage used to crash the whole backend. It no longer does.
 
+### Why does this need a blockchain at all?
+
+**Because an audit log you control proves nothing.** MandateGuard's whole claim
+is "this purchase matched what the human approved." If the approved policy lives
+only in our database, we could edit it after the fact and the audit log would
+still look perfect. That is not proof, it is a promise.
+
+So the policy's SHA-256 fingerprint is written onto Algorand TestNet as a
+transaction note. Change one character of the policy and the fingerprint changes,
+and the chain no longer agrees. Nobody has to trust us — including us.
+
+x402 on Algorand is the second reason: an AI agent can pay a per-call fee
+autonomously, in stablecoin, with no card and no human in the loop.
+
 ### Why is the smart contract not deployed?
 
-**We chose not to fake it.** Algorand TypeScript needs the AlgoKit + puya
-toolchain, and deploying would require a signing key on the server — which this
-project refuses to hold. So mandate proof is a real SHA-256 hash stored
-server-side, labelled `onChain: false` everywhere it appears. The x402 payment
-layer is fully real and unaffected.
+**We chose not to fake it.** Anchoring uses the transaction note field, which is
+real on-chain data — but not on-chain application state. A contract would let the
+chain itself reject a replayed mandate; today the server enforces that against
+MySQL. Deploying one needs the AlgoKit + puya toolchain and a signing key on the
+server, which this project refuses to hold. `onChain` is `true` only after a
+fingerprint has actually been written and read back.
+
+### How do I know you did not just make up that transaction id?
+
+**Read it back yourself.** `GET /api/mandates/:id/anchor` re-reads the
+transaction from a public Algorand indexer every single time — nothing is served
+from cache. The server refuses a transaction id whose note does not match the
+fingerprint it computed itself, so an id alone proves nothing here. Open the
+explorer link and check the note by hand:
+
+```bash
+node demo-proof/verify-anchor.mjs MG-1001
+```
 
 ### What would you build next?
 
-1. Deploy the mandate proof contract so replay protection is on-chain.
+1. Deploy the mandate proof contract so the chain itself rejects a replayed
+   mandate, instead of the server doing it.
 2. A database, so the audit log survives a restart.
 3. Real merchant integrations instead of the demo catalog.
 4. Policy templates and multi-agent budgets.

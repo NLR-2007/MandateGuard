@@ -13,11 +13,14 @@ import { getSpentToday, nextVerificationId } from '../data/memoryStore.js'
 import { recordVerification, setPaymentProof } from '../services/auditService.js'
 import { addEvent, nextRequestId } from '../services/flowService.js'
 import {
+  getMandate,
   getMandateStatus,
   isMandateValid,
   markMandateUsed,
   registerMandate,
+  setMandateAnchor,
 } from '../services/mandateProof.js'
+import { expectedNote, verifyAnchor } from '../services/chainAnchor.js'
 import { verifyMandate } from '../services/mandateVerifier.js'
 import { getPolicy, validateOrderInput } from '../services/policyService.js'
 import type { AIOrder, OrderSource, PolicySource } from '../types/index.js'
@@ -166,8 +169,14 @@ export function createX402Routes(): Hono {
         mandateHash: mandate.mandateHash,
         status: getMandateStatus(policy.id),
         storage: mandate.storage,
-        onChain: false,
-        note: 'Mandate proof is stored in server memory in Phase 6. On-chain registration is not deployed.',
+        // True only when the fingerprint has actually been written to
+        // Algorand TestNet and read back. Never assumed.
+        onChain: Boolean(mandate.anchorTxId),
+        anchorTxId: mandate.anchorTxId,
+        anchorExplorerUrl: mandate.anchorTxId ? explorerTxUrl(mandate.anchorTxId) : null,
+        note: mandate.anchorTxId
+          ? `Fingerprint written to Algorand TestNet in transaction ${mandate.anchorTxId}.`
+          : 'Fingerprint is recorded in MySQL. It has not been written to Algorand yet — use "Write proof to Algorand" on the dashboard.',
       },
     })
   })
@@ -204,4 +213,95 @@ mandateRoutes.post('/mandates/:id/mark-used', (c) => {
 mandateRoutes.get('/mandates/:id', (c) => {
   const id = c.req.param('id')
   return c.json({ success: true, mandateId: id, status: getMandateStatus(id) })
+})
+
+/**
+ * Confirms that a mandate fingerprint really was written to Algorand TestNet.
+ *
+ * The browser sends only a transaction id. The server then reads that
+ * transaction from the public indexer and compares the note against the
+ * fingerprint it computed itself. A mismatch is refused. Nothing is stored on
+ * the browser's say-so, and no id is ever invented.
+ */
+mandateRoutes.post('/mandates/:id/anchor', async (c) => {
+  const id = c.req.param('id')
+  const record = getMandate(id)
+
+  if (!record) {
+    return c.json({ success: false, error: 'Mandate is not registered.' }, 404)
+  }
+
+  const body = await c.req.json().catch(() => null)
+  const txId = (body as { txId?: string } | null)?.txId?.trim()
+
+  if (!txId) {
+    return c.json({ success: false, error: 'txId is required.' }, 400)
+  }
+
+  const check = await verifyAnchor(txId, record.mandateHash)
+
+  if (!check.ok || !check.anchor) {
+    console.log(`  ⛓ Anchor REFUSED for ${id}: ${check.reason}`)
+    return c.json({ success: false, error: check.reason, verified: false }, 400)
+  }
+
+  const updated = setMandateAnchor(id, check.anchor.txId, check.anchor.roundTime)
+  console.log(
+    `  ⛓ Mandate ${id} anchored on Algorand TestNet: ${check.anchor.txId} ` +
+      `(round ${check.anchor.confirmedRound})`,
+  )
+
+  return c.json({
+    success: true,
+    verified: true,
+    mandateId: id,
+    mandateHash: record.mandateHash,
+    anchor: {
+      ...check.anchor,
+      anchoredAt: updated?.anchoredAt ?? null,
+      network: NETWORK_LABEL,
+    },
+  })
+})
+
+/**
+ * Re-reads the anchor from the chain every time it is asked.
+ *
+ * This is the demo's strongest claim: the proof does not live in our database,
+ * it lives on Algorand, and it can be checked again at any moment by anyone.
+ */
+mandateRoutes.get('/mandates/:id/anchor', async (c) => {
+  const id = c.req.param('id')
+  const record = getMandate(id)
+
+  if (!record) {
+    return c.json({ success: false, error: 'Mandate is not registered.' }, 404)
+  }
+
+  if (!record.anchorTxId) {
+    return c.json({
+      success: true,
+      mandateId: id,
+      mandateHash: record.mandateHash,
+      anchored: false,
+      expectedNote: expectedNote(record.mandateHash),
+      anchor: null,
+    })
+  }
+
+  const check = await verifyAnchor(record.anchorTxId, record.mandateHash)
+
+  return c.json({
+    success: true,
+    mandateId: id,
+    mandateHash: record.mandateHash,
+    anchored: true,
+    /** Freshly re-checked against the chain, not read from our database. */
+    stillMatches: check.ok,
+    reason: check.reason,
+    expectedNote: expectedNote(record.mandateHash),
+    anchor: check.anchor
+      ? { ...check.anchor, anchoredAt: record.anchoredAt, network: NETWORK_LABEL }
+      : null,
+  })
 })

@@ -248,7 +248,9 @@ const amountCheck = result.checks.find((c) => c.rule === 'Maximum Price')
                 <div>
                   <dt className="text-xs text-[var(--ink-soft)]">Mandate Proof</dt>
                   <dd className="text-[var(--ink)]">
-                    {result.mandate.onChain ? 'Registered on-chain' : 'Registered (server)'}
+                    {result.mandate.onChain
+                      ? 'Written to Algorand TestNet'
+                      : 'Recorded in MySQL only'}
                   </dd>
                 </div>
                 <div>
@@ -281,8 +283,19 @@ const amountCheck = result.checks.find((c) => c.rule === 'Maximum Price')
             </p>
           )}
 
-          {result.mandate && !result.mandate.onChain && (
-            <p className="mt-4 text-xs text-[var(--ink-faint)]">{result.mandate.note}</p>
+          {result.mandate?.anchorExplorerUrl && (
+            <a
+              href={result.mandate.anchorExplorerUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-sm mt-4 inline-block"
+            >
+              View the mandate proof on Algorand ↗
+            </a>
+          )}
+
+          {result.mandate && (
+            <p className="footnote mt-4">{result.mandate.note}</p>
           )}
         </div>
       )}

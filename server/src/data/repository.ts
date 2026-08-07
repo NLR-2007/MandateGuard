@@ -101,6 +101,8 @@ export async function loadAll(): Promise<{
     usedAt: r.used_at ?? null,
     registeredAt: r.registered_at,
     storage: 'MYSQL',
+    anchorTxId: r.anchor_tx_id ?? null,
+    anchoredAt: r.anchored_at ?? null,
   }))
   loadMandates(mandateRecords)
 
@@ -175,10 +177,19 @@ export function persistPolicy(p: SpendingPolicy): void {
 
 export function persistMandate(m: MandateRecord): void {
   void write(
-    `INSERT INTO mandates (mandate_id, mandate_hash, expires_at, used, used_at, registered_at)
-     VALUES (?,?,?,?,?,?)
-     ON DUPLICATE KEY UPDATE used = VALUES(used), used_at = VALUES(used_at)`,
-    [m.mandateId, m.mandateHash, m.expiresAt, m.used ? 1 : 0, m.usedAt, m.registeredAt],
+    `INSERT INTO mandates
+       (mandate_id, mandate_hash, expires_at, used, used_at, registered_at,
+        anchor_tx_id, anchored_at)
+     VALUES (?,?,?,?,?,?,?,?)
+     ON DUPLICATE KEY UPDATE
+       used = VALUES(used),
+       used_at = VALUES(used_at),
+       anchor_tx_id = VALUES(anchor_tx_id),
+       anchored_at = VALUES(anchored_at)`,
+    [
+      m.mandateId, m.mandateHash, m.expiresAt, m.used ? 1 : 0, m.usedAt,
+      m.registeredAt, m.anchorTxId, m.anchoredAt,
+    ],
     'persistMandate',
   )
 }

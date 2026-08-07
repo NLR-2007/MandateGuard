@@ -197,3 +197,47 @@ export async function prepareAiOrderForRequest(
     body: JSON.stringify({ policyId, requestId }),
   })
 }
+
+/**
+ * On-chain anchor - Algorand TestNet.
+ *
+ * The fingerprint of an approved policy can be written into the note field of
+ * a real TestNet transaction. These two calls read that status and confirm a
+ * transaction the wallet has just sent. The server re-reads the chain itself
+ * before believing anything, so a transaction id alone proves nothing here.
+ */
+export interface AnchorDetails {
+  txId: string
+  note: string
+  sender: string
+  confirmedRound: number
+  roundTime: number
+  explorerUrl: string
+  anchoredAt: string | null
+  network: string
+}
+
+export interface AnchorStatus {
+  mandateId: string
+  mandateHash: string
+  anchored: boolean
+  /** Re-checked against Algorand on every read, never cached. */
+  stillMatches?: boolean
+  reason?: string | null
+  expectedNote: string
+  anchor: AnchorDetails | null
+}
+
+export async function getMandateAnchor(mandateId: string): Promise<AnchorStatus> {
+  return request<AnchorStatus>(`/api/mandates/${mandateId}/anchor`)
+}
+
+export async function confirmMandateAnchor(
+  mandateId: string,
+  txId: string,
+): Promise<{ verified: boolean; mandateHash: string; anchor: AnchorDetails }> {
+  return request<{ verified: boolean; mandateHash: string; anchor: AnchorDetails }>(
+    `/api/mandates/${mandateId}/anchor`,
+    { method: 'POST', body: JSON.stringify({ txId }) },
+  )
+}

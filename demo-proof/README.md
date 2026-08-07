@@ -12,6 +12,7 @@ from the running system — nothing is mocked up or edited.
 | `03-nvidia-nim.txt` | A live NVIDIA NIM call producing all 8 policy fields correctly, plus the no-invention safety test. |
 | `04-failure-paths.txt` | AI outage and facilitator outage handled gracefully — service stays alive, nothing faked. |
 | `run-qa.mjs`, `run-qa2.mjs` | The harnesses, so any claim above can be re-run: `node demo-proof/run-qa.mjs` |
+| `verify-anchor.mjs` | Independent proof of the on-chain anchor. Recomputes the fingerprint with its own copy of the rule and reads Algorand TestNet directly, without trusting our server: `node demo-proof/verify-anchor.mjs MG-1001` |
 
 Re-run everything with the backend up:
 
@@ -33,6 +34,7 @@ I cannot drive a browser, so these are yours. Save them here with these names:
 | `09-blocked.png` | The attack result: **x402 VERIFIED** + **MandateGuard BLOCKED** with 4 reasons |
 | `10-audit-history.png` | The History page with both runs |
 | `11-nim-draft.png` | Dashboard step 2, the AI-generated draft with a red missing field |
+| `12-anchor-explorer.png` | The explorer page for the **mandate anchor**, with the `MG1:…` note field visible |
 
 **Before saving any screenshot, check it does not show:**
 

@@ -61,7 +61,10 @@ export interface MandateProofInfo {
   mandateHash: string
   status: string
   storage: string
+  /** True only when the fingerprint is confirmed on Algorand TestNet. */
   onChain: boolean
+  anchorTxId: string | null
+  anchorExplorerUrl: string | null
   note: string
 }
 

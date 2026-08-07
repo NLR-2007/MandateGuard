@@ -344,19 +344,44 @@ it can never approve again.
 > and executing a purchase are different things. Only
 > `POST /api/mandates/:id/mark-used` consumes one.
 
-### ⚠️ Known limitation: the mandate proof is not on-chain yet
+### Anchoring the mandate on Algorand
 
-In this phase the mandate registry lives in **server memory**, not in an Algorand
-smart contract. The blocker is honest and specific:
+A policy's fingerprint can be written onto **Algorand TestNet** as the note field
+of a real transaction:
 
-- Algorand TypeScript contracts need the **AlgoKit + puya** toolchain, which is
-  not installed in this environment (`algokit` is not a recognised command).
-- Deploying a contract requires a signing account. Putting a mnemonic on the
-  server was ruled out, because MandateGuard must never hold private keys.
+```
+MG1:<64-character SHA-256 fingerprint>
+```
 
-The x402 payment layer is **fully real** and unaffected. The proof layer is
-labelled `IN_MEMORY` and `onChain: false` everywhere it appears — nothing
-pretends to be blockchain data.
+The transaction is a 0 ALGO payment from the user's wallet to itself. No money
+moves; the only payload is the note. It costs one network fee, 0.001 ALGO.
+
+**Why this matters.** An audit log is only as trustworthy as whoever owns the
+database — and we own this one. Once the fingerprint is on a public ledger,
+changing so much as one character of the policy changes its fingerprint, and the
+chain stops agreeing with us. We are removed from the trust equation.
+
+**The server does not take the browser's word for it.** When the wallet reports a
+transaction id, `POST /api/mandates/:id/anchor` reads that transaction back from
+a public Algorand indexer and compares the note against the fingerprint it
+computed itself. A mismatch is refused, so a transaction id alone proves nothing.
+
+`GET /api/mandates/:id/anchor` re-reads the chain on **every** call. The proof is
+never served from cache — anyone can repeat the check, including on the explorer
+by hand.
+
+| | Where it lives | Who has to be trusted |
+|---|---|---|
+| Policy, audit log | MySQL | us |
+| Mandate fingerprint | Algorand TestNet | nobody |
+
+Keys: none. The wallet signs in its own window. MandateGuard never holds a
+private key, a mnemonic or a seed phrase.
+
+> **Still not deployed: a smart contract.** Anchoring uses the transaction note
+> field, not on-chain application state. Contract-based storage would let the
+> chain itself reject a replayed mandate; today replay protection is enforced by
+> the server against MySQL. See *Known limitations*.
 
 ---
 
@@ -371,11 +396,14 @@ Runbook: [`HACKATHON_DEMO.md`](HACKATHON_DEMO.md) · Judge answers:
 
 ## Known limitations
 
-- **No smart contract is deployed.** Mandate proof and replay protection live in
-  server memory, labelled `IN_MEMORY` / `onChain: false` everywhere they appear.
-  Blocker: Algorand TypeScript needs the AlgoKit + puya toolchain (not installed
-  here), and deploying would require a signing key on the server, which this
-  project refuses to hold.
+- **No smart contract is deployed.** Mandate fingerprints are anchored on
+  Algorand TestNet through the transaction **note field**, which is real on-chain
+  data anyone can verify — but it is not on-chain application state. Replay
+  protection is therefore enforced by the server against MySQL, not by the chain.
+  `onChain` is `true` only after a fingerprint has actually been written and read
+  back; it is never assumed.
+- **Anchoring is a deliberate, separate step.** A policy is usable without it.
+  Creating one does not silently spend the user's ALGO.
 - **TestNet only.** MainNet is rejected by configuration, by design.
 - **`@x402/*` is pinned to 2.12.0.** Version 2.21.0 truncates the Algorand
   network id to the 32-character CAIP-2 limit, which no longer matches what the

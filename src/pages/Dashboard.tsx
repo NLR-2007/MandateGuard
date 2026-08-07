@@ -2,6 +2,7 @@ import { useWallet } from '@txnlab/use-wallet-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Badge from '../components/Badge'
+import MandateAnchor from '../components/MandateAnchor'
 import OrderComparison from '../components/OrderComparison'
 import { StatusLights, useSystemStatus } from '../components/StatusBar'
 import StepIndicator from '../components/StepIndicator'
@@ -687,9 +688,13 @@ export default function Dashboard() {
               </div>
 
               <p className="mt-4 text-sm text-[var(--ink-soft)]">
-                Mandate proof registered for {policy.id}. In this build the proof is stored
-                in server memory — no smart contract is deployed.
+                Mandate proof registered for {policy.id}. The policy is now fixed: every
+                later check compares the AI's order against exactly this record.
               </p>
+
+              {/* The fingerprint can now be written to Algorand TestNet, so the
+                  approved intent no longer depends on trusting our database. */}
+              <MandateAnchor mandateId={policy.id} />
 
               <button
                 onClick={() => void handlePrepareOrder()}

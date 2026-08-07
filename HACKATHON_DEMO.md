@@ -74,6 +74,38 @@ cd mandateguard && npm run dev             # http://localhost:5173
 
 ---
 
+## STEP 3b — Put the human's intent on Algorand (45 seconds) ⭐
+
+This is the answer to *"why do you need a blockchain?"* — have it ready.
+
+- Point at **Proof on Algorand** and the line beginning `MG1:`.
+
+> **"That is a fingerprint of the rule I just approved. Now watch — I put it on
+> a public ledger."**
+
+- Click **Write proof to Algorand** → approve in Pera (0 ALGO, fee 0.001).
+- When it confirms, click **View on Algorand Explorer** and show the note field.
+
+> **"My audit log is only as honest as my database — and I own my database. This
+> fingerprint is on Algorand. If I quietly edit the rule later, the fingerprint
+> changes and the chain stops agreeing with me. You don't have to trust me."**
+
+- Click **Check the chain again**.
+
+> **"That just re-read the transaction from a public Algorand node. Live. Nothing
+> here is cached."**
+
+**If a judge asks whether you faked the id**, run this in a terminal:
+
+```bash
+node demo-proof/verify-anchor.mjs MG-1001
+```
+
+It recomputes the fingerprint independently and reads the chain directly —
+without trusting our server at all.
+
+---
+
 ## STEP 4 — The AI goes shopping (20 seconds)
 
 - Keep the scenario switch on **Safe AI Order**.

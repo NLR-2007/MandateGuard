@@ -82,6 +82,8 @@ const SCHEMA = [
      used          TINYINT(1)   NOT NULL DEFAULT 0,
      used_at       VARCHAR(64)  NULL,
      registered_at VARCHAR(64)  NOT NULL,
+     anchor_tx_id  VARCHAR(128) NULL,
+     anchored_at   VARCHAR(64)  NULL,
      INDEX idx_hash (mandate_hash)
    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 
@@ -127,6 +129,17 @@ const SCHEMA = [
 ]
 
 /**
+ * Columns added after the first release. CREATE TABLE IF NOT EXISTS leaves an
+ * existing table alone, so a database built before on-chain anchoring would
+ * still be missing these. Each one is tried on its own and a duplicate-column
+ * error is the expected, harmless case.
+ */
+const MIGRATIONS = [
+  'ALTER TABLE mandates ADD COLUMN anchor_tx_id VARCHAR(128) NULL',
+  'ALTER TABLE mandates ADD COLUMN anchored_at VARCHAR(64) NULL',
+]
+
+/**
  * Creates the database if needed, connects, and builds the schema.
  * Returns true when MySQL is in use.
  */
@@ -157,6 +170,18 @@ export async function initDatabase(): Promise<boolean> {
 
     for (const statement of SCHEMA) {
       await pool.query(statement)
+    }
+
+    for (const statement of MIGRATIONS) {
+      try {
+        await pool.query(statement)
+      } catch (error) {
+        // ER_DUP_FIELDNAME just means the column is already there.
+        const code = (error as { code?: string }).code
+        if (code !== 'ER_DUP_FIELDNAME') {
+          console.error(`  ✕ MySQL migration failed: ${(error as Error).message}`)
+        }
+      }
     }
 
     state = 'MYSQL'

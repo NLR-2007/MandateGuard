@@ -66,7 +66,7 @@ systemRoutes.get('/system/status', (c) => {
         state: 'NOT_CONFIGURED' as ServiceState,
         name: 'Mandate proof contract',
         applicationId: null,
-        note: 'Mandate proof is stored in server memory. No contract is deployed.',
+        note: 'Mandate fingerprints are stored in MySQL and can be anchored on Algorand TestNet via a transaction note. No smart contract is deployed.',
       },
     },
     spend: {

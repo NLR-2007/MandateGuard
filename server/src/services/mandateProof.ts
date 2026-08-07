@@ -22,8 +22,14 @@ export interface MandateRecord {
   used: boolean
   usedAt: string | null
   registeredAt: string
-  /** Where the proof lives. On-chain registration is not available yet. */
+  /** Where the record lives locally. */
   storage: 'IN_MEMORY' | 'MYSQL'
+  /**
+   * Algorand TestNet transaction carrying this fingerprint in its note field.
+   * null until the human's wallet has written it to the chain.
+   */
+  anchorTxId: string | null
+  anchoredAt: string | null
 }
 
 const mandates = new Map<string, MandateRecord>()
@@ -71,6 +77,8 @@ export function registerMandate(policy: SpendingPolicy): MandateRecord {
     usedAt: null,
     registeredAt: new Date().toISOString(),
     storage: storageState() === 'MYSQL' ? 'MYSQL' : 'IN_MEMORY',
+    anchorTxId: null,
+    anchoredAt: null,
   }
 
   mandates.set(policy.id, record)
@@ -113,6 +121,30 @@ export function markMandateUsed(mandateId: string): MandateRecord | null {
 
   record.used = true
   record.usedAt = new Date().toISOString()
+  persistMandate(record)
+  return record
+}
+
+/**
+ * Records the Algorand transaction that carries this fingerprint.
+ *
+ * Only call this AFTER chainAnchor.verifyAnchor() has read the note back off
+ * the chain. Storing an unverified id would be inventing evidence.
+ */
+export function setMandateAnchor(
+  mandateId: string,
+  txId: string,
+  roundTimeSeconds: number,
+): MandateRecord | null {
+  const record = mandates.get(mandateId)
+  if (!record) return null
+
+  record.anchorTxId = txId
+  // The block's own timestamp, so the record matches what the chain says.
+  record.anchoredAt = roundTimeSeconds
+    ? new Date(roundTimeSeconds * 1000).toISOString()
+    : new Date().toISOString()
+
   persistMandate(record)
   return record
 }
