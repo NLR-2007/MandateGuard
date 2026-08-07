@@ -121,7 +121,10 @@ export default function WalletBar() {
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-full max-w-sm border border-[var(--rule)] p-6"
+            /* An opaque background is not decoration here: without it the panel
+               is transparent over the dark overlay and the dark text vanishes. */
+            className="w-full max-w-sm border border-[var(--rule)] p-6 shadow-2xl"
+            style={{ background: 'var(--paper-card)' }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="display text-[24px]">Connect a TestNet wallet</h3>
