@@ -27,6 +27,7 @@ import { createShopRoutes, shopRoutes } from './routes/shop.routes.js'
 import { agentRoutes } from './routes/agent.routes.js'
 import { getModelName, isNimConfigured } from './services/nimClient.js'
 import { describeTelegram, isTelegramConfigured } from './services/telegram.js'
+import { agentAddress, describeAgentWallet, isAgentWalletConfigured } from './services/agentWallet.js'
 import { startTelegramBot } from './services/telegramBot.js'
 import { describeX402, isX402Configured } from './x402/x402Config.js'
 
@@ -103,6 +104,7 @@ app.get('/health', (c) =>
     storage: describeStorage(),
     payment: describeX402(),
     telegram: describeTelegram(),
+    agentWallet: { configured: isAgentWalletConfigured(), address: agentAddress() },
   }),
 )
 
@@ -177,6 +179,13 @@ const server = serve({ fetch: app.fetch, port: PORT }, () => {
   console.log(
     `  NVIDIA NIM: ${isNimConfigured() ? `configured (${getModelName()})` : 'NOT configured - manual mode only'}`,
   )
+
+  if (isAgentWalletConfigured()) {
+    void describeAgentWallet().then((w) => {
+      console.log(`  Agent wallet: ${w.address}`)
+      console.log(`           ${w.ready ? '✓ funded and ready' : '⚠ ' + w.note}`)
+    })
+  }
 
   if (isTelegramConfigured()) {
     startTelegramBot()

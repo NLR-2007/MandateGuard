@@ -13,6 +13,7 @@ import { getModelName, isNimConfigured } from './nimClient.js'
 import { rupees } from './notifier.js'
 import { answerCallback, sendMessage, startPolling, type Incoming } from './telegram.js'
 import { describeStorage } from '../data/db.js'
+import { describeAgentWallet } from './agentWallet.js'
 import { describeX402, isX402Configured } from '../x402/x402Config.js'
 
 /** Called when the user taps Approve or Reject. Set by the agent routes. */
@@ -23,9 +24,19 @@ export function setDecisionHandler(handler: DecisionHandler): void {
   onDecision = handler
 }
 
+/** Runs a whole shopping trip from Telegram. Set by the agent routes. */
+type BuyHandler = (what: string) => Promise<void>
+let onBuy: BuyHandler | null = null
+
+export function setBuyHandler(handler: BuyHandler): void {
+  onBuy = handler
+}
+
 const HELP = [
   '🛡 <b>MandateGuard</b>',
   '',
+  '/buy     — send the agent shopping now',
+  '/wallet  — the agent’s own balance',
   '/status  — is everything running',
   '/spend   — how much has been spent today',
   '/orders  — the last few decisions',
@@ -113,6 +124,9 @@ function setAllPolicies(status: 'ACTIVE' | 'DISABLED'): number {
   return changed
 }
 
+/** A newline, written this way so no edit tool can mangle it. */
+const NL = String.fromCharCode(10)
+
 async function handle(msg: Incoming): Promise<void> {
   // A tapped Approve/Reject button.
   if (msg.callback) {
@@ -134,6 +148,36 @@ async function handle(msg: Incoming): Promise<void> {
     case '/status':
       void sendMessage(statusSummary())
       return
+
+    case '/wallet': {
+      const w = await describeAgentWallet()
+      void sendMessage(
+        [
+          '👛 <b>The agent’s wallet</b>',
+          '',
+          w.address ? `<code>${w.address}</code>` : 'not configured',
+          '',
+          w.balance
+            ? `ALGO  ${w.balance.algo.toFixed(3)}${NL}USDC  ${w.balance.optedIn ? w.balance.usdc?.toFixed(3) : 'not opted in'}`
+            : '',
+          '',
+          w.ready ? '✅ The agent can buy on its own.' : `⚠️ ${w.note}`,
+          '',
+          '<i>This is the agent’s money, not yours. MandateGuard decides what it may spend it on.</i>',
+        ]
+          .filter(Boolean)
+          .join(String.fromCharCode(10)),
+      )
+      return
+    }
+
+    case '/buy': {
+      if (!onBuy) return
+      // Everything after the command word is what the user asked for.
+      const what = (msg.text ?? '').replace(/^\/buy(@\S+)?\s*/i, '').trim()
+      await onBuy(what)
+      return
+    }
 
     case '/spend':
       void sendMessage(spendSummary())

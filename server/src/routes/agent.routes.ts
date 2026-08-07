@@ -7,13 +7,64 @@
 import { Hono } from 'hono'
 import { getPolicy } from '../services/policyService.js'
 import { decideRun, getRun, listRuns, runAgent, type AgentMode } from '../services/agentFlow.js'
-import { setDecisionHandler } from '../services/telegramBot.js'
+import { setBuyHandler, setDecisionHandler } from '../services/telegramBot.js'
+import { agentBuys } from '../services/agentBuyer.js'
+import { isAgentWalletConfigured } from '../services/agentWallet.js'
+import { listPolicies } from '../services/policyService.js'
+import { sendMessage } from '../services/telegram.js'
+import { markRunPaid } from '../services/agentFlow.js'
 import { rupeesToUsdc } from '../services/notifier.js'
 
 export const agentRoutes = new Hono()
 
 // Telegram button taps land here.
 setDecisionHandler(decideRun)
+
+/**
+ * /buy — a whole shopping trip from the phone, with no browser open.
+ *
+ * This is the only path where nothing human happens at all: the agent
+ * searches, MandateGuard rules on the pick, and if it passes the agent pays
+ * from its own wallet. If it does not pass, the run stops here and the user is
+ * told why - approval is never even offered for an order that breaks the rule.
+ */
+setBuyHandler(async () => {
+  if (!isAgentWalletConfigured()) {
+    void sendMessage('⚠️ The agent has no wallet of its own yet, so it cannot buy without you.')
+    return
+  }
+
+  const policy = listPolicies().find((p) => p.status === 'ACTIVE')
+  if (!policy) {
+    void sendMessage(
+      '⚠️ There is no active rule. Approve one first, or send /resume if you froze spending.',
+    )
+    return
+  }
+
+  let run
+  try {
+    run = await runAgent({ policy, mode: 'AUTONOMOUS' })
+  } catch (error) {
+    void sendMessage(`⚠️ The agent could not choose anything: ${(error as Error).message}`)
+    return
+  }
+
+  // Blocked runs already told the user why. Nothing more to do.
+  if (run.state !== 'READY_TO_PAY' || !run.item) return
+
+  try {
+    await agentBuys({
+      itemId: run.item.id,
+      verificationId: null,
+      mandateId: run.policyId,
+    })
+    markRunPaid(run.requestId)
+    // The receipt, with its transaction link, is sent by the shop route.
+  } catch (error) {
+    void sendMessage(`⚠️ The payment failed: ${(error as Error).message}`)
+  }
+})
 
 function view(run: ReturnType<typeof getRun>) {
   if (!run) return null
