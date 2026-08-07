@@ -8,7 +8,7 @@ interface LinkDef {
 }
 
 const links: LinkDef[] = [
-  { to: '/', label: 'Home', modes: ['MVP', 'DEMO'] },
+  { to: '/home', label: 'Home', modes: ['MVP', 'DEMO'] },
   { to: '/dashboard', label: 'Dashboard', modes: ['MVP', 'DEMO'] },
   { to: '/history', label: 'History', modes: ['MVP', 'DEMO'] },
   { to: '/architecture', label: 'How it works', modes: ['MVP', 'DEMO'] },
@@ -79,7 +79,7 @@ export default function Navbar() {
             <NavLink
               key={link.to}
               to={link.to}
-              end={link.to === '/'}
+              end={link.to === '/home'}
               className="mono text-[11px] font-medium tracking-[0.14em] uppercase transition-colors"
               style={({ isActive }) =>
                 isActive

@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@perawallet/connect": "^1.6.0",
+    "@splinetool/react-spline": "^4.1.0",
+    "@splinetool/runtime": "^1.12.98",
     "@txnlab/use-wallet": "^4.6.0",
     "@txnlab/use-wallet-react": "^4.6.0",
     "@x402-avm/avm": "2.6.1",

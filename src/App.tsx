@@ -9,6 +9,7 @@ import AIOrder from './pages/AIOrder'
 import CreatePolicy from './pages/CreatePolicy'
 import History from './pages/History'
 import Home from './pages/Home'
+import Landing from './pages/Landing'
 import UnsafeDemo from './pages/UnsafeDemo'
 import Verification from './pages/Verification'
 /**
@@ -21,17 +22,19 @@ const walletManager = new WalletManager({
   defaultNetwork: NetworkId.TESTNET,
 })
 
-export default function App() {
+/**
+ * Everything except the landing page: masthead, ruled navigation, footer.
+ * The landing page deliberately sits outside this - it is full-bleed and dark,
+ * and wrapping it in the paper chrome would fight it.
+ */
+function AppShell() {
   return (
-    <AppModeProvider>
-    <WalletProvider manager={walletManager}>
-    <BrowserRouter>
-      <div className="min-h-screen">
+    <div className="min-h-screen">
         <Navbar />
 
         <main className="mx-auto max-w-[1180px] px-6 pb-24">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/unsafe-demo" element={<UnsafeDemo />} />
             <Route path="/architecture" element={<Architecture />} />
@@ -55,6 +58,19 @@ export default function App() {
           </div>
         </footer>
       </div>
+  )
+}
+
+export default function App() {
+  return (
+    <AppModeProvider>
+    <WalletProvider manager={walletManager}>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        {/* Every other path keeps the chrome. */}
+        <Route path="*" element={<AppShell />} />
+      </Routes>
     </BrowserRouter>
     </WalletProvider>
     </AppModeProvider>

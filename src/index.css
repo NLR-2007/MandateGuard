@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 /* ═══════════════════════════════════════════════════════════
@@ -460,3 +460,71 @@ select.field {
   text-transform: none;
   color: var(--ink-soft);
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   Landing page — the one dark, full-bleed screen.
+   Everything is scoped under .lp so none of it can reach the
+   paper theme that the rest of the app depends on.
+   ═══════════════════════════════════════════════════════════ */
+
+.lp {
+  --lp-bg:       hsl(0 0% 8%);
+  --lp-fg:       hsl(0 0% 96%);
+  --lp-muted:    hsl(0 0% 60%);
+  --lp-accent:   hsl(119 99% 46%);
+  --lp-on-accent: hsl(0 0% 4%);
+  --lp-line:     hsl(0 0% 20%);
+
+  background: var(--lp-bg);
+  color: var(--lp-fg);
+  font-family: 'Sora', ui-sans-serif, sans-serif;
+  min-height: 100vh;
+}
+
+/* The reveal: each element rises and sharpens into place. Staggered with
+   inline animation-delay so the eye is led down the page once, on load. */
+@keyframes lp-rise {
+  from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+.lp-rise {
+  opacity: 0;
+  animation: lp-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Anyone who asks for less motion gets the content, immediately. */
+@media (prefers-reduced-motion: reduce) {
+  .lp-rise {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+.lp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.75rem;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 3px;
+  transition: filter 0.2s ease, transform 0.1s ease;
+  cursor: pointer;
+}
+
+.lp-btn:active { transform: scale(0.975); }
+.lp-btn:hover  { filter: brightness(1.12); }
+
+.lp-btn-accent { background: var(--lp-accent); color: var(--lp-on-accent); }
+.lp-btn-plain  { background: hsl(0 0% 96%);   color: hsl(0 0% 8%); }
+.lp-btn-plain:hover { filter: brightness(0.9); }
+
+.lp-btn-ghost {
+  background: transparent;
+  color: var(--lp-fg);
+  border: 1px solid var(--lp-line);
+}
+.lp-btn-ghost:hover { border-color: var(--lp-accent); filter: none; }
