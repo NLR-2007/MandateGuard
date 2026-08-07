@@ -18,15 +18,69 @@ import { createPaymentConfig, getX402Config } from './x402Config.js'
  * instead of throwing. A payment problem must never take the whole service
  * down - MandateGuard, the AI and the free routes have to keep working.
  */
-export function createX402Middleware(): MiddlewareHandler {
-  const config = getX402Config()
+/**
+ * One resource server for the whole process.
+ *
+ * It holds the facilitator connection and the registered payment scheme, so
+ * building it per request would open a new connection every time.
+ */
+let sharedServer: x402ResourceServer | null = null
 
+function resourceServerOnce(): x402ResourceServer {
+  if (sharedServer) return sharedServer
+
+  const config = getX402Config()
   const facilitatorClient = new HTTPFacilitatorClient({ url: config.facilitatorUrl })
 
-  const resourceServer = new x402ResourceServer(facilitatorClient).register(
+  sharedServer = new x402ResourceServer(facilitatorClient).register(
     ALGORAND_TESTNET_CAIP2,
     new ExactAvmScheme(),
   )
+  return sharedServer
+}
+
+/**
+ * A payment gate whose price and recipient are decided per request.
+ *
+ * The verification fee is always the same, so its config is fixed. A purchase
+ * is not: every product has its own price and its own seller wallet. This
+ * builds the x402 config from whatever `configFor` returns, then hands over to
+ * the normal middleware - so the protocol itself is unchanged.
+ *
+ * Returning null means "cannot price this request", and the caller answers.
+ */
+export function createDynamicX402Middleware(
+  configFor: (c: Parameters<MiddlewareHandler>[0]) => unknown | null,
+): MiddlewareHandler {
+  return async (c, next) => {
+    const config = configFor(c)
+
+    if (!config) {
+      return c.json(
+        { success: false, error: 'This request cannot be priced, so it was not accepted.' },
+        400,
+      )
+    }
+
+    try {
+      const inner = paymentMiddleware(config as never, resourceServerOnce()) as MiddlewareHandler
+      return await inner(c, next)
+    } catch (error) {
+      console.error(`  ✕ x402 payment layer unavailable: ${(error as Error)?.message}`)
+      return c.json(
+        {
+          success: false,
+          error: 'The x402 payment service is unavailable right now. Nothing was paid.',
+          detail: 'facilitator_unreachable',
+        },
+        503,
+      )
+    }
+  }
+}
+
+export function createX402Middleware(): MiddlewareHandler {
+  const resourceServer = resourceServerOnce()
 
   const paymentConfig = createPaymentConfig()
   const inner = paymentMiddleware(paymentConfig as never, resourceServer) as MiddlewareHandler
