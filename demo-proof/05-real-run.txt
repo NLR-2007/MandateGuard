@@ -1,0 +1,43 @@
+REAL END-TO-END RUN — Algorand TestNet
+Captured 2026-08-07T16:15:34Z from the live system. Nothing here is mocked.
+
+Policy MG-1017 · Verification VER-1031 · decision APPROVED · mandate USED
+
+================================================================
+1. MANDATE ANCHOR — the human's approved policy, on-chain
+================================================================
+
+Independent anchor check for MG-1017
+========================================================
+  ✓ policy found: 1 x 1TB SSD from SecureStore
+
+  computed here : 9fc7b115486a445367855c243d012198536d3196ba6f523f2017d4bb520b1b11
+  server says   : 9fc7b115486a445367855c243d012198536d3196ba6f523f2017d4bb520b1b11
+  ✓ fingerprints agree — the server did not invent one
+
+  reading Algorand TestNet directly: 33RX5SPURXHDFN7DIOLWQFX6TVBRVVFHSUAGUDENBNETLBYYS52Q
+  note on chain : MG1:9fc7b115486a445367855c243d012198536d3196ba6f523f2017d4bb520b1b11
+  expected      : MG1:9fc7b115486a445367855c243d012198536d3196ba6f523f2017d4bb520b1b11
+  ✓ the chain carries exactly this policy’s fingerprint
+  ✓ confirmed in block 66084044 at 2026-08-07T16:14:05.000Z
+  ✓ signed by GVIQHVNXROMRNVQX22OQJATWCT5T3KRV5JC72PDUCVGGK4BN4R3WX7BUBI
+
+  Explorer: https://lora.algokit.io/testnet/transaction/33RX5SPURXHDFN7DIOLWQFX6TVBRVVFHSUAGUDENBNETLBYYS52Q
+========================================================
+
+All checks passed.
+
+
+================================================================
+2. x402 PAYMENT — read straight from the Algorand indexer
+================================================================
+x402 PAYMENT — read straight from Algorand TestNet
+  tx         M7AR3KGI7J6TRVKVIB2F4TPFRVHKTDB256JJY5YS4YD6JBFTSO6A
+  type       axfer | asset 10458941
+  amount     0.005 USDC
+  sender     GVIQHVNXROMRNVQX22OQJATWCT5T3KRV5JC72PDUCVGGK4BN4R3WX7BUBI
+  receiver   GVIQHVNXROMRNVQX22OQJATWCT5T3KRV5JC72PDUCVGGK4BN4R3WX7BUBI
+  round      66084054
+  time       2026-08-07T16:14:32.000Z
+  fee payer  sponsored (feePayer)
+  explorer   https://lora.algokit.io/testnet/transaction/M7AR3KGI7J6TRVKVIB2F4TPFRVHKTDB256JJY5YS4YD6JBFTSO6A
