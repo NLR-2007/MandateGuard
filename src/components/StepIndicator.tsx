@@ -34,8 +34,8 @@ export default function StepIndicator({ current }: Props) {
             style={{
               borderColor: 'var(--rule)',
               background: active
-                ? 'var(--ink)' : done
-                  ? 'rgba(39,81,47,0.07)' : 'transparent',
+                ? 'var(--accent)' : done
+                  ? 'var(--wash-green)' : 'transparent',
               minWidth: '110px',
             }}
           >
@@ -43,7 +43,7 @@ export default function StepIndicator({ current }: Props) {
               className="mono block text-[9.5px] tracking-[0.16em]"
               style={{
                 color: active
-                  ? 'rgba(246,243,236,0.6)' : done
+                  ? 'rgba(0,0,0,0.55)' : done
                     ? 'var(--forest)' : 'var(--ink-faint)',
               }}
             >
@@ -53,7 +53,7 @@ export default function StepIndicator({ current }: Props) {
               className="mono block text-[11px] tracking-[0.08em] uppercase"
               style={{
                 color: active
-                  ? 'var(--paper-card)' : done
+                  ? 'var(--accent-ink)' : done
                     ? 'var(--forest)' : 'var(--ink-faint)',
               }}
             >

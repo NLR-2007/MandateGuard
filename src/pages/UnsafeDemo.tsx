@@ -29,7 +29,7 @@ export default function UnsafeDemo() {
     <section className="pt-10">
       <DemoPageNote />
       {/* Simulation label */}
-      <div className="mb-8 flex flex-wrap items-center gap-3 border border-[var(--ochre)] bg-[rgba(146,101,15,0.08)] px-5 py-3">
+      <div className="mb-8 flex flex-wrap items-center gap-3 border border-[var(--ochre)] bg-[var(--wash-ochre)] px-5 py-3">
         <span className="text-xl"></span>
         <span className="font-semibold text-[var(--ochre)]">
           Simulation — MandateGuard Disabled
@@ -52,7 +52,7 @@ export default function UnsafeDemo() {
           className={[
             'mt-4  border px-5 py-3 text-sm font-medium',
             hasViolations
-              ? 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)]' : 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]',
+              ? 'border-[var(--oxblood)] bg-[var(--wash-red)] text-[var(--oxblood)]' : 'border-[var(--forest)] bg-[var(--wash-green)] text-[var(--forest)]',
           ].join(' ')}
         >
           {scenario.note}

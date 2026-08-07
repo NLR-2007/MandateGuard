@@ -20,9 +20,9 @@ export default function UnsafeFlow({ orderPrice, maxPrice }: Props) {
 
   const toneClass = {
     normal: 'border-[var(--rule)]  text-[var(--ink)]',
-    warn: 'border-[var(--ochre)] bg-[rgba(146,101,15,0.08)] text-[var(--ochre)]',
-    ok: 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]',
-    danger: 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)] font-bold',
+    warn: 'border-[var(--ochre)] bg-[var(--wash-ochre)] text-[var(--ochre)]',
+    ok: 'border-[var(--forest)] bg-[var(--wash-green)] text-[var(--forest)]',
+    danger: 'border-[var(--oxblood)] bg-[var(--wash-red)] text-[var(--oxblood)] font-bold',
   }
 
   return (

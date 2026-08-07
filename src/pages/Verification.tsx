@@ -64,7 +64,7 @@ const amountCheck = result.checks.find((c) => c.rule === 'Maximum Price')
         className={[
           'mt-10  border p-10 text-center',
           approved
-            ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)]' : 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)]',
+            ? 'border-[var(--forest)] bg-[var(--wash-green)]' : 'border-[var(--oxblood)] bg-[var(--wash-red)]',
         ].join(' ')}
       >
         <div className="text-7xl"></div>
@@ -95,7 +95,7 @@ const amountCheck = result.checks.find((c) => c.rule === 'Maximum Price')
           <div
             className={[
               ' border p-6 text-center',
-              result.payment.status === 'VERIFIED' ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)]' : 'border-[var(--ochre)] bg-[rgba(146,101,15,0.08)]',
+              result.payment.status === 'VERIFIED' ? 'border-[var(--forest)] bg-[var(--wash-green)]' : 'border-[var(--ochre)] bg-[var(--wash-ochre)]',
             ].join(' ')}
           >
             <p className="text-sm text-[var(--ink-soft)]">x402 Payment</p>
@@ -116,7 +116,7 @@ const amountCheck = result.checks.find((c) => c.rule === 'Maximum Price')
             className={[
               ' border p-6 text-center',
               approved
-                ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)]' : 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)]',
+                ? 'border-[var(--forest)] bg-[var(--wash-green)]' : 'border-[var(--oxblood)] bg-[var(--wash-red)]',
             ].join(' ')}
           >
             <p className="text-sm text-[var(--ink-soft)]">MandateGuard Decision</p>

@@ -57,7 +57,7 @@ export default function OrderComparison({ policy, order, unsafe }: Props) {
             className={[
               'tag',
               unsafe
-                ? 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)]' : 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]',
+                ? 'border-[var(--oxblood)] bg-[var(--wash-red)] text-[var(--oxblood)]' : 'border-[var(--forest)] bg-[var(--wash-green)] text-[var(--forest)]',
             ].join(' ')}
           >
             {unsafe ? 'Unsafe Demo' : 'Safe Demo'}

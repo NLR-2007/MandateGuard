@@ -19,7 +19,7 @@ return (
               'btn btn-sm',
               isActive
                 ? isSafe
-                  ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]' : 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)] hover:text-[var(--ink)]',
+                  ? 'border-[var(--forest)] bg-[var(--wash-green)] text-[var(--forest)]' : 'border-[var(--oxblood)] bg-[var(--wash-red)] text-[var(--oxblood)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)] hover:text-[var(--ink)]',
             ].join(' ')}
           >
             {scenarios[id].label}

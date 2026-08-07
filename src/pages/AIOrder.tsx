@@ -221,7 +221,7 @@ export default function AIOrder() {
           <button
             onClick={() => void handleSimulateUnsafe()}
             disabled={busy !== ''}
-            className="border border-[var(--ochre)] bg-[rgba(146,101,15,0.08)] px-5 py-2.5 text-sm font-semibold text-[var(--ochre)] transition-colors duration-200 hover:bg-[rgba(146,101,15,0.08)] disabled:opacity-50"
+            className="border border-[var(--ochre)] bg-[var(--wash-ochre)] px-5 py-2.5 text-sm font-semibold text-[var(--ochre)] transition-colors duration-200 hover:bg-[var(--wash-ochre)] disabled:opacity-50"
           >
             {busy === 'sim' ? 'Loading…' : 'Simulate Unsafe AI Order'}
           </button>
@@ -230,7 +230,7 @@ export default function AIOrder() {
             onClick={() => pickDemo('safe')}
             className={[
               'btn btn-sm',
-              liveOrder === null && mode === 'safe' ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)]',
+              liveOrder === null && mode === 'safe' ? 'border-[var(--forest)] bg-[var(--wash-green)] text-[var(--forest)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)]',
             ].join(' ')}
           >
             Load Safe Demo
@@ -240,7 +240,7 @@ export default function AIOrder() {
             onClick={() => pickDemo('unsafe')}
             className={[
               'btn btn-sm',
-              liveOrder === null && mode === 'unsafe' ? 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)]',
+              liveOrder === null && mode === 'unsafe' ? 'border-[var(--oxblood)] bg-[var(--wash-red)] text-[var(--oxblood)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)]',
             ].join(' ')}
           >
             Load Unsafe Demo
@@ -267,7 +267,7 @@ export default function AIOrder() {
         )}
 
         {aiReason && (
-          <p className="mt-4 border border-[var(--indigo)] bg-[rgba(34,53,91,0.06)] px-4 py-3 text-sm text-[var(--indigo)]">
+          <p className="mt-4 border border-[var(--indigo)] bg-[var(--wash-indigo)] px-4 py-3 text-sm text-[var(--indigo)]">
             <span className="font-semibold">AI summary:</span> {aiReason}
           </p>
         )}
@@ -352,7 +352,7 @@ return (
             </ol>
 
             {stage === 'awaiting-wallet' && (
-              <p className="mt-4 border border-[var(--indigo)] bg-[rgba(34,53,91,0.06)] px-4 py-3 text-sm text-cyan-200">
+              <p className="mt-4 border border-[var(--indigo)] bg-[var(--wash-indigo)] px-4 py-3 text-sm text-cyan-200">
                 Open your wallet and approve the 0.005 Test USDC payment. Nothing happens
                 until you sign.
               </p>

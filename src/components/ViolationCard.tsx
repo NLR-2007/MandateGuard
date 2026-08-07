@@ -8,7 +8,7 @@ export default function ViolationCard({ violation, index }: Props) {
   return (
     <div className="notice p-5 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--oxblood)]">
       <div className="flex items-center gap-2">
-        <span className="flex h-6 w-6 items-center justify-center bg-[rgba(140,29,24,0.06)] text-xs font-bold text-[var(--oxblood)]">
+        <span className="flex h-6 w-6 items-center justify-center bg-[var(--wash-red)] text-xs font-bold text-[var(--oxblood)]">
           {index}
         </span>
         <h4 className="font-semibold text-[var(--oxblood)]">{violation.title}</h4>

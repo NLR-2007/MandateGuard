@@ -79,7 +79,7 @@ export default function GuardComparison({ order, maxPrice }: Props) {
           <p className="mt-4 display text-[28px] text-[var(--ink)]">
             ₹{order.price.toLocaleString('en-IN')} &lt; ₹{maxPrice.toLocaleString('en-IN')}
           </p>
-          <p className="mt-3 inline-block border border-[var(--forest)] bg-[rgba(39,81,47,0.07)] px-4 py-2 font-semibold text-[var(--forest)]">
+          <p className="mt-3 inline-block border border-[var(--forest)] bg-[var(--wash-green)] px-4 py-2 font-semibold text-[var(--forest)]">
             PASS
           </p>
           <p className="mt-4 text-[var(--ink-soft)]">Payment would proceed.</p>
@@ -93,7 +93,7 @@ export default function GuardComparison({ order, maxPrice }: Props) {
           className={[
             ' border p-6',
             result
-              ? result.decision === 'APPROVED' ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)]' : 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)]' : 'border-[var(--rule)] ',
+              ? result.decision === 'APPROVED' ? 'border-[var(--forest)] bg-[var(--wash-green)]' : 'border-[var(--oxblood)] bg-[var(--wash-red)]' : 'border-[var(--rule)] ',
           ].join(' ')}
         >
           <h3 className="font-bold text-[var(--indigo)]">WITH MANDATEGUARD</h3>
@@ -122,7 +122,7 @@ export default function GuardComparison({ order, maxPrice }: Props) {
               <p
                 className={[
                   'mt-5  border px-4 py-3 text-center display text-[23px]',
-                  result.decision === 'APPROVED' ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]' : 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)]',
+                  result.decision === 'APPROVED' ? 'border-[var(--forest)] bg-[var(--wash-green)] text-[var(--forest)]' : 'border-[var(--oxblood)] bg-[var(--wash-red)] text-[var(--oxblood)]',
                 ].join(' ')}
               >
                 FINAL RESULT: {result.decision}

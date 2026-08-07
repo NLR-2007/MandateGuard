@@ -60,7 +60,7 @@ export default function Navbar() {
                   className="mono px-3 py-1 text-[10px] font-semibold tracking-[0.16em] uppercase transition-colors"
                   style={
                     mode === m
-                      ? { background: 'var(--ink)', color: 'var(--paper-card)'
+                      ? { background: 'var(--accent)', color: 'var(--accent-ink)'
 }
                       : { color: 'var(--ink-faint)'
 }

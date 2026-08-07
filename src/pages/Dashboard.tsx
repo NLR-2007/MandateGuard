@@ -503,7 +503,7 @@ export default function Dashboard() {
           {error && (
             <p
               className="mt-6 border-l-4 py-3 pl-4 text-[14px]"
-              style={{ borderColor: 'var(--oxblood)', color: 'var(--oxblood)', background: 'rgba(140,29,24,0.05)'
+              style={{ borderColor: 'var(--oxblood)', color: 'var(--oxblood)', background: 'var(--wash-red)'
 }}
             >
               {error}
@@ -608,7 +608,7 @@ export default function Dashboard() {
                       className="btn btn-sm"
                       style={
                         form.warrantyAllowed === false
-                          ? { background: 'var(--ink)', borderColor: 'var(--ink)', color: 'var(--paper-card)'
+                          ? { background: 'var(--accent)', borderColor: 'var(--accent)', color: 'var(--accent-ink)'
 }
                           : { color: 'var(--ink-faint)', borderColor: 'var(--rule)'
 }
@@ -844,7 +844,7 @@ export default function Dashboard() {
               {result.decision === 'BLOCKED' ? (
                 <div
                   className="mt-8 border-l-4 p-6"
-                  style={{ borderColor: 'var(--oxblood)', background: 'rgba(140,29,24,0.05)'
+                  style={{ borderColor: 'var(--oxblood)', background: 'var(--wash-red)'
 }}
                 >
                   <p className="display text-[19px]" style={{ color: 'var(--oxblood)'
@@ -1117,7 +1117,7 @@ function PaymentStateView({
       {state === 'FAILED' && (
         <p
           className="mt-6 border-l-4 py-3 pl-4 text-[14px]"
-          style={{ borderColor: 'var(--oxblood)', color: 'var(--oxblood)', background: 'rgba(140,29,24,0.05)'
+          style={{ borderColor: 'var(--oxblood)', color: 'var(--oxblood)', background: 'var(--wash-red)'
 }}
         >
           Payment failed. Nothing was recorded as paid.

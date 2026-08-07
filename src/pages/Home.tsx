@@ -35,7 +35,7 @@ export default function Home() {
             {/* Without */}
             <div
               className="border p-7"
-              style={{ borderColor: 'var(--rule)', background: 'rgba(140,29,24,0.035)'
+              style={{ borderColor: 'var(--rule)', background: 'var(--wash-red)'
 }}
             >
               <span className="label" style={{ color: 'var(--oxblood)'
@@ -64,7 +64,7 @@ export default function Home() {
             {/* With */}
             <div
               className="border border-l-0 p-7"
-              style={{ borderColor: 'var(--rule)', background: 'rgba(39,81,47,0.04)'
+              style={{ borderColor: 'var(--rule)', background: 'var(--wash-green)'
 }}
             >
               <span className="label" style={{ color: 'var(--forest)'

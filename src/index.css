@@ -8,27 +8,39 @@
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-  /* Paper stock */
-  --paper:      #ece7dc;
-  --paper-card: #f6f3ec;
-  --paper-deep: #e2dccd;
+  /* Surfaces - near-black, layered by lightness rather than borders alone */
+  --paper:      #0d0d0e;
+  --paper-card: #151517;
+  --paper-deep: #1d1d20;
 
-  /* Ink */
-  --ink:        #17160f;
-  --ink-soft:   #3d3a31;
-  --ink-faint:  #6d675a;
-  --rule:       #cfc7b4;
-  --rule-soft:  #ded7c6;
+  /* Text */
+  --ink:        #f2f2f0;
+  --ink-soft:   #b6b6b1;
+  --ink-faint:  #86867f;
+  --rule:       #2c2c30;
+  --rule-soft:  #232327;
 
-  /* Verdicts */
-  --oxblood:    #8c1d18;
-  --stamp-red:  #a32621;
-  --forest:     #27512f;
-  --ochre:      #92650f;
-  --indigo:     #22355b;
+  /* Verdicts - tuned for contrast on a dark surface, not on paper */
+  --oxblood:    #ff6b5e;
+  --stamp-red:  #ff4d3d;
+  --forest:     #2ff000;
+  --ochre:      #f0b429;
+  --indigo:     #7aa2f7;
 
-  --shadow-hard: 3px 3px 0 var(--ink);
-  --shadow-soft: 2px 2px 0 var(--rule);
+  /* Accent, shared with the landing page so the two feel like one product */
+  --accent:     hsl(119 99% 46%);
+  --accent-ink: hsl(0 0% 4%);
+
+  /* Low-alpha washes behind tags and notices. Named so the pages can use
+     them instead of repeating raw rgba() values. */
+  --wash-red:    rgba(255, 107, 94, 0.10);
+  --wash-green:  rgba(47, 240, 0, 0.09);
+  --wash-ochre:  rgba(240, 180, 41, 0.10);
+  --wash-indigo: rgba(122, 162, 247, 0.10);
+  --wash-ink:    rgba(255, 255, 255, 0.04);
+
+  --shadow-hard: 3px 3px 0 var(--accent);
+  --shadow-soft: 0 1px 0 var(--rule);
 }
 
 html,
@@ -40,30 +52,26 @@ body,
 body {
   background-color: var(--paper);
   color: var(--ink);
-  font-family: 'IBM Plex Sans', ui-sans-serif, sans-serif;
+  font-family: 'Sora', ui-sans-serif, sans-serif;
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 
-  /* Paper grain + faint horizontal ruling */
+  /* A faint grid instead of paper grain: enough texture that the surface is
+     not flat, quiet enough to read across. */
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E"),
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent 31px,
-      rgba(23, 22, 15, 0.035) 31px,
-      rgba(23, 22, 15, 0.035) 32px
-    );
+    linear-gradient(to right, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 64px 64px;
 }
 
 /* ── Typography ─────────────────────────────────────────── */
 
 .display {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-weight: 400;
-  letter-spacing: -0.015em;
-  line-height: 1.02;
+  font-family: 'Sora', ui-sans-serif, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
 }
 
 .mono {
@@ -90,7 +98,7 @@ body {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.16em;
-  color: var(--oxblood);
+  color: var(--accent);
   text-transform: uppercase;
 }
 
@@ -99,8 +107,9 @@ body {
 .sheet {
   position: relative;
   background: var(--paper-card);
-  border: 1px solid var(--ink);
-  box-shadow: var(--shadow-hard);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .sheet::before {
@@ -108,18 +117,19 @@ body {
   position: absolute;
   inset: 0 auto 0 0;
   width: 2px;
-  background: var(--oxblood);
-  opacity: 0.55;
+  background: var(--accent);
+  opacity: 0.85;
 }
 
 /* Plain bordered block, no margin rule */
 .block {
   background: var(--paper-card);
   border: 1px solid var(--rule);
+  border-radius: 4px;
 }
 
 .block-ink {
-  border-color: var(--ink);
+  border-color: var(--ink-faint);
 }
 
 /* Hairline separator */
@@ -128,7 +138,7 @@ body {
 }
 
 .rule-double {
-  border-top: 3px double var(--ink);
+  border-top: 3px double var(--rule);
 }
 
 /* ── Buttons ────────────────────────────────────────────── */
@@ -140,9 +150,10 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   padding: 0.7rem 1.25rem;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--rule);
   background: transparent;
   color: var(--ink);
+  border-radius: 3px;
   cursor: pointer;
   transition:
     transform 0.12s ease,
@@ -152,13 +163,12 @@ body {
 }
 
 .btn:hover:not(:disabled) {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-hard);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .btn:active:not(:disabled) {
-  transform: translate(0, 0);
-  box-shadow: none;
+  transform: scale(0.98);
 }
 
 .btn:disabled {
@@ -167,22 +177,24 @@ body {
 }
 
 .btn-solid {
-  background: var(--ink);
-  color: var(--paper-card);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .btn-solid:hover:not(:disabled) {
-  box-shadow: 3px 3px 0 var(--oxblood);
+  filter: brightness(1.12);
+  color: var(--accent-ink);
 }
 
 .btn-red {
-  background: var(--oxblood);
-  border-color: var(--oxblood);
-  color: #f6f3ec;
+  background: var(--stamp-red);
+  border-color: var(--stamp-red);
+  color: #17110f;
 }
 
 .btn-red:hover:not(:disabled) {
-  box-shadow: 3px 3px 0 var(--ink);
+  filter: brightness(1.12);
 }
 
 .btn-sm {
@@ -194,9 +206,9 @@ body {
 
 .field {
   width: 100%;
-  background: var(--paper);
+  background: var(--paper-deep);
   border: 0;
-  border-bottom: 1px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
   padding: 0.5rem 0.25rem;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
@@ -206,7 +218,8 @@ body {
 
 .field:focus {
   outline: none;
-  background: #fffdf7;
+  background: #1f1f23;
+  border-bottom-color: var(--accent);
   border-bottom-width: 2px;
   margin-bottom: -1px;
 }
@@ -218,11 +231,11 @@ body {
 
 .field-missing {
   border-bottom-color: var(--oxblood);
-  background: rgba(140, 29, 24, 0.05);
+  background: var(--wash-red);
 }
 
 textarea.field {
-  border: 1px solid var(--ink);
+  border: 1px solid var(--rule);
   padding: 0.85rem;
   line-height: 1.7;
   resize: vertical;
@@ -305,11 +318,11 @@ textarea.field {
 }
 
 .tag-ink { color: var(--ink-soft); }
-.tag-red { color: var(--oxblood); background: rgba(140, 29, 24, 0.06); }
-.tag-green { color: var(--forest); background: rgba(39, 81, 47, 0.07); }
-.tag-ochre { color: var(--ochre); background: rgba(146, 101, 15, 0.08); }
-.tag-indigo { color: var(--indigo); background: rgba(34, 53, 91, 0.06); }
-.tag-solid { background: var(--ink); color: var(--paper-card); border-color: var(--ink); }
+.tag-red { color: var(--oxblood); background: var(--wash-red); }
+.tag-green { color: var(--forest); background: var(--wash-green); }
+.tag-ochre { color: var(--ochre); background: var(--wash-ochre); }
+.tag-indigo { color: var(--indigo); background: var(--wash-indigo); }
+.tag-solid { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
 /* ── Ledger table ───────────────────────────────────────── */
 
@@ -328,7 +341,7 @@ textarea.field {
   color: var(--ink-soft);
   text-align: left;
   padding: 0.6rem 0.75rem;
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
   white-space: nowrap;
 }
 
@@ -339,11 +352,11 @@ textarea.field {
 }
 
 .ledger tbody tr:nth-child(even) {
-  background: rgba(23, 22, 15, 0.022);
+  background: rgba(255, 255, 255, 0.018);
 }
 
 .ledger tbody tr:hover {
-  background: rgba(140, 29, 24, 0.045);
+  background: rgba(47, 240, 0, 0.06);
 }
 
 /* ── Entrance choreography ──────────────────────────────── */
@@ -380,7 +393,7 @@ textarea.field {
 }
 
 .ink-link:hover {
-  color: var(--oxblood);
+  color: var(--accent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -398,15 +411,15 @@ textarea.field {
 
 .notice {
   border-left: 4px solid var(--ochre);
-  background: rgba(146, 101, 15, 0.07);
+  background: var(--wash-ochre);
   padding: 0.7rem 1rem;
   font-size: 14px;
-  color: #6f4d0b;
+  color: var(--ochre);
 }
 
 .notice-ink {
-  border-left-color: var(--ink);
-  background: rgba(23, 22, 15, 0.04);
+  border-left-color: var(--ink-faint);
+  background: var(--wash-ink);
   color: var(--ink-soft);
 }
 
@@ -426,26 +439,26 @@ button.btn {
 .btn-solid,
 button.btn-solid,
 a.btn-solid {
-  background: var(--ink) !important;
-  color: var(--paper-card) !important;
+  background: var(--accent) !important;
+  color: var(--accent-ink) !important;
 }
 
 .btn-red {
-  background: var(--oxblood) !important;
-  color: #f6f3ec !important;
+  background: var(--stamp-red) !important;
+  color: #17110f !important;
 }
 
 input.field,
 textarea.field,
 select.field {
   color: var(--ink) !important;
-  background: var(--paper);
+  background: var(--paper-deep);
 }
 
 /* Anything sitting on the dark ink background must be light. */
 [data-on-ink],
 [data-on-ink] * {
-  color: var(--paper-card);
+  color: var(--accent-ink);
 }
 
 /* ── Footnote: small explanatory prose, NOT a label ─────────

@@ -20,7 +20,7 @@ export default function HumanPolicyCard({ policy }: Props) {
         <h3 className="flex items-center gap-2 font-bold tracking-wide text-[var(--indigo)]">
            HUMAN APPROVED POLICY
         </h3>
-        <span className="border border-[var(--forest)] bg-[rgba(39,81,47,0.07)] px-3 py-1 text-xs font-semibold text-[var(--forest)]">
+        <span className="border border-[var(--forest)] bg-[var(--wash-green)] px-3 py-1 text-xs font-semibold text-[var(--forest)]">
           ACTIVE
         </span>
       </div>

@@ -119,7 +119,7 @@ export default function Hero() {
               className="border-b border-r px-4 py-5 last:border-r-0"
               style={{
                 borderColor: 'var(--rule)',
-                background: step.mark ? 'rgba(140,29,24,0.05)' : 'transparent',
+                background: step.mark ? 'var(--wash-red)' : 'transparent',
               }}
             >
               <span

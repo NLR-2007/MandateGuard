@@ -204,7 +204,7 @@ export default function CreatePolicy() {
                   className={[
                     'btn btn-sm',
                     warrantyAllowed
-                      ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)]',
+                      ? 'border-[var(--forest)] bg-[var(--wash-green)] text-[var(--forest)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)]',
                   ].join(' ')}
                 >
                   Yes
@@ -215,7 +215,7 @@ export default function CreatePolicy() {
                   className={[
                     'btn btn-sm',
                     !warrantyAllowed
-                      ? 'border-[var(--ink)] bg-[rgba(34,53,91,0.06)] text-[var(--indigo)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)]',
+                      ? 'border-[var(--ink)] bg-[var(--wash-indigo)] text-[var(--indigo)]' : 'border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--rule)]',
                   ].join(' ')}
                 >
                   No

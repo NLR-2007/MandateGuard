@@ -24,7 +24,7 @@ function Row({
         <p className="mt-0.5 flex flex-wrap items-center gap-2 font-medium">
           <span className="text-[var(--ink-faint)] line-through">{wasValue}</span>
           <span className="text-[var(--oxblood)]">→</span>
-          <span className="rounded bg-[rgba(140,29,24,0.06)] px-2 py-0.5 text-[var(--oxblood)]">{value}</span>
+          <span className="rounded bg-[var(--wash-red)] px-2 py-0.5 text-[var(--oxblood)]">{value}</span>
         </p>
       ) : (
         <p className="mt-0.5 font-medium text-[var(--ink)]">{value}</p>
@@ -43,7 +43,7 @@ export default function AIOrderCard({ policy, order, changed }: Props) {
     <div
       className={[
         'h-full  border p-6',
-        anyChange ? 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)]' : 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)]',
+        anyChange ? 'border-[var(--oxblood)] bg-[var(--wash-red)]' : 'border-[var(--forest)] bg-[var(--wash-green)]',
       ].join(' ')}
     >
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -59,7 +59,7 @@ export default function AIOrderCard({ policy, order, changed }: Props) {
           className={[
             'tag',
             anyChange
-              ? 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)] text-[var(--oxblood)]' : 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)] text-[var(--forest)]',
+              ? 'border-[var(--oxblood)] bg-[var(--wash-red)] text-[var(--oxblood)]' : 'border-[var(--forest)] bg-[var(--wash-green)] text-[var(--forest)]',
           ].join(' ')}
         >
           {anyChange ? 'CHANGED' : 'MATCHES'}

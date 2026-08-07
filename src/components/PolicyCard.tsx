@@ -19,7 +19,7 @@ export default function PolicyCard({ policy, detailed = false }: Props) {
     <div className="border border-[var(--indigo)] p-6">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="display text-[19px]">Human Spending Policy</h3>
-        <span className="border border-[var(--forest)] bg-[rgba(39,81,47,0.07)] px-3 py-1 text-xs font-semibold text-[var(--forest)]">
+        <span className="border border-[var(--forest)] bg-[var(--wash-green)] px-3 py-1 text-xs font-semibold text-[var(--forest)]">
           {policy.status}
         </span>
       </div>

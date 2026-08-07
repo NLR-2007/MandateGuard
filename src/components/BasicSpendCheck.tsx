@@ -34,7 +34,7 @@ export default function BasicSpendCheck({ maxPrice, orderPrice }: Props) {
           className={[
             ' border p-5',
             withinLimit
-              ? 'border-[var(--forest)] bg-[rgba(39,81,47,0.07)]' : 'border-[var(--oxblood)] bg-[rgba(140,29,24,0.06)]',
+              ? 'border-[var(--forest)] bg-[var(--wash-green)]' : 'border-[var(--oxblood)] bg-[var(--wash-red)]',
           ].join(' ')}
         >
           <p className="text-sm text-[var(--ink-soft)]">Result</p>
@@ -49,7 +49,7 @@ export default function BasicSpendCheck({ maxPrice, orderPrice }: Props) {
         </div>
       </div>
 
-      <p className="mt-6 border border-[var(--ochre)] bg-[rgba(146,101,15,0.08)] px-5 py-4 font-semibold text-[var(--ochre)]">
+      <p className="mt-6 border border-[var(--ochre)] bg-[var(--wash-ochre)] px-5 py-4 font-semibold text-[var(--ochre)]">
         Payment would be allowed by an amount-only policy.
       </p>
       <p className="mt-3 text-sm text-[var(--ink-soft)]">
