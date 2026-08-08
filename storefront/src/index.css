@@ -1,0 +1,274 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Familjen+Grotesk:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+/* ═══════════════════════════════════════════════════════════
+   NovaMart — an ordinary online shop.
+
+   Deliberately warm, light and commercial. It should look like
+   somewhere you would actually buy a hard drive, and nothing
+   like the MandateGuard console: a judge must believe this is
+   a separate company's website that simply calls an API.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --bg:        #fbfaf7;
+  --surface:   #ffffff;
+  --sunk:      #f2efe9;
+
+  --ink:       #14161a;
+  --ink-soft:  #52565e;
+  --ink-faint: #8a8f98;
+  --line:      #e4e0d8;
+
+  --brand:     #ff4d2e;
+  --brand-ink: #ffffff;
+  --deep:      #10233f;
+
+  --good:      #0f6b4f;
+  --warn:      #a35b00;
+  --bad:       #c0271a;
+
+  --radius: 14px;
+  --shadow-sm: 0 1px 2px rgba(20, 22, 26, 0.06);
+  --shadow-md: 0 4px 18px rgba(20, 22, 26, 0.08);
+  --shadow-lg: 0 18px 50px rgba(20, 22, 26, 0.14);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Familjen Grotesk', ui-sans-serif, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.display {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-variant-ligatures: none;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ── Surfaces ───────────────────────────────────────────── */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-hover {
+  transition:
+    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: #d6d1c6;
+}
+
+/* ── Buttons ────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.72rem 1.3rem;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    transform 0.1s ease,
+    background-color 0.15s ease;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  background: var(--sunk);
+  color: var(--ink-faint);
+  border-color: var(--line);
+}
+
+.btn-brand {
+  background: var(--brand);
+  color: var(--brand-ink);
+}
+
+.btn-brand:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+
+.btn-dark {
+  background: var(--deep);
+  color: #fff;
+}
+
+.btn-dark:hover:not(:disabled) {
+  filter: brightness(1.25);
+}
+
+.btn-quiet {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.btn-quiet:hover:not(:disabled) {
+  background: var(--sunk);
+}
+
+.btn-sm {
+  padding: 0.45rem 0.9rem;
+  font-size: 13px;
+}
+
+/* ── Product imagery stand-in ───────────────────────────────
+   There are no photographs, so each category gets its own
+   gradient and glyph. Consistent and deliberate beats a grey
+   box with a broken-image icon. */
+
+.thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  border-radius: calc(var(--radius) - 4px);
+  overflow: hidden;
+  font-size: 46px;
+}
+
+.thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, 0.55), transparent 60%);
+}
+
+.thumb-storage     { background: linear-gradient(140deg, #dbe7ff, #b9ccf5); }
+.thumb-books       { background: linear-gradient(140deg, #ffe6d3, #ffc7a1); }
+.thumb-laptops     { background: linear-gradient(140deg, #e3dcff, #c3b6f7); }
+.thumb-accessories { background: linear-gradient(140deg, #d7f2e4, #aee0c7); }
+
+/* ── Small parts ────────────────────────────────────────── */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.pill-good { background: rgba(15, 107, 79, 0.1);  color: var(--good); }
+.pill-bad  { background: rgba(192, 39, 26, 0.09); color: var(--bad); }
+.pill-warn { background: rgba(163, 91, 0, 0.1);   color: var(--warn); }
+.pill-ink  { background: var(--sunk);             color: var(--ink-soft); }
+
+.field {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  font: inherit;
+  color: var(--ink);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--deep);
+  box-shadow: 0 0 0 3px rgba(16, 35, 63, 0.08);
+}
+
+/* ── Motion ─────────────────────────────────────────────── */
+
+.rise {
+  opacity: 0;
+  animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* The agent working, shown as a moving bar rather than a spinner:
+   it reads as "something is happening over there", at a glance,
+   from the back of a room. */
+.working {
+  position: relative;
+  overflow: hidden;
+}
+
+.working::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 77, 46, 0.18), transparent);
+  animation: sweep 1.25s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+.beacon {
+  animation: beacon 1.4s ease-in-out infinite;
+}
+
+@keyframes beacon {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .working::after, .beacon { animation: none; }
+  .rise { opacity: 1; transform: none; }
+}
+
+/* The card the AI shopper is currently considering. Deliberately loud:
+   from the back of a room it must be obvious which one it chose. */
+.spotlit {
+  border-color: var(--brand) !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 77, 46, 0.16),
+    var(--shadow-md);
+  transform: translateY(-3px);
+}

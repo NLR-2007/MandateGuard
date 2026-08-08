@@ -385,6 +385,36 @@ private key, a mnemonic or a seed phrase.
 
 ---
 
+## NovaMart — the shop that uses this
+
+[`storefront/`](storefront/) is a separate application: an ordinary online shop
+with its own name, design and port. It holds **no spending rules, no wallet and
+no policy logic**. Before money moves it makes one call, the way a shop calls a
+payment processor:
+
+```ts
+const verdict = await fetch(GUARD + '/api/verify-mandate', {
+  method: 'POST',
+  body: JSON.stringify({ policyId, order }),
+}).then((r) => r.json())
+
+if (verdict.decision !== 'APPROVED') return refuse(verdict.violations)
+```
+
+The shop can display a refusal and the rules it broke. It **cannot overrule
+one** — a blocked order simply never shows a pay button.
+
+A live bar under the shop's header follows the AI shopper around: browsing,
+choosing, being checked, refused or paid. It works whether the instruction came
+from the shop or from Telegram, and the chosen product is highlighted on the
+page as it happens.
+
+```bash
+cd storefront && npm install && npm run dev   # http://localhost:5174
+```
+
+---
+
 ## Screenshots and proof
 
 Captured evidence lives in [`demo-proof/`](demo-proof/) — real transcripts of the

@@ -15,6 +15,7 @@ import { answerCallback, sendMessage, startPolling, type Incoming } from './tele
 import { describeStorage } from '../data/db.js'
 import { describeAgentWallet } from './agentWallet.js'
 import { getAgentMode, setAgentMode } from './agentFlow.js'
+import { getLiveSession } from './liveSession.js'
 import { describeX402, isX402Configured } from '../x402/x402Config.js'
 
 /** Called when the user taps Approve or Reject. Set by the agent routes. */
@@ -52,6 +53,7 @@ export function setPayHandler(handler: PayHandler): void {
 const HELP = [
   '🛡 <b>MandateGuard</b>',
   '',
+  '/shop    — what the shop is doing right now',
   '/buy     — send the agent shopping now',
   '/auto    — let the agent buy without asking',
   '/ask     — make it ask me first (default)',
@@ -207,6 +209,44 @@ async function handle(msg: Incoming): Promise<void> {
         '🙋 <b>Ask-first mode</b>' + NL + NL + 'The agent will ask me before it buys anything.',
       )
       return
+
+    case '/shop': {
+      const live = getLiveSession()
+
+      if (live.phase === 'IDLE') {
+        void sendMessage(
+          [
+            '🏬 <b>NovaMart</b>',
+            '',
+            'Nothing happening right now.',
+            '',
+            'Send /buy and watch the shop react.',
+          ].join(NL),
+        )
+        return
+      }
+
+      void sendMessage(
+        [
+          '🏬 <b>NovaMart — right now</b>',
+          '',
+          live.headline,
+          '',
+          live.product ? `Item    ${live.product}` : '',
+          live.price != null ? `Price   ₹${live.price.toLocaleString('en-IN')} → ${live.priceUsdc} USDC` : '',
+          live.seller ? `Seller  ${live.seller}` : '',
+          live.checksTotal > 0 ? `Rules   ${live.checksPassed}/${live.checksTotal} passed` : '',
+          live.violations.length > 0
+            ? NL + '<b>Refused because:</b>' + NL + live.violations.map((v, i) => `${i + 1}. ${v}`).join(NL)
+            : '',
+          live.orderId ? NL + `Order   <code>${live.orderId}</code>` : '',
+          live.explorerUrl ? `<a href="${live.explorerUrl}">View payment on Algorand</a>` : '',
+        ]
+          .filter(Boolean)
+          .join(NL),
+      )
+      return
+    }
 
     case '/wallet': {
       const w = await describeAgentWallet()
