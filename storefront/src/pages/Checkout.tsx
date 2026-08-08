@@ -2,8 +2,15 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useWallet } from '@txnlab/use-wallet-react'
 import { askGuard, getPolicies, rupees, type GuardVerdict, type Policy } from '../api'
-import { describePayError, PAY_LABEL, payForItem, type PayStage } from '../x402Client'
+import {
+  checkNotSelfPayment,
+  describePayError,
+  PAY_LABEL,
+  payForItem,
+  type PayStage,
+} from '../x402Client'
 import { useCart } from '../cart'
+import { productImage } from '../productImages'
 
 /**
  * Checkout — the only place NovaMart talks to MandateGuard.
@@ -65,6 +72,7 @@ export default function Checkout() {
     try {
       let last
       for (const item of items) {
+        checkNotSelfPayment(activeAddress, item.receiverWallet)
         last = await payForItem({
           itemId: item.id,
           policyId,
@@ -114,12 +122,21 @@ export default function Checkout() {
             const v = verdicts[item.id]
             return (
               <div key={item.id + Math.random()} className="card p-5">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-[16px] font-semibold">{item.product}</h3>
-                    <p className="text-[13px]" style={{ color: 'var(--ink-faint)' }}>
-                      {item.seller}
-                    </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <img
+                      src={productImage(item.id)}
+                      alt=""
+                      className="checkout-product-image"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div>
+                      <h3 className="text-[16px] font-semibold">{item.product}</h3>
+                      <p className="text-[13px]" style={{ color: 'var(--ink-faint)' }}>
+                        {item.seller}
+                      </p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <span className="display text-[20px]">{rupees(item.price)}</span>

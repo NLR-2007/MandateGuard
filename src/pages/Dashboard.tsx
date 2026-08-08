@@ -17,6 +17,7 @@ import {
   simulateUnsafeOrder,
 } from '../services/api'
 import {
+  checkNotSelfPayment,
   describePaymentError,
   verifyWithX402,
   type PaidVerificationResult,
@@ -235,6 +236,15 @@ export default function Dashboard() {
     if (!policy || !order || !requestId) return
     if (!activeAddress || !signTransactions) {
       setError('Connect an Algorand TestNet wallet first.')
+      return
+    }
+
+    // Paying yourself settles fine but proves nothing - the explorer shows
+    // one address paying itself and no balance moves.
+    try {
+      checkNotSelfPayment(activeAddress, status?.services.x402.receiver ?? null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Cannot pay from this wallet.')
       return
     }
 
@@ -782,7 +792,12 @@ export default function Dashboard() {
           {/* STEP 6 - payment */}
           {step === 6 && (
             <Panel title="Step 6 — x402 payment">
-              <PaymentStateView state={paymentState} status={status} timings={stageTimings} />
+              <PaymentStateView
+                state={paymentState}
+                status={status}
+                timings={stageTimings}
+                payer={activeAddress ?? null}
+              />
 
               {/* Missed the phone notification? Send a fresh request. */}
               {paymentState === 'WAITING_FOR_WALLET' && (
@@ -1082,11 +1097,14 @@ function PaymentStateView({
   state,
   status,
   timings,
+  payer,
 }: {
   state: PaymentState
   status: SystemStatus | null
   /** How long each finished step actually took. */
   timings: Partial<Record<PaymentState, number>>
+  /** The connected wallet that would sign. */
+  payer: string | null
 }) {
   const order: PaymentState[] = [
     'PAYMENT_REQUIRED',
@@ -1114,6 +1132,31 @@ function PaymentStateView({
 }
           />
         </dl>
+      )}
+
+      {/* Who is paying whom. Shown before signing, because "sender and
+          receiver are the same address" is otherwise only visible on the
+          explorer afterwards - by which point the payment has happened. */}
+      {status?.services.x402.receiver && (
+        <div className="block mb-6 p-4">
+          <span className="label">This payment</span>
+          <div className="mt-2 space-y-1.5">
+            <Row
+              label="From (you)"
+              value={payer ? `${payer.slice(0, 8)}…${payer.slice(-6)}` : 'no wallet connected'}
+            />
+            <Row
+              label="To (MandateGuard)"
+              value={`${status.services.x402.receiver.slice(0, 8)}…${status.services.x402.receiver.slice(-6)}`}
+            />
+          </div>
+          {payer && payer === status.services.x402.receiver && (
+            <p className="mt-3 text-[13px]" style={{ color: 'var(--oxblood)' }}>
+              These are the same account, so this would be a payment to yourself.
+              Connect a different wallet to pay from.
+            </p>
+          )}
+        </div>
       )}
 
       <ol className="space-y-0">

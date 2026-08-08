@@ -125,6 +125,21 @@ export async function payForItem(params: {
   return (await response.json()) as Receipt
 }
 
+/**
+ * Refuses a payment where buyer and seller are the same account.
+ *
+ * It settles fine on-chain, which is the problem: no balance moves and the
+ * explorer shows one address paying itself.
+ */
+export function checkNotSelfPayment(payer: string, receiver: string | null | undefined): void {
+  if (receiver && payer === receiver) {
+    throw new Error(
+      'You are signed in with the seller’s own wallet, so this would be a payment to yourself. ' +
+        'Switch to a different account to buy.',
+    )
+  }
+}
+
 /** Turns a wallet or network failure into one plain sentence. */
 export function describePayError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error)

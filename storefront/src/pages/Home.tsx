@@ -2,13 +2,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getLive, getPolicies, getProducts, rupees, sendAgent, type Product } from '../api'
 import { useCart } from '../cart'
-
-const GLYPH: Record<string, string> = {
-  storage: '💾',
-  books: '📗',
-  laptops: '💻',
-  accessories: '🎧',
-}
+import { productImage } from '../productImages'
 
 const FILTERS = [
   { id: 'all', label: 'Everything' },
@@ -231,8 +225,14 @@ export default function Home() {
                 className={`tile rise ${spotlight === p.id ? 'tile-spotlit' : ''}`}
                 style={{ '--i': i } as CSSProperties}
               >
-                <Link to={`/p/${p.id}`} className={`shot shot-${p.category}`}>
-                  <span className="relative z-10">{GLYPH[p.category]}</span>
+                <Link to={`/p/${p.id}`} className="shot">
+                  <img
+                    src={productImage(p.id)}
+                    alt={p.product}
+                    className="product-image"
+                    loading="lazy"
+                    decoding="async"
+                  />
 
                   {off > 0 && (
                     <span className="pill pill-brand absolute top-3 left-3 z-10">

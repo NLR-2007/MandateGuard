@@ -2,13 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getProducts, rupees, type Product as Item } from '../api'
 import { useCart } from '../cart'
-
-const GLYPH: Record<string, string> = {
-  storage: '💾',
-  books: '📗',
-  laptops: '💻',
-  accessories: '🎧',
-}
+import { productImage } from '../productImages'
 
 function listPrice(price: number): number {
   return Math.round((price * 1.22) / 10) * 10
@@ -63,25 +57,13 @@ export default function Product() {
 
       <div className="mt-6 grid gap-10 lg:grid-cols-[1.05fr_1fr]">
         {/* Gallery */}
-        <div>
-          <div
-            className={`shot shot-${item.category} rounded-[var(--radius-lg)]`}
-            style={{ fontSize: 110, border: '1px solid var(--line)' }}
-          >
-            <span className="relative z-10">{GLYPH[item.category]}</span>
-          </div>
-
-          <div className="mt-3 grid grid-cols-4 gap-3">
-            {[0, 1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className={`shot shot-${item.category} rounded-[var(--radius)]`}
-                style={{ fontSize: 22, opacity: n === 0 ? 1 : 0.55, border: '1px solid var(--line)' }}
-              >
-                <span className="relative z-10">{GLYPH[item.category]}</span>
-              </div>
-            ))}
-          </div>
+        <div className="product-detail-shot">
+          <img
+            src={productImage(item.id)}
+            alt={item.product}
+            className="product-image"
+            decoding="async"
+          />
         </div>
 
         {/* Detail */}
@@ -187,8 +169,14 @@ export default function Product() {
           <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {related.map((p) => (
               <Link key={p.id} to={`/p/${p.id}`} className="tile">
-                <div className={`shot shot-${p.category}`} style={{ fontSize: 38 }}>
-                  <span className="relative z-10">{GLYPH[p.category]}</span>
+                <div className="shot">
+                  <img
+                    src={productImage(p.id)}
+                    alt={p.product}
+                    className="product-image"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </div>
                 <div className="p-4">
                   <span className="block text-[14px] leading-snug font-semibold">{p.product}</span>

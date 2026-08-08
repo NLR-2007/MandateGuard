@@ -115,6 +115,23 @@ function createX402Fetch(wallet: WalletSigner, onStage: (s: PaymentStage) => voi
   return wrapFetchWithPayment(fetch, client)
 }
 
+/**
+ * Refuses a payment where the payer and the payee are the same account.
+ *
+ * It settles perfectly well on-chain, which is the problem: the explorer then
+ * shows one address paying itself, no balance moves, and it looks like a
+ * simulation rather than a payment. The fee is meant to go from a customer to
+ * the service, so the two must be different accounts.
+ */
+export function checkNotSelfPayment(payer: string, receiver: string | null | undefined): void {
+  if (receiver && payer === receiver) {
+    throw new Error(
+      'This wallet is also the account that receives the fee, so the payment would go to itself. ' +
+        'Connect a different wallet to pay from.',
+    )
+  }
+}
+
 /** Turns a wallet/network failure into a short sentence for the UI. */
 export function describePaymentError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error)
