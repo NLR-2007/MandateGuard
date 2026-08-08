@@ -56,7 +56,7 @@ export default function AgentStrip() {
       className={`border-b ${busy ? 'working' : ''}`}
       style={{ background: tone.bg, borderColor: 'var(--line)' }}
     >
-      <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-3 gap-y-2 px-6 py-3">
+      <div className="wrap flex flex-wrap items-center gap-x-3 gap-y-2 py-3">
         <span
           className={`h-2.5 w-2.5 shrink-0 rounded-full ${busy ? 'beacon' : ''}`}
           style={{ background: tone.dot }}

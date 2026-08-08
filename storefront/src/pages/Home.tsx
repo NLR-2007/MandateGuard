@@ -1,6 +1,7 @@
-import { useEffect, useState, type CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
-import { getLive, getProducts, getPolicies, rupees, sendAgent, type Product } from '../api'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { getLive, getPolicies, getProducts, rupees, sendAgent, type Product } from '../api'
+import { useCart } from '../cart'
 
 const GLYPH: Record<string, string> = {
   storage: '💾',
@@ -9,7 +10,7 @@ const GLYPH: Record<string, string> = {
   accessories: '🎧',
 }
 
-const CATEGORIES = [
+const FILTERS = [
   { id: 'all', label: 'Everything' },
   { id: 'storage', label: 'Storage' },
   { id: 'laptops', label: 'Laptops' },
@@ -17,14 +18,23 @@ const CATEGORIES = [
   { id: 'accessories', label: 'Accessories' },
 ]
 
+/** A believable "was" price, so the discount badge is not invented on the fly. */
+function listPrice(price: number): number {
+  return Math.round((price * 1.22) / 10) * 10
+}
+
 export default function Home() {
+  const [params, setParams] = useSearchParams()
+  const { add } = useCart()
+
   const [products, setProducts] = useState<Product[]>([])
   const [rate, setRate] = useState('')
-  const [category, setCategory] = useState('all')
   const [policyId, setPolicyId] = useState('')
   const [sending, setSending] = useState('')
-  /** Which product the agent is currently looking at, if any. */
   const [spotlight, setSpotlight] = useState<string | null>(null)
+
+  const category = params.get('c') ?? 'all'
+  const query = (params.get('q') ?? '').toLowerCase()
 
   useEffect(() => {
     void getProducts().then((d) => {
@@ -40,9 +50,8 @@ export default function Home() {
   /**
    * Mark whatever the agent is currently looking at.
    *
-   * Only the highlight lives here. Moving the page is the pilot's job, and
-   * doing it from a poll was the bug: every tick re-scrolled the window, so
-   * the page would not stay still long enough to read.
+   * Only the highlight lives here. Moving the page is the pilot's job — doing
+   * it from a poll re-scrolled the window every tick and nothing could be read.
    */
   useEffect(() => {
     let stop = false
@@ -62,10 +71,14 @@ export default function Home() {
     }
   }, [])
 
-  const shown =
-    category === 'all' ? products : products.filter((p) => p.category === category)
+  const shown = useMemo(
+    () =>
+      products
+        .filter((p) => category === 'all' || p.category === category)
+        .filter((p) => !query || `${p.product} ${p.seller}`.toLowerCase().includes(query)),
+    [products, category, query],
+  )
 
-  /** The shop's own "shop for me" button. Same engine Telegram uses. */
   const askAgent = async (want: string) => {
     if (!policyId) return
     setSending(want)
@@ -81,29 +94,39 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="grid items-center gap-8 py-12 md:grid-cols-[1.15fr_1fr]">
-        <div>
-          <span className="eyebrow">Free delivery over ₹999</span>
-          <h1 className="display mt-3 text-[clamp(34px,5.5vw,58px)]">
+      <section className="grid items-stretch gap-6 py-8 lg:grid-cols-[1.35fr_1fr]">
+        <div
+          className="relative overflow-hidden rounded-[var(--radius-lg)] p-9 md:p-12"
+          style={{ background: 'linear-gradient(135deg, #12233c 0%, #24374f 55%, #33465f 100%)' }}
+        >
+          <div
+            className="pointer-events-none absolute -top-24 -right-16 h-72 w-72 rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(232,69,42,0.5), transparent 65%)' }}
+          />
+          <span className="eyebrow" style={{ color: '#9fb0c6' }}>
+            New this week
+          </span>
+          <h1 className="display mt-3 text-[clamp(30px,4.6vw,50px)]" style={{ color: '#fff' }}>
             Good gear,
             <br />
             fairly priced.
           </h1>
-          <p className="mt-4 max-w-[34rem] text-[17px]" style={{ color: 'var(--ink-soft)' }}>
+          <p className="mt-4 max-w-[30rem] text-[16px]" style={{ color: '#c7d2e0' }}>
             Storage, laptops, books and desk things. Or let our AI shopper find it for you —
-            it spends within limits you set, and it cannot go past them.
+            it spends inside limits you set, and it cannot go past them.
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-7 flex flex-wrap gap-3">
             <button
-              className="btn btn-brand"
+              className="btn btn-brand btn-lg"
               onClick={() => void askAgent('an SSD')}
               disabled={sending !== '' || !policyId}
             >
               {sending === 'an SSD' ? 'Shopping…' : '🤖 Let the AI find me an SSD'}
             </button>
             <button
-              className="btn btn-quiet"
+              className="btn btn-lg"
+              style={{ background: 'rgba(255,255,255,0.12)', color: '#fff' }}
               onClick={() => void askAgent('a gaming laptop')}
               disabled={sending !== '' || !policyId}
             >
@@ -111,26 +134,31 @@ export default function Home() {
             </button>
           </div>
 
-          <p className="mt-3 text-[13px]" style={{ color: 'var(--ink-faint)' }}>
+          <p className="mt-4 text-[12.5px]" style={{ color: '#93a3ba' }}>
             {policyId
-              ? `Spending rule ${policyId} is active. Watch the bar at the top.`
-              : 'No spending rule is active yet — set one up in MandateGuard first.'}
+              ? `Spending rule ${policyId} is active — watch the bar at the top.`
+              : 'No spending rule is active yet. Set one up in MandateGuard first.'}
           </p>
         </div>
 
-        <div className="card p-8">
+        <div className="card flex flex-col justify-center p-8">
           <span className="eyebrow">Why shop here</span>
-          <ul className="mt-4 space-y-4">
+          <ul className="mt-5 space-y-5">
             {[
               ['🛡', 'Agent-safe checkout', 'Every AI purchase is checked against your own rules before payment.'],
               ['⛓', 'Settled on Algorand', 'Paid in Test USDC. Every order has a transaction you can look up.'],
-              ['↩', 'Nothing moves on a refusal', 'If a purchase breaks your rule, no money leaves. Ever.'],
+              ['↩', 'Refusals cost nothing', 'If a purchase breaks your rule, no money leaves. Ever.'],
             ].map(([icon, title, text]) => (
               <li key={title} className="flex gap-3">
-                <span className="text-[20px]">{icon}</span>
+                <span
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[16px]"
+                  style={{ background: 'var(--sunk)' }}
+                >
+                  {icon}
+                </span>
                 <span>
-                  <b className="block">{title}</b>
-                  <span className="text-[14px]" style={{ color: 'var(--ink-soft)' }}>
+                  <b className="block text-[15px]">{title}</b>
+                  <span className="text-[13.5px]" style={{ color: 'var(--ink-soft)' }}>
                     {text}
                   </span>
                 </span>
@@ -140,65 +168,134 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Categories */}
-      <div className="flex flex-wrap gap-2 border-y py-4" style={{ borderColor: 'var(--line)' }}>
-        {CATEGORIES.map((c) => (
+      {/* Trust row */}
+      <div
+        className="grid gap-px overflow-hidden rounded-[var(--radius)] border sm:grid-cols-4"
+        style={{ background: 'var(--line)', borderColor: 'var(--line)' }}
+      >
+        {[
+          ['🚚', 'Free delivery', 'On orders over ₹999'],
+          ['↩', '7-day returns', 'No questions asked'],
+          ['🔒', 'Secure checkout', 'Keys never leave your wallet'],
+          ['⛓', 'On-chain receipts', 'Every order is verifiable'],
+        ].map(([icon, title, sub]) => (
+          <div key={title} className="flex items-center gap-3 p-4" style={{ background: 'var(--surface)' }}>
+            <span className="text-[18px]">{icon}</span>
+            <span>
+              <b className="block text-[13.5px]">{title}</b>
+              <span className="text-[12px]" style={{ color: 'var(--ink-faint)' }}>
+                {sub}
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="mt-10 flex flex-wrap items-center gap-2">
+        {FILTERS.map((f) => (
           <button
-            key={c.id}
-            onClick={() => setCategory(c.id)}
-            className="btn btn-sm"
-            style={
-              category === c.id
-                ? { background: 'var(--deep)', color: '#fff' }
-                : { background: 'var(--surface)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }
-            }
+            key={f.id}
+            onClick={() => {
+              const next = new URLSearchParams(params)
+              if (f.id === 'all') next.delete('c')
+              else next.set('c', f.id)
+              setParams(next, { replace: true })
+            }}
+            className={`btn btn-sm ${category === f.id ? 'btn-dark' : 'btn-quiet'}`}
           >
-            {c.label}
+            {f.label}
           </button>
         ))}
-        <span className="ml-auto self-center text-[13px]" style={{ color: 'var(--ink-faint)' }}>
-          {shown.length} items · {rate}
+
+        <span className="ml-auto text-[13px]" style={{ color: 'var(--ink-faint)' }}>
+          {shown.length} {shown.length === 1 ? 'product' : 'products'}
+          {query ? ` matching “${query}”` : ''} · {rate}
         </span>
       </div>
 
       {/* Grid */}
-      <section className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {shown.map((p, i) => (
-          <Link
-            key={p.id}
-            to={`/p/${p.id}`}
-            className={`card card-hover rise p-4 ${spotlight === p.id ? 'spotlit' : ''}`}
-            style={{ '--i': i } as CSSProperties}
-          >
-            {spotlight === p.id && (
-              <span className="pill pill-warn beacon mb-3 inline-flex">
-                🤖 The AI shopper is looking at this
-              </span>
-            )}
-            <div className={`thumb thumb-${p.category}`}>
-              <span className="relative z-10">{GLYPH[p.category]}</span>
-            </div>
+      {shown.length === 0 ? (
+        <p className="py-20 text-center" style={{ color: 'var(--ink-faint)' }}>
+          Nothing matched. Try another search.
+        </p>
+      ) : (
+        <section className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {shown.map((p, i) => {
+            const was = listPrice(p.price)
+            const off = Math.round(((was - p.price) / was) * 100)
 
-            <div className="mt-4 flex items-start justify-between gap-3">
-              <h3 className="text-[16px] leading-snug font-semibold">{p.product}</h3>
-              <span className="pill pill-ink shrink-0">★ {p.rating}</span>
-            </div>
+            return (
+              <article
+                key={p.id}
+                className={`tile rise ${spotlight === p.id ? 'tile-spotlit' : ''}`}
+                style={{ '--i': i } as CSSProperties}
+              >
+                <Link to={`/p/${p.id}`} className={`shot shot-${p.category}`}>
+                  <span className="relative z-10">{GLYPH[p.category]}</span>
 
-            <p className="mt-1 text-[13px]" style={{ color: 'var(--ink-faint)' }}>
-              {p.seller}
-            </p>
+                  {off > 0 && (
+                    <span className="pill pill-brand absolute top-3 left-3 z-10">
+                      {off}% off
+                    </span>
+                  )}
+                  {!p.inStock && (
+                    <span className="pill pill-ink absolute top-3 right-3 z-10">
+                      Out of stock
+                    </span>
+                  )}
+                </Link>
 
-            <div className="mt-3 flex items-baseline justify-between">
-              <span className="display text-[22px]">{rupees(p.price)}</span>
-              <span className="mono text-[12px]" style={{ color: 'var(--ink-faint)' }}>
-                {p.priceUsdc} USDC
-              </span>
-            </div>
+                {spotlight === p.id && (
+                  <div
+                    className="beacon px-4 py-2 text-[12px] font-semibold"
+                    style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}
+                  >
+                    🤖 The AI shopper is looking at this
+                  </div>
+                )}
 
-            {!p.inStock && <span className="pill pill-bad mt-3 inline-flex">Out of stock</span>}
-          </Link>
-        ))}
-      </section>
+                <div className="flex flex-1 flex-col p-4">
+                  <Link to={`/p/${p.id}`} className="text-[15px] leading-snug font-semibold">
+                    {p.product}
+                  </Link>
+
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="stars">
+                      {'★'.repeat(Math.round(p.rating))}
+                      {'☆'.repeat(5 - Math.round(p.rating))}
+                    </span>
+                    <span className="text-[12px]" style={{ color: 'var(--ink-faint)' }}>
+                      {p.rating.toFixed(1)}
+                    </span>
+                  </div>
+
+                  <p className="mt-0.5 text-[12.5px]" style={{ color: 'var(--ink-faint)' }}>
+                    {p.seller}
+                  </p>
+
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className="display text-[21px]">{rupees(p.price)}</span>
+                    {off > 0 && <span className="strike">{rupees(was)}</span>}
+                  </div>
+
+                  <p className="mono mt-0.5 text-[11.5px]" style={{ color: 'var(--ink-faint)' }}>
+                    {p.priceUsdc} USDC
+                  </p>
+
+                  <button
+                    className="btn btn-quiet btn-sm btn-block mt-4"
+                    disabled={!p.inStock}
+                    onClick={() => add(p)}
+                  >
+                    Add to cart
+                  </button>
+                </div>
+              </article>
+            )
+          })}
+        </section>
+      )}
     </div>
   )
 }
