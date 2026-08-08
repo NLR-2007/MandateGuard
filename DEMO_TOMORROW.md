@@ -180,7 +180,7 @@ No smart contract — anchoring uses the transaction note field, so replay prote
 | Problem | Do this |
 |---|---|
 | Telegram silent | Keep going — the web UI shows everything. Say "my phone is on the venue wifi." |
-| AI request hangs | Times out in 90s with a readable message. Use the Dashboard's manual path. |
+| AI request hangs | NVIDIA's endpoint is congested. Times out in 90s with a readable message; use the Dashboard's manual path. If it is slow every time, the 70B models are down — check `NVIDIA_MODEL` in `server/.env` is `meta/llama-3.1-8b-instruct`. |
 | Wallet will not connect | Wallet bar is at the top of Dashboard and Shop. Hard-refresh. |
 | Facilitator down | Paid routes answer 503 and say so. Nothing fakes success. |
 | Backend died | The port-conflict command at the top of this file. |

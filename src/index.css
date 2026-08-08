@@ -171,9 +171,25 @@ body {
   transform: scale(0.98);
 }
 
+/**
+ * A disabled button still has to be readable - it usually says what the app
+ * is busy doing. Fading the accent green to 35% left dark green text on a
+ * green field, which is the one state a user stares at while waiting.
+ */
 .btn:disabled {
-  opacity: 0.35;
+  opacity: 1;
+  background: var(--paper-deep);
+  border-color: var(--rule);
+  color: var(--ink-faint);
   cursor: not-allowed;
+}
+
+.btn-solid:disabled,
+button.btn-solid:disabled,
+.btn-red:disabled {
+  background: var(--paper-deep) !important;
+  border-color: var(--rule) !important;
+  color: var(--ink-soft) !important;
 }
 
 .btn-solid {
