@@ -27,6 +27,7 @@ import { sendMessage } from '../services/telegram.js'
 import { askWhatToBuy } from '../services/notifier.js'
 import { markRunPaid } from '../services/agentFlow.js'
 import { rupeesToUsdc } from '../services/notifier.js'
+import { getLiveSession, resetLive } from '../services/liveSession.js'
 
 export const agentRoutes = new Hono()
 
@@ -90,7 +91,7 @@ setWantHandler(async (want: string) => {
 
   let run
   try {
-    run = await runAgent({ policy, mode, want: label })
+    run = await runAgent({ policy, mode, want: label, source: 'TELEGRAM' })
   } catch (error) {
     void sendMessage(`⚠️ The agent could not choose anything: ${(error as Error).message}`)
     return
@@ -192,6 +193,19 @@ agentRoutes.get('/agent/run/:id', (c) => {
   const run = getRun(c.req.param('id'))
   if (!run) return c.json({ success: false, error: 'Unknown request.' }, 404)
   return c.json({ success: true, run: view(run) })
+})
+
+/**
+ * What the agent is doing right now.
+ *
+ * The storefront polls this. It is deliberately a read-only summary: a shop
+ * integrating MandateGuard sees what the guard is doing, never how it decides.
+ */
+agentRoutes.get('/agent/live', (c) => c.json({ success: true, live: getLiveSession() }))
+
+agentRoutes.post('/agent/live/reset', (c) => {
+  resetLive()
+  return c.json({ success: true })
 })
 
 agentRoutes.get('/agent/runs', (c) =>

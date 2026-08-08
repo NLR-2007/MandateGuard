@@ -14,6 +14,8 @@ import { prepareAiOrder } from './aiOrderAgent.js'
 import { verifyMandate } from './mandateVerifier.js'
 import { askApproval, notifyAgentPicked, notifyBlocked } from './notifier.js'
 import { editButtons, sendMessage } from './telegram.js'
+import { startLive, updateLive } from './liveSession.js'
+import { rupeesToUsdc } from './notifier.js'
 import type { AIOrder, SpendingPolicy, VerificationResult } from '../types/index.js'
 
 export type AgentMode = 'ASK' | 'AUTONOMOUS'
@@ -90,12 +92,28 @@ export async function runAgent(params: {
   mode: AgentMode
   /** What the user asked for. Absent means "anything that fits the rule". */
   want?: string
+  /** Where the instruction came from, so the shop can say so. */
+  source?: 'TELEGRAM' | 'WEB'
 }): Promise<AgentRun> {
-  const { policy, mode, want } = params
+  const { policy, mode, want, source = 'WEB' } = params
+
+  // Publish each step so the storefront can show it happening.
+  startLive(source, want ?? 'something')
 
   // 1. The AI searches and picks. Untrusted output.
   const prepared = await prepareAiOrder(policy, undefined, undefined, want)
   const item = demoCatalog.find((i) => i.id === prepared.catalogId) ?? null
+
+  updateLive({
+    phase: 'SELECTED',
+    headline: `Chose ${prepared.order.product} from ${prepared.order.seller}`,
+    itemId: item?.id ?? null,
+    product: prepared.order.product,
+    price: prepared.order.price,
+    priceUsdc: rupeesToUsdc(prepared.order.price),
+    seller: prepared.order.seller,
+    reason: prepared.reason,
+  })
 
   notifyAgentPicked({
     product: prepared.order.product,
@@ -105,8 +123,17 @@ export async function runAgent(params: {
   })
 
   // 2. MandateGuard decides. Always. In both modes.
+  updateLive({ phase: 'CHECKING', headline: 'MandateGuard is checking it against your rule…' })
+
   const result = verifyMandate(policy, prepared.order, {
     spentToday: getSpentToday(),
+  })
+
+  updateLive({
+    decision: result.decision,
+    violations: result.violations,
+    checksPassed: result.checks.filter((c) => c.passed).length,
+    checksTotal: result.checks.length,
   })
 
   const requestId = nextRequestId()
@@ -123,6 +150,11 @@ export async function runAgent(params: {
   }
 
   if (result.decision === 'BLOCKED') {
+    updateLive({
+      phase: 'BLOCKED',
+      requestId,
+      headline: `Refused — ${result.violations.length} rule${result.violations.length === 1 ? '' : 's'} broken. Nothing was paid.`,
+    })
     notifyBlocked(prepared.order, policy, result.violations)
     runs.set(requestId, run)
     return run
@@ -131,6 +163,11 @@ export async function runAgent(params: {
   // 3. Passed the rules. Ask, or just proceed.
   if (mode === 'ASK') {
     run.state = 'PENDING_APPROVAL'
+    updateLive({
+      phase: 'AWAITING_APPROVAL',
+      requestId,
+      headline: 'All ten rules passed. Waiting for the buyer to confirm.',
+    })
     const sent = await askApproval(requestId, {
       product: prepared.order.product,
       price: prepared.order.price,
@@ -138,6 +175,11 @@ export async function runAgent(params: {
     })
     run.messageId = sent.messageId
   } else {
+    updateLive({
+      phase: 'PAYING',
+      requestId,
+      headline: 'All ten rules passed. Paying the seller…',
+    })
     void sendMessage(
       [
         '🤖 <b>Acting on its own</b>',
@@ -178,6 +220,12 @@ export async function decideRun(requestId: string, approved: boolean): Promise<s
 
   run.state = approved ? 'READY_TO_PAY' : 'REJECTED'
 
+  updateLive(
+    approved
+      ? { phase: 'PAYING', headline: 'Confirmed. Paying the seller…' }
+      : { phase: 'REJECTED', headline: 'The buyer declined. Nothing was paid.' },
+  )
+
   return approved
     ? `✅ Approved. Paying ${run.order.seller} now…`
     : `✖ Rejected. Nothing was paid.`
@@ -187,6 +235,19 @@ export async function decideRun(requestId: string, approved: boolean): Promise<s
 export function markRunPaid(requestId: string): void {
   const run = runs.get(requestId)
   if (run) run.state = 'PAID'
+}
+
+/** The purchase settled. Only real values arrive here. */
+export function markLivePaid(details: {
+  orderId: string
+  transactionId: string | null
+  explorerUrl: string | null
+}): void {
+  updateLive({
+    phase: 'PAID',
+    headline: 'Paid. The seller has the money.',
+    ...details,
+  })
 }
 
 /** Test helper. */

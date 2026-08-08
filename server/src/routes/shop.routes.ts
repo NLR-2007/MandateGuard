@@ -17,6 +17,7 @@ import { Hono } from 'hono'
 import { demoCatalog, type CatalogItem } from '../data/demoCatalog.js'
 import { findAudit, setPaymentProof } from '../services/auditService.js'
 import { markMandateUsed } from '../services/mandateProof.js'
+import { markLivePaid } from '../services/agentFlow.js'
 import { DEMO_RATE_NOTE, notifyPaid, rupeesToUsdc } from '../services/notifier.js'
 import { createDynamicX402Middleware, readSettlement } from '../x402/paymentMiddleware.js'
 import { explorerTxUrl, getX402Config, NETWORK_LABEL } from '../x402/x402Config.js'
@@ -93,6 +94,12 @@ export function createShopRoutes(): Hono {
       console.log(`  🛒 Purchase settled on Algorand: ${settlement.transaction}`)
       console.log(`     ${explorerTxUrl(settlement.transaction)}`)
     }
+
+    markLivePaid({
+      orderId: String(body.orderId ?? ''),
+      transactionId: settlement.transaction,
+      explorerUrl: settlement.transaction ? explorerTxUrl(settlement.transaction) : null,
+    })
 
     // Tell the user what was bought and prove it.
     const item = body.item as CatalogItem | undefined
