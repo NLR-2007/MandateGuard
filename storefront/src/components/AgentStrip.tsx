@@ -84,6 +84,9 @@ export default function AgentStrip() {
               background: live.decision === 'BLOCKED' ? 'rgba(192,39,26,0.09)' : 'rgba(15,107,79,0.1)',
               color: live.decision === 'BLOCKED' ? 'var(--bad)' : 'var(--good)',
             }}
+            /* The reasons themselves live on the order, not up here - this bar
+               is a glance, not a report. */
+            title={live.violations.join('  ·  ')}
           >
             {live.checksPassed}/{live.checksTotal} rules passed
           </span>
@@ -100,28 +103,6 @@ export default function AgentStrip() {
           </a>
         )}
       </div>
-
-      {live.violations.length > 0 && (
-        <div className="mx-auto max-w-[1180px] px-6 pb-4">
-          {/* A grid, not a wrapping row: reasons must line up in columns so
-              each one reads as its own item. Flowing them inline ran them
-              together and the numbering stopped helping. */}
-          <ol className="grid gap-x-8 gap-y-1.5 sm:grid-cols-2 lg:grid-cols-3">
-            {live.violations.map((v, i) => (
-              <li
-                key={v}
-                className="flex items-baseline gap-2 text-[13px] leading-snug"
-                style={{ color: 'var(--bad)' }}
-              >
-                <span className="mono shrink-0 opacity-55">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span>{v}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-      )}
     </div>
   )
 }
