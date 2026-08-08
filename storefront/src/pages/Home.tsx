@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { getLive, getProducts, getPolicies, rupees, sendAgent, type Product } from '../api'
 
@@ -25,7 +25,6 @@ export default function Home() {
   const [sending, setSending] = useState('')
   /** Which product the agent is currently looking at, if any. */
   const [spotlight, setSpotlight] = useState<string | null>(null)
-  const cards = useRef<Record<string, HTMLAnchorElement | null>>({})
 
   useEffect(() => {
     void getProducts().then((d) => {
@@ -39,29 +38,18 @@ export default function Home() {
   }, [])
 
   /**
-   * Follow the agent around the shop.
+   * Mark whatever the agent is currently looking at.
    *
-   * When it settles on something, the page switches to that category, scrolls
-   * the card into view and marks it. An audience should see the choice being
-   * made, not read about it afterwards.
+   * Only the highlight lives here. Moving the page is the pilot's job, and
+   * doing it from a poll was the bug: every tick re-scrolled the window, so
+   * the page would not stay still long enough to read.
    */
   useEffect(() => {
     let stop = false
     const tick = async () => {
       try {
         const live = await getLive()
-        if (stop) return
-        if (!live.itemId) {
-          setSpotlight(null)
-          return
-        }
-        setSpotlight(live.itemId)
-
-        const item = products.find((p) => p.id === live.itemId)
-        if (item) setCategory((c) => (c === 'all' || c === item.category ? c : item.category))
-
-        const el = cards.current[live.itemId]
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        if (!stop) setSpotlight(live.itemId)
       } catch {
         /* the guard is down; the shop keeps working */
       }
@@ -72,7 +60,7 @@ export default function Home() {
       stop = true
       clearInterval(id)
     }
-  }, [products])
+  }, [])
 
   const shown =
     category === 'all' ? products : products.filter((p) => p.category === category)
@@ -179,9 +167,6 @@ export default function Home() {
           <Link
             key={p.id}
             to={`/p/${p.id}`}
-            ref={(el) => {
-              cards.current[p.id] = el
-            }}
             className={`card card-hover rise p-4 ${spotlight === p.id ? 'spotlit' : ''}`}
             style={{ '--i': i } as CSSProperties}
           >

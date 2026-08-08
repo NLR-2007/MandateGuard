@@ -42,6 +42,14 @@ export function setWantHandler(handler: WantHandler): void {
   onWant = handler
 }
 
+/** The user tapped one exact product from the shop's catalogue. */
+type PickHandler = (itemId: string) => Promise<void>
+let onPick: PickHandler | null = null
+
+export function setPickHandler(handler: PickHandler): void {
+  onPick = handler
+}
+
 /** The user confirmed the purchase, so the agent pays. */
 type PayHandler = (requestId: string) => Promise<void>
 let onPay: PayHandler | null = null
@@ -156,9 +164,15 @@ async function handle(msg: Incoming): Promise<void> {
     const [action, value] = msg.callback.split(':')
     if (msg.callbackId) await answerCallback(msg.callbackId, 'Got it')
 
-    // "I want an SSD" / "I want a laptop" - the agent goes shopping.
+    // "I want an SSD" - the agent goes and searches.
     if (action === 'want') {
       if (onWant) await onWant(value)
+      return
+    }
+
+    // One exact product tapped from the catalogue.
+    if (action === 'pick') {
+      if (onPick) await onPick(value)
       return
     }
 

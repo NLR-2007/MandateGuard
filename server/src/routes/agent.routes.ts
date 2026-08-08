@@ -18,6 +18,7 @@ import {
   setBuyHandler,
   setDecisionHandler,
   setPayHandler,
+  setPickHandler,
   setWantHandler,
 } from '../services/telegramBot.js'
 import { agentBuys } from '../services/agentBuyer.js'
@@ -25,6 +26,7 @@ import { isAgentWalletConfigured } from '../services/agentWallet.js'
 import { listPolicies } from '../services/policyService.js'
 import { sendMessage } from '../services/telegram.js'
 import { askWhatToBuy } from '../services/notifier.js'
+import { demoCatalog } from '../data/demoCatalog.js'
 import { markRunPaid } from '../services/agentFlow.js'
 import { rupeesToUsdc } from '../services/notifier.js'
 import { getLiveSession, resetLive } from '../services/liveSession.js'
@@ -54,7 +56,7 @@ setBuyHandler(async () => {
     return
   }
 
-  void askWhatToBuy()
+  void askWhatToBuy(demoCatalog)
 })
 
 /**
@@ -126,6 +128,51 @@ async function payForRun(requestId: string): Promise<void> {
     void sendMessage(`⚠️ The payment failed: ${(error as Error).message}`)
   }
 }
+
+/**
+ * The user tapped one exact product in the shop.
+ *
+ * No searching is needed - they named it. The checking is identical: a
+ * hand-picked item goes through the same ten rules and can be refused just
+ * the same, which is the whole point of a guard that the shop cannot bypass.
+ */
+setPickHandler(async (itemId: string) => {
+  const policy = activeRule()
+  if (!policy) {
+    void sendMessage('⚠️ There is no active rule. Approve one first, or send /resume.')
+    return
+  }
+
+  const item = demoCatalog.find((i) => i.id === itemId)
+  if (!item) {
+    void sendMessage('⚠️ That product is no longer in the shop.')
+    return
+  }
+
+  void sendMessage(`🛍 Opening <b>${item.product}</b> in the shop…`)
+
+  let run
+  try {
+    run = await runAgent({
+      policy,
+      mode: getAgentMode(),
+      itemId,
+      source: 'TELEGRAM',
+    })
+  } catch (error) {
+    void sendMessage(`⚠️ Could not order that: ${(error as Error).message}`)
+    return
+  }
+
+  console.log(
+    `  🛍 pick(${itemId}) [${getAgentMode()}] → ${run.order.product} · ${run.result.decision}`,
+  )
+
+  // Blocked runs already said why; ASK mode is now waiting on a tap.
+  if (run.state !== 'READY_TO_PAY' || !run.item) return
+
+  await payForRun(run.requestId)
+})
 
 /**
  * The user tapped "Yes, buy it".

@@ -10,7 +10,7 @@
 
 import { getSpentToday } from '../data/memoryStore.js'
 import { demoCatalog, type CatalogItem } from '../data/demoCatalog.js'
-import { prepareAiOrder } from './aiOrderAgent.js'
+import { buildOrderFromChoice, prepareAiOrder } from './aiOrderAgent.js'
 import { verifyMandate } from './mandateVerifier.js'
 import { askApproval, notifyAgentPicked, notifyBlocked } from './notifier.js'
 import { editButtons, sendMessage } from './telegram.js'
@@ -94,14 +94,31 @@ export async function runAgent(params: {
   want?: string
   /** Where the instruction came from, so the shop can say so. */
   source?: 'TELEGRAM' | 'WEB'
+  /**
+   * A product the user named outright.
+   *
+   * When someone picks an exact item there is nothing to search for, so the
+   * AI step is skipped rather than dressed up. What does NOT change is the
+   * checking: a hand-picked item goes through all ten rules exactly like an
+   * AI-chosen one, and can be refused just the same.
+   */
+  itemId?: string
 }): Promise<AgentRun> {
-  const { policy, mode, want, source = 'WEB' } = params
+  const { policy, mode, want, source = 'WEB', itemId } = params
+  const chosen = itemId ? demoCatalog.find((i) => i.id === itemId) : undefined
 
   // Publish each step so the storefront can show it happening.
-  startLive(source, want ?? 'something')
+  startLive(source, chosen ? chosen.product : (want ?? 'something'))
 
-  // 1. The AI searches and picks. Untrusted output.
-  const prepared = await prepareAiOrder(policy, undefined, undefined, want)
+  // 1. Either the user named a product, or the AI goes and finds one.
+  //    Untrusted output either way.
+  const prepared = chosen
+    ? buildOrderFromChoice(
+        { catalogId: chosen.id, quantity: 1, warrantyAdded: false, reason: 'Chosen by the buyer.' },
+        demoCatalog,
+      )
+    : await prepareAiOrder(policy, undefined, undefined, want)
+
   const item = demoCatalog.find((i) => i.id === prepared.catalogId) ?? null
 
   updateLive({

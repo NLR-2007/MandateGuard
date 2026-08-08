@@ -7,6 +7,7 @@ import Checkout from './pages/Checkout'
 import Orders from './pages/Orders'
 import Confirmation from './pages/Confirmation'
 import WalletButton from './components/WalletButton'
+import AgentPilot from './components/AgentPilot'
 import { CartProvider, useCart } from './cart'
 
 /**
@@ -33,6 +34,8 @@ export default function App() {
       <BrowserRouter>
         <Header />
         <AgentStrip />
+        {/* Opens whatever the agent picks, like a shopper clicking it. */}
+        <AgentPilot />
 
         <main className="mx-auto max-w-[1180px] px-6 pb-24">
           <Routes>

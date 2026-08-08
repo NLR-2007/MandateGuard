@@ -34,24 +34,40 @@ function usdcLine(amountRupees: number): string {
 }
 
 /**
- * The shopping menu.
+ * The shopping menu: everything the shop sells.
  *
- * Two choices on purpose: one the user's rule allows, one it does not. A
- * panel watching this needs to see both outcomes, and needs to see that the
- * SAME engine produced both.
+ * Real products with real prices, not two canned choices. Some of them the
+ * user's rule allows and some it does not, and the buttons do not say which -
+ * finding that out is MandateGuard's job, and hinting at it would give the
+ * game away.
  */
-export function askWhatToBuy(): Promise<{ ok: boolean; messageId?: number }> {
+export function askWhatToBuy(
+  items: { id: string; product: string; price: number; seller: string; inStock: boolean }[],
+): Promise<{ ok: boolean; messageId?: number }> {
+  const buttons: InlineButton[][] = items
+    .filter((i) => i.inStock)
+    .map((i) => [
+      {
+        text: `${i.product} · ${rupees(i.price)} · ${i.seller}`,
+        callback_data: `pick:${i.id}`,
+      },
+    ])
+
+  // A shortcut for the demo: let the agent go and choose for itself.
+  buttons.unshift([
+    { text: '🤖 Let the agent choose', callback_data: 'want:ssd' },
+  ])
+
   return sendMessage(
     [
-      '🛒 <b>What should I buy?</b>',
+      '🏬 <b>NovaMart</b>',
       '',
-      'I will search the shop, then MandateGuard will check my choice',
-      'against the rule you approved.',
+      'Pick something, or let the agent find one for you.',
+      '',
+      'Whatever is chosen, MandateGuard checks it against your rule before',
+      'a single rupee moves.',
     ].join(String.fromCharCode(10)),
-    [
-      [{ text: '💾 An SSD', callback_data: 'want:ssd' }],
-      [{ text: '💻 A gaming laptop', callback_data: 'want:laptop' }],
-    ],
+    buttons,
   )
 }
 
