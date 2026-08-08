@@ -69,9 +69,15 @@ export default function Orders() {
             {e.violations.length > 0 && (
               <ol className="mt-3 space-y-1">
                 {e.violations.map((v, i) => (
-                  <li key={v} className="text-[13px]" style={{ color: 'var(--bad)' }}>
-                    <span className="mono mr-1.5 opacity-60">{String(i + 1).padStart(2, '0')}</span>
-                    {v}
+                  <li
+                    key={v}
+                    className="flex items-baseline gap-2 text-[13px] leading-snug"
+                    style={{ color: 'var(--bad)' }}
+                  >
+                    <span className="mono shrink-0 opacity-55">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span>{v}</span>
                   </li>
                 ))}
               </ol>

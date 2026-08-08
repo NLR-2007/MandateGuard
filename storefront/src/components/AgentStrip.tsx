@@ -56,7 +56,7 @@ export default function AgentStrip() {
       className={`border-b ${busy ? 'working' : ''}`}
       style={{ background: tone.bg, borderColor: 'var(--line)' }}
     >
-      <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3">
+      <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-3 gap-y-2 px-6 py-3">
         <span
           className={`h-2.5 w-2.5 shrink-0 rounded-full ${busy ? 'beacon' : ''}`}
           style={{ background: tone.dot }}
@@ -66,7 +66,7 @@ export default function AgentStrip() {
           {live.source === 'TELEGRAM' ? 'AI shopper · via Telegram' : 'AI shopper'}
         </span>
 
-        <span className="text-[15px] font-medium" style={{ color: tone.fg }}>
+        <span className="text-[15px] font-semibold" style={{ color: tone.fg }}>
           {live.headline}
         </span>
 
@@ -102,12 +102,21 @@ export default function AgentStrip() {
       </div>
 
       {live.violations.length > 0 && (
-        <div className="mx-auto max-w-[1180px] px-6 pb-3">
-          <ol className="flex flex-wrap gap-x-5 gap-y-1">
+        <div className="mx-auto max-w-[1180px] px-6 pb-4">
+          {/* A grid, not a wrapping row: reasons must line up in columns so
+              each one reads as its own item. Flowing them inline ran them
+              together and the numbering stopped helping. */}
+          <ol className="grid gap-x-8 gap-y-1.5 sm:grid-cols-2 lg:grid-cols-3">
             {live.violations.map((v, i) => (
-              <li key={v} className="text-[13px]" style={{ color: 'var(--bad)' }}>
-                <span className="mono mr-1.5 opacity-60">{String(i + 1).padStart(2, '0')}</span>
-                {v}
+              <li
+                key={v}
+                className="flex items-baseline gap-2 text-[13px] leading-snug"
+                style={{ color: 'var(--bad)' }}
+              >
+                <span className="mono shrink-0 opacity-55">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span>{v}</span>
               </li>
             ))}
           </ol>

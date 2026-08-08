@@ -154,11 +154,15 @@ export default function Checkout() {
                     {v.violations.length > 0 && (
                       <ol className="mt-3 space-y-1">
                         {v.violations.map((x, i) => (
-                          <li key={x} className="text-[13px]" style={{ color: 'var(--bad)' }}>
-                            <span className="mono mr-1.5 opacity-60">
+                          <li
+                            key={x}
+                            className="flex items-baseline gap-2 text-[13px] leading-snug"
+                            style={{ color: 'var(--bad)' }}
+                          >
+                            <span className="mono shrink-0 opacity-55">
                               {String(i + 1).padStart(2, '0')}
                             </span>
-                            {x}
+                            <span>{x}</span>
                           </li>
                         ))}
                       </ol>
