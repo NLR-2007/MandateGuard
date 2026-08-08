@@ -11,6 +11,7 @@ const links: LinkDef[] = [
   { to: '/home', label: 'Home', modes: ['MVP', 'DEMO'] },
   { to: '/dashboard', label: 'Dashboard', modes: ['MVP', 'DEMO'] },
   { to: '/shop', label: 'Shop', modes: ['MVP', 'DEMO'] },
+  { to: '/attack', label: 'Break It', modes: ['MVP', 'DEMO'] },
   { to: '/history', label: 'History', modes: ['MVP', 'DEMO'] },
   { to: '/architecture', label: 'How it works', modes: ['MVP', 'DEMO'] },
 
