@@ -36,6 +36,7 @@ export default function Shop() {
   const [policies, setPolicies] = useState<SpendingPolicy[]>([])
   const [policyId, setPolicyId] = useState('')
   const [mode, setMode] = useState<AgentMode>('ASK')
+  const [want, setWant] = useState('an SSD')
 
   const [run, setRun] = useState<AgentRun | null>(null)
   const [purchase, setPurchase] = useState<PurchaseResult | null>(null)
@@ -75,7 +76,7 @@ export default function Shop() {
     setRun(null)
     setPurchase(null)
     try {
-      setRun(await sendAgentShopping(policyId, mode))
+      setRun(await sendAgentShopping(policyId, mode, want))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The agent could not run.')
     } finally {
@@ -128,6 +129,36 @@ export default function Shop() {
       {/* Controls */}
       <div className="sheet mt-8 p-7">
         <span className="label">Send the agent shopping</span>
+
+        <div className="mt-5">
+          <span className="label label-ink mb-1.5 block">What should the agent buy?</span>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 'an SSD', label: '💾 An SSD', hint: 'your rule allows this' },
+              { value: 'a gaming laptop', label: '💻 A gaming laptop', hint: 'your rule does not' },
+            ].map((choice) => (
+              <button
+                key={choice.value}
+                onClick={() => setWant(choice.value)}
+                className="border px-4 py-2.5 text-left transition-colors"
+                style={
+                  want === choice.value
+                    ? { borderColor: 'var(--accent)', background: 'var(--wash-green)' }
+                    : { borderColor: 'var(--rule)' }
+                }
+              >
+                <span className="block text-[14px]" style={{ color: 'var(--ink)' }}>
+                  {choice.label}
+                </span>
+                <span className="label">{choice.hint}</span>
+              </button>
+            ))}
+          </div>
+          <p className="footnote mt-2">
+            The agent really goes looking for whatever you pick. It will not quietly
+            swap in something safe — that is MandateGuard&rsquo;s job, not the agent&rsquo;s.
+          </p>
+        </div>
 
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
           <div>

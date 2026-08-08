@@ -157,6 +157,8 @@ agentRoutes.post('/agent/shop', async (c) => {
   const body = (await c.req.json().catch(() => ({}))) as {
     policyId?: string
     mode?: AgentMode
+    /** What the user asked for. The agent searches for THIS. */
+    want?: string
   }
 
   const policy = body.policyId ? getPolicy(body.policyId) : undefined
@@ -167,9 +169,10 @@ agentRoutes.post('/agent/shop', async (c) => {
   const mode: AgentMode = body.mode === 'AUTONOMOUS' ? 'AUTONOMOUS' : 'ASK'
 
   try {
-    const run = await runAgent({ policy, mode })
+    const run = await runAgent({ policy, mode, want: body.want })
     console.log(
-      `  🤖 Agent run ${run.requestId}: ${run.result.decision} · ${run.state} · ${mode}`,
+      `  🤖 Agent run ${run.requestId}${body.want ? ` ("${body.want}")` : ''}: ` +
+        `${run.result.decision} · ${run.state} · ${mode}`,
     )
     return c.json({ success: true, run: view(run) })
   } catch (error) {

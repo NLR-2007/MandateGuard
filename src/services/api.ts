@@ -290,10 +290,12 @@ export async function getShopProducts(): Promise<{
 export async function sendAgentShopping(
   policyId: string,
   mode: AgentMode,
+  /** What to look for. The agent searches for this, not for what will pass. */
+  want?: string,
 ): Promise<AgentRun> {
   const data = await request<{ run: AgentRun }>('/api/agent/shop', {
     method: 'POST',
-    body: JSON.stringify({ policyId, mode }),
+    body: JSON.stringify({ policyId, mode, want }),
   })
   return data.run
 }

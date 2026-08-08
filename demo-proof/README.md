@@ -13,6 +13,7 @@ from the running system — nothing is mocked up or edited.
 | `04-failure-paths.txt` | AI outage and facilitator outage handled gracefully — service stays alive, nothing faked. |
 | `run-qa.mjs`, `run-qa2.mjs` | The harnesses, so any claim above can be re-run: `node demo-proof/run-qa.mjs` |
 | `05-real-run.txt` | **The real end-to-end run.** Policy MG-1017 anchored on Algorand TestNet (`33RX5SPU…`) and the x402 payment settled (`M7AR3KGI…`), both re-read from the public indexer, with the fingerprint recomputed independently. |
+| `run-qa3.mjs` | The shop, the agent and both modes: per-product x402 pricing, real seller wallets, the agent fetching what was actually asked for, and approval never overruling a refusal. 45/45. |
 | `verify-anchor.mjs` | Independent proof of the on-chain anchor. Recomputes the fingerprint with its own copy of the rule and reads Algorand TestNet directly, without trusting our server: `node demo-proof/verify-anchor.mjs MG-1001` |
 
 Re-run everything with the backend up:
