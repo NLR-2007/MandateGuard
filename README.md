@@ -1,396 +1,116 @@
-# MandateGuard
+<div align="center">
 
-**AI Agent Spend Policy Engine — x402 + Algorand TestNet + NVIDIA NIM**
+# 🛡️ MandateGuard
 
-> Let AI spend, but keep human intent in control.
+### Let AI spend your money. Decide what it's allowed to buy.
 
-An AI agent can stay inside your spending limit and still buy the wrong thing.
-MandateGuard compares what the human approved against what the AI actually
-ordered, and answers **APPROVED** or **BLOCKED** with exact reasons.
+**An AI agent can stay inside your budget and still buy completely the wrong thing.**
+MandateGuard compares what the human approved against what the AI actually ordered —
+and answers **APPROVED** or **BLOCKED**, with reasons.
+
+<br>
+
+![Algorand](https://img.shields.io/badge/Algorand-TestNet-000000?style=for-the-badge&logo=algorand)
+![x402](https://img.shields.io/badge/x402-payments-e8452a?style=for-the-badge)
+![NVIDIA NIM](https://img.shields.io/badge/NVIDIA-NIM-76B900?style=for-the-badge&logo=nvidia)
+![Telegram](https://img.shields.io/badge/Telegram-control-229ED9?style=for-the-badge&logo=telegram)
+
+![tests](https://img.shields.io/badge/tests-73%20passing-0f6b4f?style=flat-square)
+![rules](https://img.shields.io/badge/rules-10%20deterministic-12233c?style=flat-square)
+![ai in decision](https://img.shields.io/badge/AI%20in%20the%20decision-none-c0271a?style=flat-square)
+
+</div>
 
 ---
 
-## Problem
+## The problem
 
-AI agents are starting to spend money on our behalf. The usual control is a
-spending limit — "don't spend more than ₹5,000".
+An AI agent with a wallet is a new kind of risk. It doesn't need to be malicious
+to hurt you — it just needs to be **wrong**, or **talked into** being wrong.
 
-That is not enough. Here is a real example from our demo:
+A spending cap doesn't help:
 
-| | Human approved | AI ordered |
+| The rule | What the agent bought | Under budget? |
 |---|---|---|
-| Product | 1TB SSD | 1TB SSD ✓ |
-| Quantity | 1 | **2** |
-| Price | ≤ ₹5,000 | ₹4,900 ✓ |
-| Seller | SecureStore | **OtherStore** |
-| Warranty | not allowed | **added** |
-| Receiver wallet | ALGO-SECURE-STORE | **ALGO-UNKNOWN-WALLET** |
+| 1TB SSD, ₹5,000, SecureStore, no warranty | 1TB SSD, **₹4,500**, **OtherStore** | ✅ yes |
+| " | **2TB** SSD, ₹4,900, SecureStore | ✅ yes |
+| " | 1TB SSD, ₹4,800, SecureStore, **+ warranty** | ✅ yes |
 
-An amount-only check sees ₹4,900 < ₹5,000 and says **PASS**. The money was in
-budget. The purchase was wrong.
+Every one of those passes an amount check. Every one is the wrong purchase.
 
-## Solution
-
-MandateGuard sits between the AI agent and the payment. It independently
-compares the AI's final order against the human-approved policy, using ten
-deterministic rules, and returns APPROVED or BLOCKED **with the exact reasons**.
-
-In the example above it returns BLOCKED with four reasons — while still agreeing
-that the price was fine.
-
-## Why MandateGuard
-
-- **Intent, not just amount.** Quantity, seller, add-ons and the payment
-  destination are all checked, not only the total.
-- **The AI never judges itself.** The decision is plain TypeScript. Same input,
-  same answer, every time — there is a test that proves it.
-- **Every block explains itself.** Never a bare "BLOCKED"; always sentences a
-  human can act on.
-- **Pay-per-check.** x402 makes per-call verification affordable for agents, with
-  no signup or API keys.
-- **Auditable.** Every decision is recorded with its payment proof and mandate
-  status.
+> **The question isn't "how much?" It's "was this what the human actually agreed to?"**
 
 ---
 
-## The idea in one picture
+## What it does
 
-```
-Human
-  ↓
-NVIDIA NIM        reads plain English, drafts a policy (assistance only)
-  ↓
-Human approves    nothing becomes real until a person clicks Approve
-  ↓
-AI Agent          picks an item and prepares an order
-  ↓
-x402              asks for a small Test USDC fee for the verification API
-  ↓
-Algorand TestNet  records the payment
-  ↓
-MandateGuard      deterministic TypeScript compares policy vs order
-  ↓
-APPROVED / BLOCKED
+You approve a rule **once**, in plain English. The agent shops on its own.
+Before any money moves, ten deterministic checks compare the order against
+exactly what you approved.
+
+```mermaid
+flowchart LR
+    A["🗣️ Human<br/>plain English"] --> B["🤖 NVIDIA NIM<br/>drafts the rule"]
+    B --> C["✍️ Human approves<br/>once"]
+    C --> D["⛓️ Fingerprint<br/>written to Algorand"]
+    C --> E["🛒 AI agent<br/>goes shopping"]
+    E --> F{"🛡️ MandateGuard<br/>10 rules"}
+    F -->|APPROVED| G["💸 x402 payment<br/>to the seller"]
+    F -->|BLOCKED| H["🛑 Nothing paid<br/>reasons sent to your phone"]
+    G --> I["📱 Receipt + explorer link"]
+
+    style F fill:#12233c,color:#fff,stroke:#e8452a,stroke-width:3px
+    style H fill:#fbeae8,color:#c0271a
+    style G fill:#e7f3ee,color:#0f6b4f
 ```
 
-**Each layer has exactly one job:**
-
-| Layer | Job |
-|---|---|
-| **NVIDIA NIM** | Understands language. Never decides anything. |
-| **x402** | Verifies **payment**. Never judges the order. |
-| **Algorand** | Provides the **blockchain record** of the payment. |
-| **MandateGuard** | Verifies **intent**. Makes the final call, in plain code. |
-
-> **x402 verifies payment. MandateGuard verifies intent. Algorand provides proof.**
-
-## Tech stack
-
-| Part | Technology |
-|---|---|
-| Frontend | React + TypeScript + Tailwind CSS |
-| Backend | Node.js + Hono + TypeScript |
-| Database | MySQL / MariaDB (XAMPP) |
-| AI | NVIDIA NIM (`meta/llama-3.1-70b-instruct`) |
-| Security | MandateGuard deterministic policy engine |
-| Payment | x402 |
-| Blockchain | Algorand TestNet |
-| Currency | Test USDC (ASA 10458941) |
-| Facilitator | GoPlausible |
-
-## Pages
-
-| Route | What it does |
-|---|---|
-| `/` | The problem, the solution, the flow |
-| `/dashboard` | **Control Center** — the whole journey in one guided run |
-| `/unsafe-demo` | The problem: an amount-only check passes an unsafe order |
-| `/policy` | Create a policy by hand, or with AI help |
-| `/order` | AI order + verification (free or paid route) |
-| `/verify` | The last decision, with blockchain proof |
-| `/history` | Audit log of every verification |
-| `/history/:verificationId` | One transaction in full, with its timeline |
-| `/architecture` | The four layers, one job each |
-
-A user can successfully pay the API fee and *still* have their order blocked —
-those are two separate answers, and the UI shows them separately.
+**Approval moves from per-order to per-policy.** You approve the rule once;
+the agent then acts alone inside it. That's what makes an autonomous agent
+useful instead of terrifying.
 
 ---
 
-## Why the decision is not made by AI
+## 🔥 Break It — we attack our own agent, live
 
-The APPROVED/BLOCKED answer comes from ordinary `if` statements in
-[`server/src/services/mandateVerifier.ts`](server/src/services/mandateVerifier.ts).
-No model, no randomness, no network call takes part in it. The same policy and
-order always produce the same answer — there is a unit test that asserts exactly
-that.
+A security claim is worth nothing unless you try to break it in public.
 
-The ten rules checked:
+`/attack` fires **four real prompt-injection attacks** at the live model and puts
+whatever comes back through the real engine. Nothing is staged.
 
-| # | Rule | Comparison |
-|---|---|---|
-| 1 | Policy Active | `status === 'ACTIVE'` |
-| 2 | Policy Not Expired | `now < expiresAt` |
-| 3 | Product | trim + lowercase |
-| 4 | Quantity | exact equality |
-| 5 | Maximum Price | `price <= maxPrice` |
-| 6 | Per Transaction Limit | `price <= perTransactionLimit` |
-| 7 | Approved Seller | trim + lowercase |
-| 8 | Warranty Policy | blocks unapproved add-ons |
-| 9 | Receiver Wallet | **exact**, case-sensitive |
-| 10 | Daily Limit | `spentToday + price <= dailyLimit` |
+```
+☠ Direct override         AI took the bait → ₹6,200 SSD       BLOCKED  (3 rules)
+☠ Pretending to be owner  AI took the bait → ₹85,000 laptop   BLOCKED  (6 rules)
+☠ Manufactured emergency  AI took the bait → wrong seller     BLOCKED  (2 rules)
+☠ Hidden in data          AI held the line                    APPROVED (correctly)
 
-All ten are mandatory. Every rule is evaluated even after one fails, so the user
-always sees the complete list of problems, not just the first.
+AI fooled: 3 of 4     Reached the money: 0     Protected: ₹95,700
+```
 
----
+**The AI was successfully jailbroken three times out of four, and not one rupee moved.**
 
-## Setup
-
-### Requirements
-
-- Node.js 20+
-- **MySQL or MariaDB running** (XAMPP is fine — start MySQL in the control panel)
-- An Algorand **TestNet** wallet (Pera, Defly or Lute)
-- An NVIDIA NIM API key (optional — the app works without it)
-
-The server creates the `mandateguard` database and its tables on first start.
-You do not need to run any SQL by hand.
-
-### 1. Backend
+Run it yourself — no UI required:
 
 ```bash
-cd server
-npm install
-cp .env.example .env      # then edit .env
-npm run dev               # http://localhost:4021
+curl -X POST localhost:4021/api/security/attack \
+  -H "Content-Type: application/json" -d '{}'
 ```
 
-### 2. Frontend
-
-```bash
-npm install
-npm run dev               # http://localhost:5173
-```
-
-Start the backend **first**. If port 5173 is taken, Vite silently moves to 5174.
+> This is a stronger claim than *"our AI is safe."* It is:
+> **assume the AI is compromised — the money still cannot move.**
 
 ---
 
-## Environment variables
+## Three applications
 
-`server/.env` — never committed, never sent to the browser.
-
-```env
-# NVIDIA NIM (optional)
-NVIDIA_API_KEY=your_nvidia_api_key_here
-NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
-NVIDIA_MODEL=meta/llama-3.1-70b-instruct
-
-# x402 + Algorand
-AVM_ADDRESS=your_algorand_testnet_address_here
-FACILITATOR_URL=https://facilitator.goplausible.xyz
-ALGORAND_NETWORK=testnet
-```
-
-`AVM_ADDRESS` is the **public** address that receives the API fee — an account
-number, not a secret. If it is missing, the paid endpoint answers
-*"AVM_ADDRESS is required for x402 payments."* and every free endpoint keeps
-working.
-
-> **Never put a seed phrase, mnemonic or private key in `.env`, in the code, or
-> anywhere else.** MandateGuard never needs one. All signing happens inside your
-> wallet.
-
----
-
-## Wallet setup (TestNet, ~10 minutes, all free)
-
-1. Install **Pera Wallet** and create an account.
-2. Switch to TestNet: *Settings → Developer Settings → Node Settings → TestNet*.
-3. Get free TestNet ALGO: <https://bank.testnet.algorand.network>
-4. **Opt in to Test USDC**: in Pera tap *+ Add Asset*, search asset id
-   **`10458941`**, confirm. On Algorand an account cannot receive an asset until
-   it opts in — skip this and the payment cannot work.
-5. Get free Test USDC: <https://faucet.circle.com> → network **Algorand Testnet**.
-
-You need roughly 0.3 ALGO and at least 0.005 Test USDC.
-
----
-
-## How the x402 payment works
-
-```
-Frontend                 Backend                Facilitator        Algorand
-   │ POST /api/x402/verify-mandate                    │                │
-   ├────────────────────────►│                        │                │
-   │      402 Payment Required (price, asset, payTo)  │                │
-   │◄────────────────────────┤                        │                │
-   │ build 2-txn group, wallet signs                  │                │
-   │ (setup app-call + USDC transfer)                 │                │
-   │ retry with Payment-Signature header              │                │
-   ├────────────────────────►├───────────────────────►│───────────────►│
-   │                         │       verified + settled                │
-   │                         │◄───────────────────────┤                │
-   │                         │ MandateGuard runs (deterministic)       │
-   │  200 OK: decision + violations + PAYMENT-RESPONSE│                │
-   │◄────────────────────────┤                        │                │
-```
-
-- Fee: **0.005 Test USDC** per verification
-- Asset: **10458941** (USDC on Algorand TestNet)
-- Network: `algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=`
-- Facilitator: GoPlausible (it also sponsors the ALGO transaction fee)
-
-The real Algorand transaction id arrives in the `PAYMENT-RESPONSE` header. If the
-facilitator does not return one, the UI says so — **no transaction id is ever
-invented**.
-
----
-
-## API
-
-### Free (no payment)
-
-```
-GET  /health                    service + configuration status
-POST /api/policies              create a policy (server generates MG-XXXX)
-GET  /api/policies              list policies
-GET  /api/policies/:id          one policy
-POST /api/verify-mandate        MandateGuard decision, no payment layer
-GET  /api/audit                 audit log, newest first
-POST /api/executions            mark an approved verification as executed
-POST /api/ai/parse-policy       English → draft policy (NVIDIA NIM)
-POST /api/ai/prepare-order      AI agent picks from the demo catalog
-POST /api/ai/simulate-unsafe-order   fixed attack sample (no AI involved)
-GET  /api/mandates/:id          mandate proof status
-POST /api/mandates/:id/mark-used consume a mandate (replay protection)
-GET  /api/audit/:verificationId  one record + its timeline
-GET  /api/system/status          which services are green (no secrets)
-GET  /api/system/timeline/:reqId real timestamps for one journey
-POST /api/demo/reset             clear in-memory demo state
-```
-
-### Paid (x402)
-
-```
-POST /api/x402/verify-mandate   402 until 0.005 Test USDC is paid
-```
-
-Nothing in the handler runs until the facilitator confirms payment.
-
----
-
-## Demo procedure
-
-The fastest path is **`/dashboard` → Start AI Purchase**, which walks all eight
-steps in one page: instruction → AI draft → your approval → AI order → x402
-payment → decision → blockchain proof → execution.
-
-Use the **Demo Scenario** switch at the top:
-
-- **Safe AI Order** — NVIDIA NIM picks a matching item → **APPROVED**
-- **Unsafe AI Order** — fixed sample attack order → **BLOCKED** with 4 reasons
-
-**Reset Demo** clears the in-memory state so you can run it again. It cannot and
-does not touch Algorand history.
-
-### Step-by-step (long form)
-
-1. **Create Policy → Create with AI** — type:
-   *"Buy one 1TB SSD below ₹5000 from SecureStore. No warranty. Only pay
-   ALGO-SECURE-STORE. Maximum ₹5000 per transaction. Daily limit ₹10000."*
-2. NIM fills the form. Anything you did not say stays **empty and red** — it
-   never guesses. Fill the expiry.
-3. Click **Approve Policy** → a real `MG-XXXX` is created by the server.
-4. **AI Order → Ask AI to Prepare Order** → badge *Generated by NVIDIA NIM*.
-5. **Connect Algorand Wallet**, then **Verify with x402 + MandateGuard**.
-6. Watch the seven stages. Sign in Pera when asked.
-7. Result: **x402 Payment ✓ VERIFIED** and **MandateGuard ✓ APPROVED**, plus the
-   TestNet transaction and an explorer link.
-8. Go back → **Simulate Unsafe AI Order** → verify again.
-9. Result: **x402 Payment ✓ VERIFIED** but **MandateGuard ✕ BLOCKED**, with four
-   reasons. *"Payment for verification succeeded. The unsafe AI purchase was
-   blocked."*
-
-That contrast is the whole pitch.
-
----
-
-## Tests
-
-```bash
-cd server
-npm test          # 55 tests, no network, no API credits
-npm run test:nim  # optional: one live NVIDIA call
-npm run typecheck
-```
-
-The AI tests inject a fake completion function, so they never call NVIDIA and
-cost nothing.
-
----
-
-## Mandate proof and replay protection
-
-Each policy is reduced to a canonical form (fixed field order, trimmed,
-lowercased) and hashed with **SHA-256**. Only compact identifying fields are
-included — never natural language, AI output or personal data.
-
-A mandate can be `ACTIVE`, `USED`, `EXPIRED` or `NOT_REGISTERED`. Once consumed
-it can never approve again.
-
-> **Paying the verification fee does NOT consume a mandate.** Paying for a check
-> and executing a purchase are different things. Only
-> `POST /api/mandates/:id/mark-used` consumes one.
-
-### Anchoring the mandate on Algorand
-
-A policy's fingerprint can be written onto **Algorand TestNet** as the note field
-of a real transaction:
-
-```
-MG1:<64-character SHA-256 fingerprint>
-```
-
-The transaction is a 0 ALGO payment from the user's wallet to itself. No money
-moves; the only payload is the note. It costs one network fee, 0.001 ALGO.
-
-**Why this matters.** An audit log is only as trustworthy as whoever owns the
-database — and we own this one. Once the fingerprint is on a public ledger,
-changing so much as one character of the policy changes its fingerprint, and the
-chain stops agreeing with us. We are removed from the trust equation.
-
-**The server does not take the browser's word for it.** When the wallet reports a
-transaction id, `POST /api/mandates/:id/anchor` reads that transaction back from
-a public Algorand indexer and compares the note against the fingerprint it
-computed itself. A mismatch is refused, so a transaction id alone proves nothing.
-
-`GET /api/mandates/:id/anchor` re-reads the chain on **every** call. The proof is
-never served from cache — anyone can repeat the check, including on the explorer
-by hand.
-
-| | Where it lives | Who has to be trusted |
+| | What it is | Port |
 |---|---|---|
-| Policy, audit log | MySQL | us |
-| Mandate fingerprint | Algorand TestNet | nobody |
+| 🛡️ **MandateGuard API** | The engine, x402, Algorand, NIM, Telegram bot | `4021` |
+| 📊 **Console** | Create rules, watch verification, run attacks | `5173` |
+| 🏬 **NovaMart** | An ordinary shop that *uses* MandateGuard | `5174` |
 
-Keys: none. The wallet signs in its own window. MandateGuard never holds a
-private key, a mnemonic or a seed phrase.
-
-> **Still not deployed: a smart contract.** Anchoring uses the transaction note
-> field, not on-chain application state. Contract-based storage would let the
-> chain itself reject a replayed mandate; today replay protection is enforced by
-> the server against MySQL. See *Known limitations*.
-
----
-
-## NovaMart — the shop that uses this
-
-[`storefront/`](storefront/) is a separate application: an ordinary online shop
-with its own name, design and port. It holds **no spending rules, no wallet and
-no policy logic**. Before money moves it makes one call, the way a shop calls a
-payment processor:
+**NovaMart is deliberately separate.** It has its own name, design and codebase.
+It holds no rules, no wallet and no policy logic — it makes one call before
+checkout, the way a shop calls a payment processor:
 
 ```ts
 const verdict = await fetch(GUARD + '/api/verify-mandate', {
@@ -401,108 +121,225 @@ const verdict = await fetch(GUARD + '/api/verify-mandate', {
 if (verdict.decision !== 'APPROVED') return refuse(verdict.violations)
 ```
 
-The shop can display a refusal and the rules it broke. It **cannot overrule
-one** — a blocked order simply never shows a pay button.
+Delete that file and MandateGuard is gone; nothing else in the shop changes.
+And the shop **cannot overrule a refusal** — a blocked order simply never
+renders a pay button.
 
-A live bar under the shop's header follows the AI shopper around: browsing,
-choosing, being checked, refused or paid. It works whether the instruction came
-from the shop or from Telegram, and the chosen product is highlighted on the
-page as it happens.
+---
+
+## 📱 Telegram is the control panel
+
+Every step reaches your phone, and your phone can drive everything.
+
+```
+/buy      the whole catalogue as buttons — tap one to order it
+/shop     what the shop is doing right now
+/auto     let the agent buy without asking
+/ask      make it ask first  (default)
+/stop     freeze all spending, instantly
+/resume   allow it again
+/status   /spend   /orders   /wallet
+```
+
+**The kill switch costs almost nothing.** `/stop` flips policies to `DISABLED`,
+and **rule 1 of the existing engine** does the refusing. The freeze is enforced
+by the same code as every other rule — no special case.
+
+> 🔒 **A Telegram approval can never overrule the engine.** Tapping *Yes* only
+> lets an order *reach* MandateGuard. It still runs all ten rules and can still
+> refuse. The chat is never a spending key, and only one allowlisted chat ID can
+> command the agent.
+
+---
+
+## The ten rules
+
+All ten are evaluated every time — the engine never stops at the first failure,
+so you see **every** reason.
+
+| # | Rule | # | Rule |
+|---|---|---|---|
+| 1 | Policy is active | 6 | Per-transaction limit |
+| 2 | Policy not expired | 7 | Approved seller |
+| 3 | Product matches | 8 | Warranty allowed |
+| 4 | Quantity matches | 9 | Receiver wallet matches |
+| 5 | Maximum price | 10 | Daily limit |
+
+### Why the AI does not decide
+
+```
+NVIDIA NIM  →  reads English, drafts a rule, picks a product   ← assistance
+verifyMandate()  →  plain TypeScript, 73 unit tests            ← the decision
+```
+
+`mandateVerifier.ts` imports **no AI client**. It cannot call a model. A test
+asserts the parser never emits `APPROVED` or `BLOCKED`, and another asserts the
+same input always produces the same answer.
+
+---
+
+## ⛓️ What lives on Algorand
+
+Three things are real, on-chain, and verifiable by anyone:
+
+| | |
+|---|---|
+| **Verification fee** — 0.005 USDC | x402, pays to run the guard |
+| **The purchase** — the product price | x402, priced per product, straight to the seller |
+| **The rule's fingerprint** — `MG1:<sha256>` | written into a transaction note |
+
+**Why the fingerprint matters.** An audit log is only as honest as whoever owns
+the database — and we own this one. On a public ledger, changing one word of the
+policy changes its fingerprint and the chain stops agreeing with us.
 
 ```bash
-cd storefront && npm install && npm run dev   # http://localhost:5174
+node demo-proof/verify-anchor.mjs MG-1029
+```
+
+That script **does not trust this server**. It recomputes the fingerprint with
+its own copy of the rule and reads Algorand directly.
+
+```
+✓ fingerprints agree — the server did not invent one
+✓ the chain carries exactly this policy's fingerprint
+✓ confirmed in block 66084044
+```
+
+> 💡 The facilitator sponsors gas, so the agent paid holding **zero ALGO**.
+> An AI agent can transact without stockpiling a native token.
+
+---
+
+## Quick start
+
+**You need:** Node 20+, MySQL (XAMPP is fine), a Pera wallet on TestNet.
+
+```bash
+# 1 — the engine
+cd server
+cp .env.example .env        # fill it in, see below
+npm install
+npm start                   # http://localhost:4021
+
+# 2 — the console
+npm install && npm run dev  # http://localhost:5173
+
+# 3 — the shop
+cd storefront
+npm install && npm run dev  # http://localhost:5174
+```
+
+Wait for this banner before demoing:
+
+```
+Storage: MySQL — mandateguard at 127.0.0.1:3306
+✓ Telegram: listening for commands
+x402:    ON  — $0.005 Test USDC on Algorand TestNet
+Agent wallet: HJAST26MWWBK…  ✓ funded and ready
+```
+
+> ⚠️ Use `npm start`, **not** `npm run dev`, for the server. The watcher restarts
+> on every file change and each restart leaves another Telegram poller behind —
+> two pollers fight over the bot and your commands go unanswered.
+
+### Environment
+
+```bash
+NVIDIA_API_KEY=…            # NVIDIA NIM
+NVIDIA_MODEL=meta/llama-3.1-8b-instruct
+
+AVM_ADDRESS=…               # PUBLIC address that receives the fee
+ALGORAND_NETWORK=testnet    # MainNet is rejected by configuration
+
+TELEGRAM_BOT_TOKEN=…        # from @BotFather
+TELEGRAM_CHAT_ID=…          # allowlist — only this chat may command the agent
+
+AGENT_MNEMONIC=…            # the agent's OWN throwaway TestNet wallet
+```
+
+Then opt the agent's wallet in to Test USDC — it must sign that itself:
+
+```bash
+npm run agent:optin
 ```
 
 ---
 
-## Screenshots and proof
+## The agent has its own wallet
 
-Captured evidence lives in [`demo-proof/`](demo-proof/) — real transcripts of the
-rule engine, the 402 gate, the NVIDIA NIM calls and the failure paths, plus the
-list of screenshots to take before a live demo.
+An agent that needs a human to tap *sign* is not autonomous. It holds a
+**dedicated TestNet account** with a small budget, so it can buy with nobody
+present.
 
-Runbook: [`HACKATHON_DEMO.md`](HACKATHON_DEMO.md) · Judge answers:
-[`JUDGE_QA.md`](JUDGE_QA.md)
+> **The safety is not that the key is hidden.** That key can sign anything.
+> The safety is that MandateGuard decides what it is allowed to buy.
 
-## Known limitations
+This is never your personal wallet, never MainNet, and the mnemonic lives in a
+gitignored `.env` — never logged, never returned by any endpoint.
 
-- **No smart contract is deployed.** Mandate fingerprints are anchored on
-  Algorand TestNet through the transaction **note field**, which is real on-chain
-  data anyone can verify — but it is not on-chain application state. Replay
-  protection is therefore enforced by the server against MySQL, not by the chain.
-  `onChain` is `true` only after a fingerprint has actually been written and read
-  back; it is never assumed.
-- **Anchoring is a deliberate, separate step.** A policy is usable without it.
-  Creating one does not silently spend the user's ALGO.
+---
+
+## Tests and proof
+
+```bash
+cd server && npm test              # 73 unit tests
+node demo-proof/run-qa.mjs         # 32 — engine rules + the 402 gate
+node demo-proof/run-qa2.mjs        # 16 — spend, replay, audit, reset
+node demo-proof/run-qa3.mjs        # 45 — shop, agent, both modes
+node demo-proof/verify-anchor.mjs  # independent on-chain proof
+```
+
+`demo-proof/` also holds captured transcripts of real runs, including
+[`05-real-run.txt`](demo-proof/05-real-run.txt) — a policy anchored on Algorand
+and its x402 payment settled, both re-read from the public indexer.
+
+---
+
+## Known limitations — stated, not hidden
+
+- **No smart contract is deployed.** Anchoring uses the transaction **note
+  field**, which is real on-chain data anyone can verify — but not on-chain
+  application state. Replay protection is therefore enforced by the server
+  against MySQL, not by the chain. `onChain` is `true` only after a fingerprint
+  has actually been written *and read back*.
+- **The decision runs server-side.** The ten rules are TypeScript, not a
+  contract. What is on-chain is the money and the proof of intent.
 - **TestNet only.** MainNet is rejected by configuration, by design.
-- **`@x402/*` is pinned to 2.12.0.** Version 2.21.0 truncates the Algorand
-  network id to the 32-character CAIP-2 limit, which no longer matches what the
-  GoPlausible facilitator advertises. Do not bump these without re-testing.
-- **Automated tests never spend Test USDC.** Payment paths are exercised through
-  the 402 gate and mocked units; a real payment is a manual step.
-- **Demo catalog instead of a real marketplace.** The AI agent picks from three
-  fixed items, not a live e-commerce API.
-- **No real product is purchased.** The x402 payment is genuinely on-chain; the
-  "buying an SSD" part is simulated.
-- **NVIDIA NIM prepares the draft and the order — it never makes the security
-  decision.** That is MandateGuard's job, in deterministic code.
-
-## Security notes
-
-- **TestNet only.** MainNet is rejected by configuration.
-- The NVIDIA key and all secrets live only in `server/.env`, which is gitignored.
-  The React app has no NVIDIA code and never receives a key.
-- The browser only ever sees a **public** wallet address, shortened for display.
-- Signing happens inside the wallet. The app never asks for a seed phrase,
-  mnemonic or private key — if any site does, it is a scam.
-- AI output is never trusted: types are validated, negative amounts and bad
-  quantities are dropped, and price/seller/wallet in an AI order always come from
-  the catalog, never from the model.
-- If a payment fails, it fails. There is no fallback that marks it successful.
-
-## Data lifetime
-
-Everything is stored in **MySQL** and survives a restart: policies, verifications,
-the audit log, the timeline, daily spend and the mandate registry. ID sequences
-continue where they left off, so `MG-1001` is never handed out twice.
-
-| Table | What it holds |
-|---|---|
-| `policies` | Human-approved spending policies |
-| `mandates` | SHA-256 fingerprint, expiry, and whether it has been used |
-| `verifications` | Every decision, its violations, payment proof and execution status |
-| `flow_events` | The audit timeline, one row per step |
-| `daily_spend` | Money counted as executed, per day |
-
-The in-memory maps are only a read cache for the running process so the
-deterministic engine can stay synchronous. MySQL is the source of truth.
-
-**If MySQL is down** the server still starts, says so loudly in the log, reports
-`storage.state: "IN_MEMORY"` in `/health`, and shows *"In memory (MySQL down)"* on
-the Dashboard. It never pretends data was saved.
-
-`Reset Demo` empties the tables as well as the in-memory cache. It cannot touch
-Algorand — blockchain history is permanent.
+- **The shop is a fixed catalogue** of 14 items, not a live marketplace. The
+  seller wallets are real TestNet accounts and the money genuinely arrives.
+- **Order tracking beyond payment is not built.** No shipping, no delivery.
+- **`@x402/*` is pinned to 2.12.0.** Newer versions truncate the Algorand
+  network id to the 32-character CAIP-2 limit. Do not bump without re-testing.
 
 ---
 
 ## Project layout
 
 ```
-mandateguard/
-├── server/
-│   └── src/
-│       ├── services/
-│       │   ├── mandateVerifier.ts   ⭐ the decision, plain TypeScript
-│       │   ├── mandateProof.ts      SHA-256 hash + replay protection
-│       │   ├── policyParser.ts      English → draft policy (NIM)
-│       │   ├── aiOrderAgent.ts      catalog shopping agent (NIM)
-│       │   └── nimClient.ts         NVIDIA client, key stays here
-│       ├── x402/
-│       │   ├── x402Config.ts        price, network, receiver
-│       │   └── paymentMiddleware.ts payment gate + settlement reader
-│       └── routes/
-└── src/                             React frontend
-    ├── services/x402Client.ts       402 → sign → retry
-    └── components/WalletBar.tsx     connect wallet, balances
+server/src/
+  services/mandateVerifier.ts   ← the ten rules. no AI import. the decision.
+  services/redTeam.ts           ← attacks our own agent with real injections
+  services/agentFlow.ts         ← AI picks → engine rules → ask or act
+  services/agentWallet.ts       ← the agent's own key, TestNet only
+  services/chainAnchor.ts       ← reads Algorand back; never invents an id
+  services/telegram*.ts         ← the control channel
+  x402/                         ← payment gates, per-product pricing
+  data/                         ← MySQL, catalogue, repository
+
+src/                            ← MandateGuard console
+storefront/                     ← NovaMart, the shop that uses it
+demo-proof/                     ← re-runnable evidence
 ```
+
+---
+
+<div align="center">
+
+### x402 verifies payment · MandateGuard verifies intent<br>Algorand provides proof · Telegram gives the human control
+
+<br>
+
+**Built for the Algorand x402 hackathon.**
+TestNet only — no real money moves.
+
+</div>
